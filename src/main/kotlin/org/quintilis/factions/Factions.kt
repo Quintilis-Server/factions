@@ -1,14 +1,29 @@
 package org.quintilis.factions
 
 import org.bukkit.plugin.java.JavaPlugin
+import org.quintilis.factions.managers.ConfigManager
+import org.quintilis.factions.managers.DatabaseManager
 
 class Factions : JavaPlugin() {
 
     override fun onEnable() {
-        // Plugin startup logic
+        this.saveDefaultConfig()
+
+        ConfigManager.initialize(this.config)
+
+        try {
+            logger.info("Conectando ao banco de dados PostgreSQL...")
+            DatabaseManager.connect()
+            logger.info("Conexão com o banco de dados estabelecida com sucesso!")
+        } catch (e: Exception) {
+            logger.severe("FALHA AO CONECTAR COM O BANCO DE DADOS! Desabilitando o plugin...")
+            e.printStackTrace()
+            server.pluginManager.disablePlugin(this)
+            return
+        }
     }
 
     override fun onDisable() {
-        // Plugin shutdown logic
+        DatabaseManager.close()
     }
 }
