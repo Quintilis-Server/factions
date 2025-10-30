@@ -1,6 +1,8 @@
 package org.quintilis.factions.entities.models
 
-import org.quintilis.factions.entities.annotations.*
+import org.quintilis.factions.entities.annotations.Column
+import org.quintilis.factions.entities.annotations.PrimaryKey
+import org.quintilis.factions.entities.annotations.Transient
 import org.quintilis.factions.managers.DatabaseManager
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
@@ -49,10 +51,5 @@ abstract class BaseEntity (val tableName: String) {
                 .bindBean(this)
                 .execute()
         }
-    }
-
-    fun loadAll() {
-
-
     }
 }
