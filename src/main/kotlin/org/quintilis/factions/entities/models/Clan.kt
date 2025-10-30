@@ -8,7 +8,8 @@ import org.quintilis.factions.entities.annotations.TableName
 data class Clan(
 
     @PrimaryKey
-    val id: Int? = null,
+    @Transient
+    var id: Int? = null,
 
     @Column("name")
     val name: String,

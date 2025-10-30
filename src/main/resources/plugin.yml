@@ -2,3 +2,8 @@ name: factions
 version: '1.0-SNAPSHOT'
 main: org.quintilis.factions.Factions
 api-version: '1.21'
+
+commands:
+  clan:
+    description: Comando principal dos clãs
+    usage: /clan

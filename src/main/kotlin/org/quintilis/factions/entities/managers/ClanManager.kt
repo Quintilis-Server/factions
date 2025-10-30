@@ -26,4 +26,30 @@ object ClanManager {
             }
         }
     }
+
+    fun createClan(name: String, tag: String): Clan {
+        val clan = Clan(name = name, tag = tag)
+        clan.save()
+        return clan
+    }
+
+    fun existsByName(name: String): Boolean {
+        return DatabaseManager.jdbi.withHandle<Boolean, Exception> { handle ->
+            handle.createQuery("SELECT 1 FROM clans WHERE name = :name")
+                .bind("name", name)
+                .mapTo(Boolean::class.java)
+                .findOne()
+                .orElse(false)
+        }
+    }
+
+    fun existsByTag(tag: String): Boolean {
+        return DatabaseManager.jdbi.withHandle<Boolean, Exception> { handle ->
+            handle.createQuery("SELECT 1 FROM clans WHERE tag = :tag")
+                .bind("tag", tag)
+                .mapTo(Boolean::class.java)
+                .findOne()
+                .orElse(false)
+        }
+    }
 }
