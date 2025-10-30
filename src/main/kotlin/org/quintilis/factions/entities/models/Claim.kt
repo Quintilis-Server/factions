@@ -21,5 +21,5 @@ data class Claim(
     val chunkZ: Int,
 
     @Column("clan_id")
-    val clanId: Int?
+    val clanId: Int
 ): BaseEntity("chunk_claims")
