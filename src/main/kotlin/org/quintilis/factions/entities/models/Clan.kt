@@ -3,6 +3,7 @@ package org.quintilis.factions.entities.models
 import org.quintilis.factions.entities.annotations.Column
 import org.quintilis.factions.entities.annotations.PrimaryKey
 import org.quintilis.factions.entities.annotations.TableName
+import java.util.*
 
 @TableName("clans")
 data class Clan(
@@ -15,6 +16,9 @@ data class Clan(
     val name: String,
 
     @Column("tag")
-    val tag: String
+    val tag: String,
+
+    @Column("leader_uuid")
+    val leaderUuid: UUID
 
 ) : BaseEntity("clans")

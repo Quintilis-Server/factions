@@ -4,6 +4,7 @@ import org.bukkit.entity.Player
 import org.quintilis.factions.entities.models.Clan
 import org.quintilis.factions.entities.models.ClanMember
 import org.quintilis.factions.managers.DatabaseManager
+import java.util.*
 
 object ClanManager {
 
@@ -27,10 +28,30 @@ object ClanManager {
         }
     }
 
-    fun createClan(name: String, tag: String): Clan {
-        val clan = Clan(name = name, tag = tag)
+    fun createClan(name: String, tag: String, id: UUID): Clan {
+        val clan = Clan(name = name, tag = tag, leaderUuid = id)
         clan.save()
         return clan
+    }
+
+    fun getClanByOwner(player: Player): Clan? {
+        return DatabaseManager.jdbi.withHandle <Clan, Exception> { handle ->
+            handle.createQuery("SELECT * FROM clans WHERE leader_id = :uuid")
+                .bind("uuid", player.uniqueId)
+                .mapTo(Clan::class.java)
+                .findOne()
+                .orElse(null)
+        }
+    }
+
+    fun deleteClan(clan: Clan) {
+        DatabaseManager.jdbi.withHandle<Boolean, Exception> { handle ->
+            val rowsAffected = handle.createUpdate("DELETE FROM clans WHERE leader_uuid = :uuid")
+                .bind("uuid", clan.leaderUuid)
+                .execute()
+
+            rowsAffected > 0
+        }
     }
 
     fun existsByName(name: String): Boolean {

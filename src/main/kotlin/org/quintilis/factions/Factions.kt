@@ -1,7 +1,7 @@
 package org.quintilis.factions
 
 import org.bukkit.plugin.java.JavaPlugin
-import org.quintilis.factions.commands.ClanCreateCommand
+import org.quintilis.factions.commands.ClanCommand
 import org.quintilis.factions.entities.managers.ClaimManager
 import org.quintilis.factions.entities.models.Clan
 import org.quintilis.factions.listeners.BlockProtectionListener
@@ -27,7 +27,7 @@ class Factions : JavaPlugin() {
 
             server.pluginManager.registerEvents(BlockProtectionListener(), this)
 
-            getCommand("clan")?.setExecutor(ClanCreateCommand())
+            getCommand("clan")?.setExecutor(ClanCommand())
 
         } catch (e: Exception) {
             logger.severe("FALHA AO CONECTAR COM O BANCO DE DADOS! Desabilitando o plugin...")
