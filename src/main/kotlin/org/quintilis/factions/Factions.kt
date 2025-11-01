@@ -1,9 +1,8 @@
 package org.quintilis.factions
 
 import org.bukkit.plugin.java.JavaPlugin
-import org.quintilis.factions.commands.ClanCommand
+import org.quintilis.factions.commands.clan.ClanCommand
 import org.quintilis.factions.entities.managers.ClaimManager
-import org.quintilis.factions.entities.models.Clan
 import org.quintilis.factions.listeners.BlockProtectionListener
 import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.managers.DatabaseManager
@@ -21,9 +20,6 @@ class Factions : JavaPlugin() {
             logger.info("Conexão com o banco de dados estabelecida com sucesso!")
 
             ClaimManager.loadClaims()
-
-            val clan = Clan(name = "Leofoda", tag = "Leo")
-            clan.save()
 
             server.pluginManager.registerEvents(BlockProtectionListener(), this)
 

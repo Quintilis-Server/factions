@@ -1,4 +1,6 @@
-package org.quintilis.factions.commands;
+package org.quintilis.factions.commands.clan;
+
+import org.quintilis.factions.commands.CommandInterface;
 
 public enum ClanCommands implements CommandInterface {
 

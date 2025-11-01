@@ -50,29 +50,35 @@ object CommandException {
         return true
     }
 
-    /*fun notClanLeader(commandSender: CommandSender): Boolean {
-        commandSender.sendMessage("Você tem que ser o líder do clã para fazer isso!".color(ChatColor.RED))
+    fun notClanLeader(commandSender: CommandSender): Boolean {
+        commandSender.sendMessage("Você tem que ser o líder do clã para fazer isso!".color(NamedTextColor.RED))
         return true
     }
-
+    /*
     fun notEnoughArgs(commandSender: CommandSender, args: Array<out String>, min: Int): Boolean {
         commandSender.sendMessage("Argumentos insuficientes. Necessário $min, fornecido ${args.size}".color(ChatColor.RED))
         return true
     }
-
+    */
     fun notFound(commandSender: CommandSender, type:String): Boolean{
-        commandSender.sendMessage("O $type não foi encontrado.".color(ChatColor.RED))
+        val message = (Component.text("O $type não foi encontrado.", NamedTextColor.RED))
+
+        commandSender.sendMessage(message)
+
         return true
+
     }
 
     fun notInAClan(commandSender: CommandSender): Boolean {
-        commandSender.sendMessage("Você não esta em um clã.".color(ChatColor.RED).bold())
+        val message = Component.text("You are not in a clan.", NamedTextColor.RED)
+            .decorate(TextDecoration.BOLD)
+
+        commandSender.sendMessage(message)
         return true
     }
-    */
 
     fun alreadyInClan(commandSender: CommandSender): Boolean {
-        commandSender.sendMessage("Você ja esta em um clã.".color(NamedTextColor.RED))
+        commandSender.sendMessage("You already in a clan.".color(NamedTextColor.RED))
         return true
     }
 }
