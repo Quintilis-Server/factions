@@ -18,43 +18,53 @@ abstract class BaseEntity {
     val tableName: String = this::class.findAnnotation<TableName>()?.name
         ?: throw IllegalArgumentException("A classe ${this::class.simpleName} não tem @TableName")
 
-    val primaryKeyProperty = this::class.memberProperties
-        .find { it.hasAnnotation<PrimaryKey>() }
-        ?: this::class.memberProperties.find { it.name == "id"}
-        ?: throw IllegalArgumentException("A classe ${this::class.simpleName} não tem @PrimaryKey")
+    val primaryKeyProperties: List<KProperty1<*, *>> = this::class.memberProperties
+        .filter { it.hasAnnotation<PrimaryKey>() }
+        .ifEmpty { // Fallback para "id" se nenhuma @PrimaryKey for encontrada
+            this::class.memberProperties.filter { it.name == "id" }
+        }
 
-    val primaryKeyColumnName: String = primaryKeyProperty.columnName
+    val primaryKeyColumnNames: List<String> = primaryKeyProperties.map { it.columnName }
+
+    val primaryKeyPropertyNames: List<String> = primaryKeyProperties.map { it.name }
 
 
+    fun <T : BaseEntity> save(): T {
 
-    fun <T: BaseEntity> save(): T{
-        // Pega todas as propriedades da class
-        val pkValue = (primaryKeyProperty as KProperty1<BaseEntity, *>).get(this)
+        val singlePkValue = if (primaryKeyProperties.size == 1) {
+            (primaryKeyProperties.first() as KProperty1<BaseEntity, *>).get(this)
+        } else {
+            false
+        }
+
         val properties = this::class.primaryConstructor?.parameters
             ?.mapNotNull { param ->
                 this::class.memberProperties.find { prop -> prop.name == param.name && !prop.hasAnnotation<Transient>() }
             }
             ?.filter { prop ->
-                // SE o valor da PK for null, REMOVA a PK da lista de propriedades do INSERT
-                if (pkValue == null && prop.name == primaryKeyProperty.name) {
-                    false // Exclui a PK
+                if (singlePkValue == null && prop.name == primaryKeyProperties.firstOrNull()?.name) {
+                    false
                 } else {
-                    true // Inclui todas as outras (incluindo UUIDs!)
+                    true
                 }
             }
             ?: emptyList()
+
         // Transforma para colunas sql
         val columns = properties.joinToString(", ") { it.columnName }
         // Transforma para tipos nomeados do jdbi
         val namedParams = properties.joinToString(", ") { ":${it.name}" }
-        // cria o sql
-        val updateSet = properties.filter { it.name != primaryKeyProperty.name }
+
+        val updateSet = properties
+            .filter { it.name !in primaryKeyPropertyNames }
             .joinToString(", ") { "${it.columnName} = :${it.name}" }
+
+        val conflictColumns = primaryKeyColumnNames.joinToString(", ")
 
         val sql = """
             INSERT INTO $tableName ($columns)
             VALUES ($namedParams)
-            ON CONFLICT ($primaryKeyColumnName) DO UPDATE SET
+            ON CONFLICT ($conflictColumns) DO UPDATE SET
             $updateSet
             RETURNING *
         """.trimIndent()
@@ -62,7 +72,11 @@ abstract class BaseEntity {
         return DatabaseManager.jdbi.inTransaction<T, Exception> { handle ->
             val update = handle.createUpdate(sql)
 
-            properties.forEach { prop ->
+
+            val allProperties = this::class.memberProperties
+                .filter { !it.hasAnnotation<Transient>() }
+
+            allProperties.forEach { prop ->
                 @Suppress("UNCHECKED_CAST")
                 val typedProp = prop as KProperty1<BaseEntity, *>
                 val value = typedProp.get(this)
