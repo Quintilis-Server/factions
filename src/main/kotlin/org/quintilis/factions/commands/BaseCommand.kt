@@ -168,7 +168,7 @@ abstract class BaseCommand(
         }
 
         val helpEntry = commands.find { it.command == args[0] }
-        if(helpEntry != null){
+        if(helpEntry == null){
             return this.unknownSubCommand(commandSender, args[0])
         }
 

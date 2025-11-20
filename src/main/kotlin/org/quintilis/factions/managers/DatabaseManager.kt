@@ -5,6 +5,8 @@ import com.zaxxer.hikari.HikariDataSource
 import org.bukkit.plugin.java.JavaPlugin
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin
+import org.jdbi.v3.sqlobject.SqlObjectPlugin
+//import org.jdbi.v3.sqlobject.kotlin.KotlinSqlObjectPlugin
 import org.quintilis.factions.dao.BaseDao
 import java.sql.Connection
 import java.sql.SQLException
@@ -39,6 +41,7 @@ object DatabaseManager {
         this.dataSource = HikariDataSource(config)
 
         this.jdbi = Jdbi.create(dataSource).apply {
+            installPlugin(SqlObjectPlugin())
             installPlugin(KotlinPlugin())
         }
     }

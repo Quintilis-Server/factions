@@ -1,5 +1,6 @@
 package org.quintilis.factions.entities
 
+import org.jdbi.v3.sqlobject.transaction.Transaction
 import org.quintilis.economy.entities.annotations.Column
 import org.quintilis.economy.entities.annotations.PrimaryKey
 import org.quintilis.economy.entities.annotations.TableName
@@ -29,6 +30,7 @@ abstract class BaseEntity {
     val primaryKeyPropertyNames: List<String> = primaryKeyProperties.map { it.name }
 
 
+    @Transaction
     fun <T : BaseEntity> save(): T {
 
         val singlePkValue = if (primaryKeyProperties.size == 1) {
