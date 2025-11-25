@@ -15,6 +15,6 @@ interface PlayerDao: BaseDao {
     @SqlQuery("SELECT EXISTS( SELECT 1 FROM clan_member WHERE player_id = :playerId AND active = true)")
     fun isInClan(@Bind("playerId") playerId: UUID): Boolean
 
-    @SqlQuery("SELECT EXISTS( SELECT 1 FROM clans WHERE leader_uuid = :playerId)")
+    @SqlQuery("SELECT EXISTS( SELECT 1 FROM clans WHERE leader_uuid = :playerId AND active = true)")
     fun isClanOwner(@Bind("playerId") playerId: UUID): Boolean
 }

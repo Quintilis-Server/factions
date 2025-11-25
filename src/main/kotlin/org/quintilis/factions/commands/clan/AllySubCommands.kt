@@ -24,6 +24,29 @@ enum class AllySubCommands(
             "clan.ally.remove.description",
             "factions.usage"
         )
+    ),
+    LIST(
+        "list",
+        "/clan ally list",
+        HelpEntry(
+            "clan.ally.list.description",
+            "factions.usage"
+        )
+    ),
+    ACCEPT(
+        "accept",
+        "/clan ally accept <tag>",
+        HelpEntry(
+            "clan.ally.accept.description",
+            "factions.usage"
+        )
+    ),
+    REJECT(
+        "reject",
+        "/clan ally reject <tag>",
+        HelpEntry(
+            "clan.ally.reject.description",
+            "factions.usage"
+        )
     )
-
 }

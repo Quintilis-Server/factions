@@ -10,6 +10,13 @@ import java.lang.IllegalArgumentException
 import java.util.UUID
 
 interface ClanDao: BaseDao {
+
+    @SqlQuery("SELECT * FROM clans WHERE active = true ORDER BY id LIMIT :pageSize OFFSET :startPage")
+    fun findWithPage(@Bind("startPage")startPage: Int, @Bind("pageSize")pageSize: Int): List<ClanEntity>
+
+    @SqlQuery("SELECT COUNT(*) FROM clans WHERE active = TRUE")
+    fun totalClans(): Int
+
     @SqlQuery("SELECT * FROM clans WHERE name LIKE '%' || :name || '%'")
     fun findByName(@Bind("name") name: String): ClanEntity?
 

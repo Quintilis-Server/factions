@@ -30,7 +30,7 @@ abstract class BaseCommand(
         args: Array<out String>
     ): MutableList<String>
 
-    private val pageSize = 5;
+    protected val pageSize = 5;
 
     protected fun unknownSubCommand(sender: CommandSender, subCommand: String): Boolean {
         sender.sendMessage {

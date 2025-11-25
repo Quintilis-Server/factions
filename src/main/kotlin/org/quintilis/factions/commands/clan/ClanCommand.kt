@@ -8,10 +8,13 @@ import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.quintilis.factions.commands.BaseCommand
+import org.quintilis.factions.commands.Commands
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.managers.DatabaseManager
+import kotlin.math.ceil
+import kotlin.math.max
 
 class ClanCommand: BaseCommand(
     name = "clan",
@@ -109,23 +112,144 @@ class ClanCommand: BaseCommand(
         }
     }
 
+    private fun list(sender: CommandSender, args: List<String>) {
+        sender as Player
+
+        val page = args.getOrNull(0)?.toIntOrNull() ?: 1
+
+        if(page <= 0){
+            return
+        }
+
+        val totalClans = clanDao.totalClans();
+
+        val totalPages = max(1, ceil(totalClans.toDouble() / pageSize).toInt())
+
+        if (page !in 1..totalPages) {
+            sender.sendMessage {
+                Component.translatable(
+                    "error.invalid_page", // Crie essa chave no seu properties
+                    Argument.numeric("total_page", totalPages)
+                )
+            }
+            return
+        }
+        val pageOffset = (page - 1) * pageSize
+
+        val clans = clanDao.findWithPage(pageOffset, pageSize)
+
+        sender.sendMessage {
+            Component.translatable(
+                "clan.list.header",
+                Argument.numeric("page", page),
+                Argument.numeric("total_page", totalPages)
+            )
+        }
+
+        clans.forEach {
+            sender.sendMessage {
+                Component.translatable(
+                    "clan.list.response",
+                    Argument.string("clan_name", it.name),
+                    Argument.string("tag", it.tag?: ""),
+                    Argument.string("leader_name", it.getLeader()!!.name)
+                )
+            }
+        }
+
+        sender.sendMessage {
+            Component.translatable(
+                "clan.list.footer",
+                Argument.string("command", ClanCommands.LIST.usage)
+            )
+        }
+    }
+
     override fun commandWrapper(
         commandSender: CommandSender,
         label: String,
         args: Array<out String>
     ): Boolean {
-        commandSender as Player
-        when(args[0].lowercase()){
-            ClanCommands.CREATE.command -> this.create(commandSender, args.drop(1))
-            ClanCommands.DELETE.command -> this.delete(commandSender)
-            ClanCommands.ALLY.command ->{
-                when(args[1].lowercase()){
-                    AllySubCommands.ADD.command ->{}
-                }
-            }
-            else -> this.unknownSubCommand(commandSender, args[0])
+        val rootCommand = ClanCommands.entries.find{
+            it.command.equals(args[0], ignoreCase = true)
+        } ?: return this.unknownSubCommand(commandSender, args[0])
+
+        val subArgs = args.drop(1)
+
+
+        when(rootCommand){
+            ClanCommands.CREATE -> this.create(sender = commandSender, subArgs)
+            ClanCommands.DELETE -> this.delete(sender = commandSender)
+            ClanCommands.LIST -> this.list(sender = commandSender, subArgs)
+            ClanCommands.ALLY -> this.handleAllyCommand(commandSender, subArgs)
+            ClanCommands.MEMBER -> this.handleMemberCommand(commandSender, subArgs)
         }
         return true
+    }
+
+    /**
+     * Handler ally commands
+     */
+    private fun handleAllyCommand(sender: CommandSender, args: List<String>) {
+
+        fun add(){
+
+        }
+
+        fun remove(){
+
+        }
+
+        fun list(){
+
+        }
+
+        fun accept(){
+
+        }
+
+        fun reject(){
+
+        }
+
+        val subCommand = findSubCommand(sender, args, AllySubCommands.entries) ?: return
+
+        when(subCommand){
+            AllySubCommands.ADD -> add()
+            AllySubCommands.REMOVE -> remove()
+            AllySubCommands.LIST -> list()
+            AllySubCommands.ACCEPT -> accept()
+            AllySubCommands.REJECT -> reject()
+        }
+    }
+
+    private fun handleMemberCommand(sender: CommandSender, args: List<String>){
+        val subCommand = findSubCommand(sender, args, MemberSubCommands.entries) ?: return
+
+        when(subCommand){
+
+            else -> {}
+        }
+    }
+
+    private fun <T: Commands> findSubCommand(
+        sender: CommandSender,
+        args: List<String>,
+        entries: List<T>
+    ): T?{
+        if(args.isEmpty()){
+            this.argumentsMissing(sender)
+            return null
+        }
+
+        val subName = args[0]
+        val found = entries.find { it.command.equals(subName, ignoreCase = true) }
+
+        if(found == null){
+            this.unknownSubCommand(sender, subName)
+            return null
+        }
+        return found
     }
 
     override fun onTabComplete(

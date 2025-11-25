@@ -41,5 +41,11 @@ enum class ClanCommands(
             "factions.usage"
         ),
         AllySubCommands.entries.toTypedArray()
+    ),
+    MEMBER(
+        "member",
+        "/clan member <subcommand>",
+        HelpEntry("clan.member.description", "factions.usage"),
+        MemberSubCommands.entries.toTypedArray()
     )
 }
