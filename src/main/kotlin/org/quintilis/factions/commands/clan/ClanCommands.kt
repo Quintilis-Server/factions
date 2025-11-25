@@ -7,6 +7,7 @@ enum class ClanCommands(
     override val command: String,
     override val usage: String,
     override val helpEntry: HelpEntry,
+    override val subCommands: Array<out Commands>? = null
 ): Commands {
     CREATE(
         "create",
@@ -23,5 +24,22 @@ enum class ClanCommands(
             "clan.delete.description",
             "factions.usage"
         )
+    ),
+    LIST(
+        "list",
+        "/clan list <page>",
+        HelpEntry(
+            "clan.list.description",
+            "factions.usage"
+        )
+    ),
+    ALLY(
+        "ally",
+        "/clan ally <subcommand>",
+        HelpEntry(
+            "clan.ally.description",
+            "factions.usage"
+        ),
+        AllySubCommands.entries.toTypedArray()
     )
 }

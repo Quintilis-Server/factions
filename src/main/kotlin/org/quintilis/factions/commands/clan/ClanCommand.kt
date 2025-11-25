@@ -1,7 +1,10 @@
 package org.quintilis.factions.commands.clan
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.minimessage.translation.Argument
+import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.quintilis.factions.commands.BaseCommand
@@ -19,6 +22,21 @@ class ClanCommand: BaseCommand(
 ) {
     private val clanDao = DatabaseManager.getDAO(ClanDao::class)
     private val playerDao = DatabaseManager.getDAO(PlayerDao::class)
+
+    //
+    // Errors
+    //
+    private fun noClanLeader(sender: CommandSender){
+        sender.sendMessage {
+            Component.translatable(
+                "clan.is_not_leader"
+            )
+        }
+    }
+
+    //
+    // Clan commands
+    //
 
     private fun create(sender: CommandSender, args: List<String> ) {
         sender as Player
@@ -58,15 +76,53 @@ class ClanCommand: BaseCommand(
         }
     }
 
-//    private fun delete()
+    private fun delete(sender: CommandSender) {
+        sender as Player
+        if(!playerDao.isClanOwner(sender.uniqueId)){
+            return this.noClanLeader(sender)
+        }
+
+        val clan = clanDao.findByLeaderId(sender.uniqueId) ?: return this.noClanLeader(sender)
+        val clanMembers = clanDao.findMembersByClan(clan.id!!)
+        try{
+            clanDao.deleteByIdAndLeader(clan.id, sender.uniqueId)
+        }catch(e: Exception){
+            sender.sendMessage(
+                Component.text("Error").color(NamedTextColor.RED)
+            )
+            e.printStackTrace()
+        }
+
+        clanMembers.forEach {
+            Bukkit.getPlayer(it.playerId)?.sendMessage {
+                Component.translatable(
+                    "clan.delete.member_response",
+                    Argument.string("leader_name",sender.name)
+                )
+            }
+        }
+
+        sender.sendMessage {
+            Component.translatable(
+                "clan.delete.response",
+            )
+        }
+    }
 
     override fun commandWrapper(
         commandSender: CommandSender,
         label: String,
         args: Array<out String>
     ): Boolean {
+        commandSender as Player
         when(args[0].lowercase()){
             ClanCommands.CREATE.command -> this.create(commandSender, args.drop(1))
+            ClanCommands.DELETE.command -> this.delete(commandSender)
+            ClanCommands.ALLY.command ->{
+                when(args[1].lowercase()){
+                    AllySubCommands.ADD.command ->{}
+                }
+            }
             else -> this.unknownSubCommand(commandSender, args[0])
         }
         return true
@@ -87,9 +143,19 @@ class ClanCommand: BaseCommand(
                 suggestions.addAll(subcommands)
             }
             2 -> {
-//                when (args[0].lowercase()) {
-//
-//                }
+                val mainCommandName = args[0]
+
+                val mainCommand = this.commands.find {
+                    it.command.equals(mainCommandName, ignoreCase = true)
+                }
+
+                if(mainCommand != null && mainCommand.subCommands != null){
+                    val subSuggestions = mainCommand.subCommands!!
+                        .filter { commandSender.hasPermission(it.helpEntry.permission) }
+                        .map { it.command }
+
+                    suggestions.addAll(subSuggestions)
+                }
             }
         }
 

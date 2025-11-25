@@ -38,10 +38,18 @@ class Factions : JavaPlugin() {
     private fun registerCommands(){
         fun printName(command: BaseCommand){
             logger.info("Registering ${command.name} commands")
+            command.commands.forEach { command ->
+                logger.info("Registering command: $command")
+                if(command.subCommands != null){
+                    command.subCommands!!.forEach { subCommand ->
+                        logger.info("Registering subCommand: $subCommand")
+                    }
+                }
+            }
         }
 
         val commands = listOf(ClanCommand());
-        this.server.commandMap.registerAll("economy", commands)
+        this.server.commandMap.registerAll("factions", commands)
         commands.forEach {
             printName(it)
         }
@@ -49,14 +57,14 @@ class Factions : JavaPlugin() {
 
     private fun registerTranslations() {
         //todo fazer um sistema de array q pode setar quais traduções serão feitas
-        val translationKey = Key.key("economy", "translations")
+        val translationKey = Key.key("factions", "translations")
 
         val store = MiniMessageTranslationStore.create(translationKey)
 
         val english = Locale.US
         val portuguese = Locale.forLanguageTag("pt-BR")
 
-        val bundlePath = "translations.economy"
+        val bundlePath = "translations.factions"
 
         try {
             val bundleEN = ResourceBundle.getBundle(bundlePath, english)

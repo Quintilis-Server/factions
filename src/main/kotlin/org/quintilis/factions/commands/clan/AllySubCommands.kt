@@ -6,7 +6,24 @@ import org.quintilis.factions.commands.HelpEntry
 enum class AllySubCommands(
     override val command: String,
     override val usage: String,
-    override val helpEntry: HelpEntry
+    override val helpEntry: HelpEntry,
+    override val subCommands: Array<out Commands>? = null
 ): Commands {
+    ADD(
+        "add",
+        "/clan ally add <tag>",
+        HelpEntry(
+            "clan.ally.add.description",
+            "factions.usage"
+        )
+    ),
+    REMOVE(
+        "remove",
+        "/clan ally remove <tag>",
+        HelpEntry(
+            "clan.ally.remove.description",
+            "factions.usage"
+        )
+    )
 
 }
