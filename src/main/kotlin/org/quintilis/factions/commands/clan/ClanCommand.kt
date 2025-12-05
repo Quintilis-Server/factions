@@ -12,6 +12,7 @@ import org.quintilis.factions.commands.Commands
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.entities.clan.ClanEntity
+import org.quintilis.factions.gui.ClanListMenu
 import org.quintilis.factions.managers.DatabaseManager
 import kotlin.math.ceil
 import kotlin.math.max
@@ -112,10 +113,15 @@ class ClanCommand: BaseCommand(
         }
     }
 
+    private fun listGui(sender: CommandSender) {
+        val menu = ClanListMenu(sender as Player)
+        menu.open()
+    }
+
     private fun list(sender: CommandSender, args: List<String>) {
         sender as Player
 
-        val page = args.getOrNull(0)?.toIntOrNull() ?: 1
+        val page = args.getOrNull(0)?.toIntOrNull() ?: return this.listGui(sender)
 
         if(page <= 0){
             return

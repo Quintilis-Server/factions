@@ -56,7 +56,6 @@ class Factions : JavaPlugin() {
     }
 
     private fun registerTranslations() {
-        //todo fazer um sistema de array q pode setar quais traduções serão feitas
         val translationKey = Key.key("factions", "translations")
 
         val store = MiniMessageTranslationStore.create(translationKey)

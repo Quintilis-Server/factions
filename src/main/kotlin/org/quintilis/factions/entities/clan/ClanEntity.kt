@@ -23,6 +23,8 @@ data class ClanEntity(
     val active: Boolean = true,
     @Column("created_at")
     val createdAt: OffsetDateTime = OffsetDateTime.now(),
+    @Column("points")
+    val points: Int = 0,
 ): BaseEntity(){
     fun getLeader() = Bukkit.getPlayer(leaderUuid)
 }
