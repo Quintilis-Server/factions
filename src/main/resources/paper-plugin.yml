@@ -2,3 +2,9 @@ name: factions
 version: '1.0-SNAPSHOT'
 main: org.quintilis.factions.Factions
 api-version: '1.21'
+
+commands:
+    clan:
+        description: Main clan command
+        aliases: [c]
+        usage: /clan [subcommand]
