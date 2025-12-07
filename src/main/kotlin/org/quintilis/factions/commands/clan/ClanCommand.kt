@@ -188,7 +188,11 @@ class ClanCommand: BaseCommand(
     ): Boolean {
         val rootCommand = ClanCommands.entries.find{
             it.command.equals(args[0], ignoreCase = true)
-        } ?: return this.unknownSubCommand(commandSender, args[0])
+        }
+        if(rootCommand == null){
+            this.unknownSubCommand(commandSender, args[0])
+            return true
+        }
 
         val subArgs = args.drop(1)
 
@@ -255,7 +259,8 @@ class ClanCommand: BaseCommand(
             if(isMember){
                 sender.sendMessage {
                     Component.translatable(
-                        "error.already_in_a_clan"
+                        "error.already_in_a_clan",
+                        Argument.string("player_name",player.name)
                     )
                 }
                 return
@@ -294,6 +299,17 @@ class ClanCommand: BaseCommand(
         fun accept(args: List<String>){
             val clan = clanDao.findByName(args[0]) ?: return this.clanNotFound(sender)
 
+            val isMember: Boolean = clanDao.isMember(sender.uniqueId)
+            if(isMember){
+                sender.sendMessage {
+                    Component.translatable(
+                        "error.already_in_a_clan",
+                        Argument.string("player_name",sender.name)
+                    )
+                }
+                return
+            }
+
             try{
                 MemberInviteService.acceptInvite(memberInviteDao, clan, sender)
             }catch (e: Error){
@@ -317,10 +333,38 @@ class ClanCommand: BaseCommand(
             }
         }
 
-        val inviteCommand = findSubCommand(sender, args, InviteSubCommands.entries) ?: return
+        fun reject(args: List<String>){
+            val clan = clanDao.findByName(args[0]) ?: return this.clanNotFound(sender)
+
+            try{
+                MemberInviteService.rejectInvite(memberInviteDao, clan, sender)
+            }catch (e: Error){
+                sender.sendMessage {
+                    Component.translatable("error.no_member_invite")
+                }
+                return
+            }
+
+            clan.getLeader()?.sendMessage {
+                Component.translatable(
+                    "clan.invite.reject.clan_response",
+                    Argument.string("player_name", sender.name)
+                )
+            }
+            sender.sendMessage {
+                Component.translatable(
+                    "clan.invite.reject.response",
+                    Argument.string("clan_name", clan.name)
+                )
+            }
+        }
+
+        val inviteCommand = findSubCommand(sender, args, InviteSubCommands.entries) ?:
+            return this.unknownSubCommand(sender, args[0])
 
         when(inviteCommand){
             InviteSubCommands.ACCEPT -> accept(args.drop(1))
+            InviteSubCommands.REJECT -> reject(args.drop(1))
             else ->{}
         }
     }

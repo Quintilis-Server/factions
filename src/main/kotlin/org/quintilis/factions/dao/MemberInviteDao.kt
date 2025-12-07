@@ -15,7 +15,15 @@ interface MemberInviteDao: BaseDao<MemberInviteEntity, Int> {
     @SqlQuery("SELECT * FROM member_invite WHERE player_id = :playerId AND status = 'PENDING' AND active = true")
     fun findByPlayer(@Bind("playerId") playerId: UUID): List<MemberInviteEntity>
 
-    @SqlQuery("SELECT * FROM member_invite WHERE player_id = :playerId AND clan_id = :clanId")
+    @SqlQuery("""
+        SELECT *
+            FROM member_invite 
+        WHERE 
+            player_id = :playerId 
+            AND clan_id = :clanId
+            AND status = 'PENDING'
+            AND active = true
+        """)
     fun findByPlayerIdAndClanId(@Bind("playerId") playerId: UUID, @Bind("clanId") clanId: Int): MemberInviteEntity?
 
     /**

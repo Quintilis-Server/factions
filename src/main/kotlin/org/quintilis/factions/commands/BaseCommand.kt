@@ -32,14 +32,14 @@ abstract class BaseCommand(
 
     protected val pageSize = 5;
 
-    protected fun unknownSubCommand(sender: CommandSender, subCommand: String): Boolean {
+    protected fun unknownSubCommand(sender: CommandSender, subCommand: String) {
         sender.sendMessage {
             Component.translatable(
                 "error.unknown_subcommand",
                 Argument.string("command_name", subCommand)
             )
         }
-        return true;
+        return;
     }
 
     protected fun noPermission(sender: CommandSender): Boolean {
@@ -169,7 +169,8 @@ abstract class BaseCommand(
 
         val helpEntry = commands.find { it.command == args[0] }
         if(helpEntry == null){
-            return this.unknownSubCommand(commandSender, args[0])
+            this.unknownSubCommand(commandSender, args[0])
+            return true
         }
 
         if(commandSender.hasPermission("economy.op")){
