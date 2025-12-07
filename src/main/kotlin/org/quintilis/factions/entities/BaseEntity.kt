@@ -90,4 +90,5 @@ abstract class BaseEntity {
                 .one()
         }
     }
+    fun getTableName(): String = tableName
 }

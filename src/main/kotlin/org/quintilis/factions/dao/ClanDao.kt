@@ -9,7 +9,7 @@ import org.quintilis.factions.entities.clan.ClanMemberEntity
 import java.lang.IllegalArgumentException
 import java.util.UUID
 
-interface ClanDao: BaseDao {
+interface ClanDao: BaseDao<ClanEntity, Int> {
 
     @SqlQuery("SELECT * FROM clans WHERE active = true ORDER BY id LIMIT :pageSize OFFSET :startPage")
     fun findWithPage(@Bind("startPage")startPage: Int, @Bind("pageSize")pageSize: Int): List<ClanEntity>
@@ -31,6 +31,19 @@ interface ClanDao: BaseDao {
 
     @SqlQuery("SELECT * FROM clans WHERE leader_uuid = :leaderId")
     fun findByLeaderId(@Bind("leaderId") leaderId: UUID): ClanEntity?
+
+    @SqlQuery("""
+        SELECT c.* 
+        FROM clans c
+            JOIN clan_member cm ON c.id = cm.clan_id
+        WHERE cm.player_id = :playerId
+            AND cm.active = true
+            AND c.active = true;
+    """)
+    fun findByMember(@Bind("playerId") playerId: UUID): ClanEntity?
+
+    @SqlQuery("SELECT EXISTS(SELECT 1 FROM clan_member WHERE player_id = :playerId AND active = true)")
+    fun isMember(@Bind("playerId") playerId: UUID): Boolean
 
     @Transaction
     fun deleteByIdAndLeader(id: Int, leaderId: UUID){

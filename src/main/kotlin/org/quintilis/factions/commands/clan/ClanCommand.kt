@@ -14,6 +14,7 @@ import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.gui.ClanListMenu
 import org.quintilis.factions.managers.DatabaseManager
+import org.quintilis.factions.services.MemberInviteService
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -189,6 +190,7 @@ class ClanCommand: BaseCommand(
             ClanCommands.LIST -> this.list(sender = commandSender, subArgs)
             ClanCommands.ALLY -> this.handleAllyCommand(commandSender, subArgs)
             ClanCommands.MEMBER -> this.handleMemberCommand(commandSender, subArgs)
+            ClanCommands.INVITE -> this.handleInviteCommand(commandSender, subArgs)
         }
         return true
     }
@@ -230,11 +232,48 @@ class ClanCommand: BaseCommand(
     }
 
     private fun handleMemberCommand(sender: CommandSender, args: List<String>){
+        sender as Player
         val subCommand = findSubCommand(sender, args, MemberSubCommands.entries) ?: return
 
-        when(subCommand){
+        fun invite(){
+            val player = Bukkit.getPlayer(args[0])
+            if(player == null){
+                sender.sendMessage {
+                    Component.translatable("")
+                }
+                return
+            }
+            val playerEntity = playerDao.findById(player.uniqueId)!!
+            val isMember: Boolean = clanDao.isMember(player.uniqueId)
+            if(!isMember){
+                sender.sendMessage {
+                    Component.translatable(
+                        "clan.invite.already_in_a_clan"
+                    )
+                }
+                return
+            }
+            val clan = clanDao.findByLeaderId(sender.uniqueId)
+            if(clan == null){
+                return
+            }
+            MemberInviteService.createInvite(clan, playerEntity)
 
+
+        }
+
+
+        when(subCommand){
+            MemberSubCommands.INVITE -> {}
             else -> {}
+        }
+    }
+
+    private fun handleInviteCommand(sender: CommandSender, args: List<String>) {
+        val inviteCommand = findSubCommand(sender, args, InviteSubCommands.entries) ?: return
+
+        when(inviteCommand){
+            else ->{}
         }
     }
 

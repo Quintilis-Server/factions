@@ -1,8 +1,9 @@
-package org.quintilis.factions.entities
+package org.quintilis.factions.entities.player
 
 import org.quintilis.economy.entities.annotations.Column
 import org.quintilis.economy.entities.annotations.PrimaryKey
 import org.quintilis.economy.entities.annotations.TableName
+import org.quintilis.factions.entities.BaseEntity
 import java.util.UUID
 
 @TableName("players")
