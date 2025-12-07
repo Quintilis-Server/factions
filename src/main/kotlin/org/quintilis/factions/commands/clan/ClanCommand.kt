@@ -6,6 +6,7 @@ import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.quintilis.factions.cache.MemberInviteCache
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.commands.Commands
 import org.quintilis.factions.dao.ClanDao
@@ -422,10 +423,11 @@ class ClanCommand: BaseCommand(
             3 ->{
                 val subcommand = args[1]
                 val clan = clanDao.findByLeaderId(commandSender.uniqueId)
+                val inviteCache = MemberInviteCache(memberInviteDao)
                 when(subcommand){
                     InviteSubCommands.ACCEPT.command, InviteSubCommands.REJECT.command -> {
                         // Busca apenas as Strings (nomes dos clãs) numa única query rápida
-                        val clanNames = memberInviteDao.findClanNamesForInvites(commandSender.uniqueId)
+                        val clanNames = inviteCache.getClanNames(commandSender.uniqueId)
                         suggestions.addAll(clanNames)
                     }
 
