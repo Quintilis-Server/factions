@@ -10,7 +10,7 @@ object ConfigManager {
         this.config = config
     }
     private fun getString(path: String): String{
-        val value = this.config.getString("database.$path")
+        val value = this.config.getString(path)
         if(value.isNullOrBlank()){
             throw ConfigFileNullValueException(path)
         }
@@ -22,7 +22,7 @@ object ConfigManager {
     }
 
     fun getHost(): String{
-        return this.getString("host")
+        return this.getString("database.host")
     }
 
     fun getPort(): Int{
@@ -30,18 +30,26 @@ object ConfigManager {
     }
 
     fun getUsername(): String{
-        return this.getString("username")
+        return this.getString("database.username")
     }
 
     fun getPassword(): String{
-        return this.getString("password")
+        return this.getString("database.password")
     }
 
     fun getDatabaseName(): String{
-        return this.getString("dbName")
+        return this.getString("database.dbName")
     }
 
     fun getMaxInvitationTime(): Int{
         return this.getInt("invite.maxInvitationTime")
+    }
+
+    fun getRedisPort(): Int{
+        return this.getInt("redis.port")
+    }
+
+    fun getRedisHost(): String{
+        return this.getString("redis.host")
     }
 }
