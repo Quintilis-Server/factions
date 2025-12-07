@@ -14,4 +14,7 @@ interface PlayerDao: BaseDao<PlayerEntity, UUID> {
 
     @SqlQuery("SELECT EXISTS( SELECT 1 FROM clans WHERE leader_uuid = :playerId AND active = true)")
     fun isClanOwner(@Bind("playerId") playerId: UUID): Boolean
+
+    @SqlQuery("SELECT * FROM players where name = :name")
+    fun findByName(@Bind("name")name: String): PlayerEntity?
 }

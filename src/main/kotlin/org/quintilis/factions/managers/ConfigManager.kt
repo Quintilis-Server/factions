@@ -16,6 +16,10 @@ object ConfigManager {
         }
         return value
     }
+    private fun getInt(path: String): Int{
+        val value = this.config.getInt(path)
+        return value
+    }
 
     fun getHost(): String{
         return this.getString("host")
@@ -35,5 +39,9 @@ object ConfigManager {
 
     fun getDatabaseName(): String{
         return this.getString("dbName")
+    }
+
+    fun getMaxInvitationTime(): Int{
+        return this.getInt("invite.maxInvitationTime")
     }
 }

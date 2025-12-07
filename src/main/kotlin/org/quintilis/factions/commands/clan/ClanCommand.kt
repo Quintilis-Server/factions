@@ -2,7 +2,6 @@ package org.quintilis.factions.commands.clan
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
@@ -235,36 +234,38 @@ class ClanCommand: BaseCommand(
         sender as Player
         val subCommand = findSubCommand(sender, args, MemberSubCommands.entries) ?: return
 
-        fun invite(){
-            val player = Bukkit.getPlayer(args[0])
-            if(player == null){
-                sender.sendMessage {
-                    Component.translatable("")
-                }
+        fun invite(args: List<String>){
+            val playerEntity = playerDao.findByName(args[0])
+            if(playerEntity == null){
+                this.noPlayer(sender)
                 return
             }
-            val playerEntity = playerDao.findById(player.uniqueId)!!
+            val player = playerEntity.getPlayer()!!
             val isMember: Boolean = clanDao.isMember(player.uniqueId)
-            if(!isMember){
+            if(isMember){
                 sender.sendMessage {
                     Component.translatable(
-                        "clan.invite.already_in_a_clan"
+                        "error.already_in_a_clan"
                     )
                 }
                 return
             }
-            val clan = clanDao.findByLeaderId(sender.uniqueId)
-            if(clan == null){
-                return
-            }
+            val clan = clanDao.findByLeaderId(sender.uniqueId) ?: return this.noClanLeader(sender)
+
             MemberInviteService.createInvite(clan, playerEntity)
 
+            sender.sendMessage {
+                Component.translatable(
+                    "clan.invite.response",
+                    Argument.string("player_name", player.name)
+                )
+            }
 
         }
 
 
         when(subCommand){
-            MemberSubCommands.INVITE -> {}
+            MemberSubCommands.INVITE -> invite(args.drop(1))
             else -> {}
         }
     }
@@ -302,6 +303,7 @@ class ClanCommand: BaseCommand(
         alias: String,
         args: Array<out String>
     ): MutableList<String> {
+        commandSender as Player
         val suggestions = mutableListOf<String>()
 
         when (args.size) {
@@ -326,8 +328,27 @@ class ClanCommand: BaseCommand(
                     suggestions.addAll(subSuggestions)
                 }
             }
+            3 ->{
+                val subcommand = args[1]
+                when(subcommand){
+                    MemberSubCommands.INVITE.command -> {
+                        val clan = clanDao.findByLeaderId(commandSender.uniqueId)
+                        if(clan != null){
+                            val members = clanDao.findMembersByClan(clan.id!!).map { it.playerId }
+                            suggestions.addAll(Bukkit.getOnlinePlayers().filter { player ->
+                                player.uniqueId !in members && player.uniqueId != commandSender.uniqueId
+                            }.map { it.name })
+                        }
+
+                    }
+                }
+            }
         }
 
         return suggestions
     }
+
+    /**
+     * Errors for clan commands
+     */
 }

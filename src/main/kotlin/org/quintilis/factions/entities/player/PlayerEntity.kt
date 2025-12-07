@@ -1,5 +1,7 @@
 package org.quintilis.factions.entities.player
 
+import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 import org.quintilis.economy.entities.annotations.Column
 import org.quintilis.economy.entities.annotations.PrimaryKey
 import org.quintilis.economy.entities.annotations.TableName
@@ -14,4 +16,6 @@ data class PlayerEntity(
     val name: String,
     @Column("points")
     var points: Int
-): BaseEntity() {}
+): BaseEntity() {
+    fun getPlayer(): Player? = Bukkit.getPlayer(id)
+}

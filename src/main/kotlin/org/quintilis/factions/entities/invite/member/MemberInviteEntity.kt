@@ -17,7 +17,7 @@ import java.util.UUID
 @TableName("member_invite")
 data class MemberInviteEntity(
     @PrimaryKey
-    val id: Int,
+    val id: Int? = null,
 
     @Column("clan_id")
     val clanId: Int,
@@ -32,7 +32,7 @@ data class MemberInviteEntity(
     val expiresAt: Instant,
 
     @Column("active")
-    val active: Boolean,
+    val active: Boolean = true,
 
     @Column("status")
     val status: InviteStatus = InviteStatus.PENDING,
