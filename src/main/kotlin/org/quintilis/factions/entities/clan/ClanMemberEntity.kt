@@ -15,15 +15,19 @@ import java.util.UUID
 @TableName("clan_member")
 data class ClanMemberEntity(
     @PrimaryKey
+    val id: Int? = null,
+
     @Column("clan_id")
     val clanId: Int,
 
-    @PrimaryKey
     @Column("player_id")
     val playerId: UUID,
 
     @Column("created_at")
     val createdAt: OffsetDateTime = OffsetDateTime.now(),
+
+    @Column("active")
+    val active: Boolean = true
 ): BaseEntity() {
     fun getPlayer(): Player?{
         return Bukkit.getPlayer(playerId)

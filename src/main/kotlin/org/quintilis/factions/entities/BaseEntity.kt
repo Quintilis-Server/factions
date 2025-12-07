@@ -12,9 +12,16 @@ import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
+/**
+ * Propriedade da classe para achar a anotação `@Column`
+ */
 private val KProperty1<*, *>.columnName: String
     get() = this.findAnnotation<Column>()?.name ?: this.name
 
+/**
+ * Classe abstrata que outras entidade herdam
+ * Essa classe precisa da `@TableName`, `@Column` e pelo menos uma `@PrimaryKey`
+ */
 abstract class BaseEntity {
     val tableName: String = this::class.findAnnotation<TableName>()?.name
         ?: throw IllegalArgumentException("A classe ${this::class.simpleName} não tem @TableName")
@@ -29,7 +36,13 @@ abstract class BaseEntity {
 
     val primaryKeyPropertyNames: List<String> = primaryKeyProperties.map { it.name }
 
-
+    /**
+     * Salva a entidade na database
+     * Ela da update se ele ja existir dentro da database, conforme o `@PrimaryKey`
+     * ou ela insere se não existir ja
+     * @param T É uma BaseEntity, preferencialmente precisa ser a propria classe, o cast é automático para essa função
+     * @return o tipo genérico passado antes
+     */
     @Transaction
     fun <T : BaseEntity> save(): T {
 

@@ -32,10 +32,10 @@ data class MemberInviteEntity(
     val expiresAt: Instant,
 
     @Column("active")
-    val active: Boolean = true,
+    var active: Boolean = true,
 
     @Column("status")
-    val status: InviteStatus = InviteStatus.PENDING,
+    var status: InviteStatus = InviteStatus.PENDING,
 
 ): BaseEntity() {
     fun getClan(dao: ClanDao): ClanEntity? {
@@ -48,5 +48,23 @@ data class MemberInviteEntity(
 
     fun getPlayer(dao: PlayerDao): PlayerEntity? {
         return dao.findById(playerId)
+    }
+
+    fun accept(): MemberInviteEntity{
+        this.active = false;
+        this.status = InviteStatus.ACCEPTED
+        return this.save()
+    }
+
+    fun reject(): MemberInviteEntity{
+        this.active = false;
+        this.status = InviteStatus.REJECTED
+        return this.save()
+    }
+
+    fun cancel(): MemberInviteEntity{
+        this.active = false;
+        this.status = InviteStatus.CANCELLED
+        return this.save()
     }
 }

@@ -13,6 +13,12 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
 
+/**
+ * Classe generica para as Dao, herda do `SqlObject`
+ * Tem funções padrão de todas as DAOs
+ * @param T recebe `BaseEntity`
+ * @param ID o tipo de PrimaryKey do `T`
+ */
 interface BaseDao<T: BaseEntity, ID>: SqlObject {
 
     val entityClass: KClass<T>

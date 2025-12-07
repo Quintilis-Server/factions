@@ -9,8 +9,10 @@ import org.bukkit.entity.Player
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.commands.Commands
 import org.quintilis.factions.dao.ClanDao
+import org.quintilis.factions.dao.MemberInviteDao
 import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.entities.clan.ClanEntity
+import org.quintilis.factions.entities.clan.ClanMemberEntity
 import org.quintilis.factions.gui.ClanListMenu
 import org.quintilis.factions.managers.DatabaseManager
 import org.quintilis.factions.services.MemberInviteService
@@ -26,6 +28,7 @@ class ClanCommand: BaseCommand(
 ) {
     private val clanDao = DatabaseManager.getDAO(ClanDao::class)
     private val playerDao = DatabaseManager.getDAO(PlayerDao::class)
+    private val memberInviteDao = DatabaseManager.getDAO(MemberInviteDao::class)
 
     //
     // Errors
@@ -34,6 +37,13 @@ class ClanCommand: BaseCommand(
         sender.sendMessage {
             Component.translatable(
                 "clan.is_not_leader"
+            )
+        }
+    }
+    private fun clanNotFound(sender: CommandSender){
+        sender.sendMessage {
+            Component.translatable(
+                "error.no_clan"
             )
         }
     }
@@ -71,7 +81,7 @@ class ClanCommand: BaseCommand(
         }
 
         val clan = ClanEntity(name = name, tag = tag, leaderUuid = sender.uniqueId).save<ClanEntity>()
-
+        ClanMemberEntity(clanId = clan.id!!,playerId = sender.uniqueId).save<ClanMemberEntity>()
         sender.sendMessage {
             Component.translatable(
                 "clan.create.response",
@@ -251,8 +261,17 @@ class ClanCommand: BaseCommand(
                 return
             }
             val clan = clanDao.findByLeaderId(sender.uniqueId) ?: return this.noClanLeader(sender)
-
-            MemberInviteService.createInvite(clan, playerEntity)
+            try{
+                MemberInviteService.createInvite(clan, playerEntity)
+            }catch (e: Exception){
+                sender.sendMessage {
+                    Component.translatable(
+                        "error.already_invited",
+                        Argument.string("name", player.name)
+                    )
+                }
+                return
+            }
 
             sender.sendMessage {
                 Component.translatable(
@@ -271,9 +290,37 @@ class ClanCommand: BaseCommand(
     }
 
     private fun handleInviteCommand(sender: CommandSender, args: List<String>) {
+        sender as Player
+        fun accept(args: List<String>){
+            val clan = clanDao.findByName(args[0]) ?: return this.clanNotFound(sender)
+
+            try{
+                MemberInviteService.acceptInvite(memberInviteDao, clan, sender)
+            }catch (e: Error){
+                sender.sendMessage {
+                    Component.translatable("error.no_member_invite")
+                }
+                return
+            }
+
+            clan.getLeader()?.sendMessage {
+                Component.translatable(
+                    "clan.invite.accept.clan_response",
+                    Argument.string("player_name", sender.name)
+                )
+            }
+            sender.sendMessage {
+                Component.translatable(
+                    "clan.invite.accept.response",
+                    Argument.string("clan_name", clan.name)
+                )
+            }
+        }
+
         val inviteCommand = findSubCommand(sender, args, InviteSubCommands.entries) ?: return
 
         when(inviteCommand){
+            InviteSubCommands.ACCEPT -> accept(args.drop(1))
             else ->{}
         }
     }
@@ -330,9 +377,16 @@ class ClanCommand: BaseCommand(
             }
             3 ->{
                 val subcommand = args[1]
+                val clan = clanDao.findByLeaderId(commandSender.uniqueId)
                 when(subcommand){
+                    InviteSubCommands.ACCEPT.command, InviteSubCommands.REJECT.command -> {
+                        // Busca apenas as Strings (nomes dos clãs) numa única query rápida
+                        val clanNames = memberInviteDao.findClanNamesForInvites(commandSender.uniqueId)
+                        suggestions.addAll(clanNames)
+                    }
+
                     MemberSubCommands.INVITE.command -> {
-                        val clan = clanDao.findByLeaderId(commandSender.uniqueId)
+
                         if(clan != null){
                             val members = clanDao.findMembersByClan(clan.id!!).map { it.playerId }
                             suggestions.addAll(Bukkit.getOnlinePlayers().filter { player ->
