@@ -281,6 +281,7 @@ class ClanCommand: BaseCommand(
         val subCommand = findSubCommand(sender, args, MemberSubCommands.entries) ?: return
 
         fun invite(args: List<String>){
+            if(args.isEmpty()) return
             val playerEntity = playerDao.findByName(args[0])
             if(playerEntity == null){
                 this.noPlayer(sender)

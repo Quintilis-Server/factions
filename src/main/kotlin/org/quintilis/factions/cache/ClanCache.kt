@@ -24,29 +24,7 @@ class ClanCache(
     ttl = 300L,
     classType = ClanEntity::class.java,
 ) {
-    private val gson: Gson = GsonBuilder()
-        // IMPORTANTE: Excluir campos marcados com @Transient (evita serializar KProperty1)
-        .excludeFieldsWithModifiers(java.lang.reflect.Modifier.TRANSIENT)
-        // Adaptador para OffsetDateTime (Essencial!)
-        .registerTypeAdapter(OffsetDateTime::class.java, object : JsonSerializer<OffsetDateTime>,
-            JsonDeserializer<OffsetDateTime> {
-            override fun serialize(src: OffsetDateTime?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
-                return JsonPrimitive(src?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-            }
-            override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): OffsetDateTime {
-                return OffsetDateTime.parse(json!!.asString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            }
-        })
-        // Adaptador para UUID (Prevenção)
-        .registerTypeAdapter(UUID::class.java, object : JsonSerializer<UUID>, JsonDeserializer<UUID> {
-            override fun serialize(src: UUID?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
-                return JsonPrimitive(src.toString())
-            }
-            override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): UUID {
-                return UUID.fromString(json!!.asString)
-            }
-        })
-        .create()
+    private val gson = GsonProvider.gson
 
     private val clanListType = object : TypeToken<List<ClanEntity>>() {}.type
 
