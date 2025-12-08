@@ -1,9 +1,10 @@
 package org.quintilis.factions.entities.clan
 
 import org.bukkit.Bukkit
-import org.quintilis.economy.entities.annotations.Column
-import org.quintilis.economy.entities.annotations.PrimaryKey
-import org.quintilis.economy.entities.annotations.TableName
+import org.quintilis.factions.entities.annotations.Column
+import org.quintilis.factions.entities.annotations.PrimaryKey
+import org.quintilis.factions.entities.annotations.TableName
+import org.quintilis.factions.entities.annotations.Transient
 import org.quintilis.factions.entities.BaseEntity
 import java.time.OffsetDateTime
 import java.util.UUID

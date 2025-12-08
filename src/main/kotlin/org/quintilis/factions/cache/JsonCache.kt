@@ -9,7 +9,9 @@ abstract class JsonCache<K, V>(
     ttl: Long,
     val classType: Class<V>
 ): BaseRedisCache<K, V?>(prefix, ttl) {
-    private val gson: Gson = GsonBuilder().create()
+    private val gson: Gson = GsonBuilder()
+        .excludeFieldsWithModifiers(java.lang.reflect.Modifier.TRANSIENT)
+        .create()
 
     override fun readFromRedis(jedis: Jedis, key: String): V? {
         val json = jedis.get(key) ?: return null

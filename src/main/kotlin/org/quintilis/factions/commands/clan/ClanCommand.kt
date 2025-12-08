@@ -6,6 +6,7 @@ import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.cache.MemberInviteCache
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.commands.Commands
@@ -28,6 +29,7 @@ class ClanCommand: BaseCommand(
     commands = ClanCommands.entries
 ) {
     private val clanDao = DatabaseManager.getDAO(ClanDao::class)
+    private val clanCache = ClanCache(clanDao)
     private val playerDao = DatabaseManager.getDAO(PlayerDao::class)
     private val memberInviteDao = DatabaseManager.getDAO(MemberInviteDao::class)
 
@@ -153,7 +155,7 @@ class ClanCommand: BaseCommand(
         }
         val pageOffset = (page - 1) * pageSize
 
-        val clans = clanDao.findWithPage(pageOffset, pageSize)
+        val clans = clanCache.getClans(page, pageSize)
 
         sender.sendMessage {
             Component.translatable(
@@ -202,7 +204,7 @@ class ClanCommand: BaseCommand(
         leaderPlayer?.sendMessage(
             Component.translatable(
                 "clan.quit.leader_response",
-                Argument.component("player", Component.text(player.name))
+                Argument.component("player_name", Component.text(player.name))
             )
         )
         clanDao.deleteMemberById(uuid)

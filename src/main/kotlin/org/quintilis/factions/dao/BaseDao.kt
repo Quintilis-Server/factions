@@ -4,9 +4,9 @@ import org.jdbi.v3.sqlobject.SqlObject
 import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.customizer.Define
 import org.jdbi.v3.sqlobject.statement.SqlQuery
-import org.quintilis.economy.entities.annotations.Column
-import org.quintilis.economy.entities.annotations.PrimaryKey
-import org.quintilis.economy.entities.annotations.TableName
+import org.quintilis.factions.entities.annotations.Column
+import org.quintilis.factions.entities.annotations.PrimaryKey
+import org.quintilis.factions.entities.annotations.TableName
 import org.quintilis.factions.entities.BaseEntity
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
