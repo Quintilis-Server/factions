@@ -100,7 +100,7 @@ class ClanCommand: BaseCommand(
         val clan = clanDao.findByLeaderId(sender.uniqueId) ?: return this.noClanLeader(sender)
         val clanMembers = clanDao.findMembersByClan(clan.id!!)
         try{
-            clanDao.deleteByIdAndLeader(clan.id, sender.uniqueId)
+            clanDao.deleteByIdAndLeader(clan.id)
         }catch(e: Exception){
             sender.sendMessage(
                 Component.text("Error").color(NamedTextColor.RED)
@@ -182,6 +182,34 @@ class ClanCommand: BaseCommand(
         }
     }
 
+    private fun quit(commandSender: CommandSender){
+        val player = commandSender as Player
+        val uuid = player.uniqueId
+
+        val clan = clanDao.findByMember(uuid)
+
+        if (clan == null) {
+            player.sendMessage(Component.translatable("error.not_in_clan"))
+            return
+        }
+
+        if (clan.leaderUuid == uuid) {
+            player.sendMessage(Component.translatable("clan.quit.error.leader"))
+            return
+        }
+
+        val leaderPlayer = Bukkit.getPlayer(clan.leaderUuid)
+        leaderPlayer?.sendMessage(
+            Component.translatable(
+                "clan.quit.leader_response",
+                Argument.component("player", Component.text(player.name))
+            )
+        )
+        clanDao.deleteMemberById(uuid)
+
+        player.sendMessage(Component.translatable("clan.quit.response"))
+    }
+
     override fun commandWrapper(
         commandSender: CommandSender,
         label: String,
@@ -205,6 +233,7 @@ class ClanCommand: BaseCommand(
             ClanCommands.ALLY -> this.handleAllyCommand(commandSender, subArgs)
             ClanCommands.MEMBER -> this.handleMemberCommand(commandSender, subArgs)
             ClanCommands.INVITE -> this.handleInviteCommand(commandSender, subArgs)
+            ClanCommands.QUIT -> this.quit(commandSender)
         }
         return true
     }

@@ -42,6 +42,14 @@ enum class ClanCommands(
         ),
         AllySubCommands.entries.toTypedArray()
     ),
+    QUIT(
+        "quit",
+        "/clan quit",
+        HelpEntry(
+            "clan.quit.description",
+            "factions.usage"
+        )
+    ),
     MEMBER(
         "member",
         "/clan member <subcommand>",
