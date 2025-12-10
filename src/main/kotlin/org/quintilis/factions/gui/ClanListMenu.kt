@@ -9,6 +9,7 @@ import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.managers.DatabaseManager
 import kotlin.math.ceil
@@ -22,6 +23,7 @@ class ClanListMenu(
     pageSize = 45
 ) {
     private val clanDao = DatabaseManager.getDAO(ClanDao::class)
+    private val clanCache = ClanCache(clanDao)
 
     private var currentPageIndex = 1
 
@@ -34,7 +36,7 @@ class ClanListMenu(
         gui.clearPageItems()
         val offset = (page - 1) * pageSize
 
-        val clans = clanDao.findWithPage(offset, pageSize)
+        val clans = clanCache.getClans(page, pageSize)
 
         clans.forEach { clan ->
             val item = ItemBuilder.skull()
@@ -76,7 +78,7 @@ class ClanListMenu(
             gui.removeItem(rows, 3)
         }
 
-        if(currentPageIndex > totalPages){
+        if(currentPageIndex < totalPages){
             gui.setItem(rows, 7, ItemBuilder.from(Material.PAPER)
                 .name(Component.translatable("gui.next_page"))
                 .asGuiItem {

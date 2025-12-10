@@ -8,6 +8,7 @@ import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.commands.clan.ClanCommand
 import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.managers.DatabaseManager
+import org.quintilis.factions.managers.RedisManager
 import java.util.Locale
 import java.util.MissingResourceException
 import java.util.ResourceBundle
@@ -30,6 +31,16 @@ class Factions : JavaPlugin() {
             return
         }
 
+        try{
+            logger.info("Conectando ao banco de dados Redis...")
+            RedisManager.connect()
+            logger.info("Conexão com o banco de dados estabelecida com sucesso!")
+        }catch (e: Exception){
+            logger.severe("FALHA AO CONECTAR COM O REDIS! Desabilitando o plugin...")
+            e.printStackTrace()
+            server.pluginManager.disablePlugin(this)
+            return
+        }
         this.registerCommands()
 
         this.registerTranslations()

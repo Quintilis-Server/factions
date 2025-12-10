@@ -4,3 +4,8 @@ database:
   username: "postgres"
   password: "senha"
   dbName: "minecraft"
+invite:
+  maxInvitationTime: 5 # * minutes
+redis:
+  host: localhost
+  port: 6379
