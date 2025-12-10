@@ -2,9 +2,9 @@ package org.quintilis.factions.entities.invite.member
 
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import org.quintilis.economy.entities.annotations.Column
-import org.quintilis.economy.entities.annotations.PrimaryKey
-import org.quintilis.economy.entities.annotations.TableName
+import org.quintilis.factions.entities.annotations.Column
+import org.quintilis.factions.entities.annotations.PrimaryKey
+import org.quintilis.factions.entities.annotations.TableName
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.entities.BaseEntity

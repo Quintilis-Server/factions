@@ -1,11 +1,12 @@
 package org.quintilis.factions.entities
 
 import org.jdbi.v3.sqlobject.transaction.Transaction
-import org.quintilis.economy.entities.annotations.Column
-import org.quintilis.economy.entities.annotations.PrimaryKey
-import org.quintilis.economy.entities.annotations.TableName
-import org.quintilis.economy.entities.annotations.Transient
+import org.quintilis.factions.entities.annotations.Column
+import org.quintilis.factions.entities.annotations.PrimaryKey
+import org.quintilis.factions.entities.annotations.TableName
+import org.quintilis.factions.entities.annotations.Transient as CustomTransient
 import org.quintilis.factions.managers.DatabaseManager
+import kotlin.jvm.Transient
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
@@ -23,17 +24,21 @@ private val KProperty1<*, *>.columnName: String
  * Essa classe precisa da `@TableName`, `@Column` e pelo menos uma `@PrimaryKey`
  */
 abstract class BaseEntity {
+    @Transient
     val tableName: String = this::class.findAnnotation<TableName>()?.name
         ?: throw IllegalArgumentException("A classe ${this::class.simpleName} não tem @TableName")
 
+    @Transient
     val primaryKeyProperties: List<KProperty1<*, *>> = this::class.memberProperties
         .filter { it.hasAnnotation<PrimaryKey>() }
         .ifEmpty { // Fallback para "id" se nenhuma @PrimaryKey for encontrada
             this::class.memberProperties.filter { it.name == "id" }
         }
 
+    @Transient
     val primaryKeyColumnNames: List<String> = primaryKeyProperties.map { it.columnName }
 
+    @Transient
     val primaryKeyPropertyNames: List<String> = primaryKeyProperties.map { it.name }
 
     /**
@@ -54,7 +59,7 @@ abstract class BaseEntity {
 
         val properties = this::class.primaryConstructor?.parameters
             ?.mapNotNull { param ->
-                this::class.memberProperties.find { prop -> prop.name == param.name && !prop.hasAnnotation<Transient>() }
+                this::class.memberProperties.find { prop -> prop.name == param.name && !prop.hasAnnotation<CustomTransient>() }
             }
             ?.filter { prop ->
                 if (singlePkValue == null && prop.name == primaryKeyProperties.firstOrNull()?.name) {
@@ -89,7 +94,7 @@ abstract class BaseEntity {
 
 
             val allProperties = this::class.memberProperties
-                .filter { !it.hasAnnotation<Transient>() }
+                .filter { !it.hasAnnotation<CustomTransient>() }
 
             allProperties.forEach { prop ->
                 @Suppress("UNCHECKED_CAST")

@@ -6,6 +6,8 @@ import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.quintilis.factions.cache.ClanCache
+import org.quintilis.factions.cache.MemberInviteCache
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.commands.Commands
 import org.quintilis.factions.dao.ClanDao
@@ -27,6 +29,7 @@ class ClanCommand: BaseCommand(
     commands = ClanCommands.entries
 ) {
     private val clanDao = DatabaseManager.getDAO(ClanDao::class)
+    private val clanCache = ClanCache(clanDao)
     private val playerDao = DatabaseManager.getDAO(PlayerDao::class)
     private val memberInviteDao = DatabaseManager.getDAO(MemberInviteDao::class)
 
@@ -99,7 +102,7 @@ class ClanCommand: BaseCommand(
         val clan = clanDao.findByLeaderId(sender.uniqueId) ?: return this.noClanLeader(sender)
         val clanMembers = clanDao.findMembersByClan(clan.id!!)
         try{
-            clanDao.deleteByIdAndLeader(clan.id, sender.uniqueId)
+            clanDao.deleteByIdAndLeader(clan.id)
         }catch(e: Exception){
             sender.sendMessage(
                 Component.text("Error").color(NamedTextColor.RED)
@@ -152,7 +155,7 @@ class ClanCommand: BaseCommand(
         }
         val pageOffset = (page - 1) * pageSize
 
-        val clans = clanDao.findWithPage(pageOffset, pageSize)
+        val clans = clanCache.getClans(page, pageSize)
 
         sender.sendMessage {
             Component.translatable(
@@ -181,6 +184,34 @@ class ClanCommand: BaseCommand(
         }
     }
 
+    private fun quit(commandSender: CommandSender){
+        val player = commandSender as Player
+        val uuid = player.uniqueId
+
+        val clan = clanDao.findByMember(uuid)
+
+        if (clan == null) {
+            player.sendMessage(Component.translatable("error.not_in_clan"))
+            return
+        }
+
+        if (clan.leaderUuid == uuid) {
+            player.sendMessage(Component.translatable("clan.quit.error.leader"))
+            return
+        }
+
+        val leaderPlayer = Bukkit.getPlayer(clan.leaderUuid)
+        leaderPlayer?.sendMessage(
+            Component.translatable(
+                "clan.quit.leader_response",
+                Argument.component("player_name", Component.text(player.name))
+            )
+        )
+        clanDao.deleteMemberById(uuid)
+
+        player.sendMessage(Component.translatable("clan.quit.response"))
+    }
+
     override fun commandWrapper(
         commandSender: CommandSender,
         label: String,
@@ -204,6 +235,7 @@ class ClanCommand: BaseCommand(
             ClanCommands.ALLY -> this.handleAllyCommand(commandSender, subArgs)
             ClanCommands.MEMBER -> this.handleMemberCommand(commandSender, subArgs)
             ClanCommands.INVITE -> this.handleInviteCommand(commandSender, subArgs)
+            ClanCommands.QUIT -> this.quit(commandSender)
         }
         return true
     }
@@ -249,6 +281,7 @@ class ClanCommand: BaseCommand(
         val subCommand = findSubCommand(sender, args, MemberSubCommands.entries) ?: return
 
         fun invite(args: List<String>){
+            if(args.isEmpty()) return
             val playerEntity = playerDao.findByName(args[0])
             if(playerEntity == null){
                 this.noPlayer(sender)
@@ -422,10 +455,11 @@ class ClanCommand: BaseCommand(
             3 ->{
                 val subcommand = args[1]
                 val clan = clanDao.findByLeaderId(commandSender.uniqueId)
+                val inviteCache = MemberInviteCache(memberInviteDao)
                 when(subcommand){
                     InviteSubCommands.ACCEPT.command, InviteSubCommands.REJECT.command -> {
                         // Busca apenas as Strings (nomes dos clãs) numa única query rápida
-                        val clanNames = memberInviteDao.findClanNamesForInvites(commandSender.uniqueId)
+                        val clanNames = inviteCache.getClanNames(commandSender.uniqueId)
                         suggestions.addAll(clanNames)
                     }
 
