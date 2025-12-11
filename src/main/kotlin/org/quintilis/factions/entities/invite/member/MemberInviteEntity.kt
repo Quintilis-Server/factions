@@ -51,6 +51,9 @@ data class MemberInviteEntity(
     }
 
     fun accept(): MemberInviteEntity{
+        if (!active || status != InviteStatus.PENDING) {
+            throw Error("Not pending")
+        }
         this.active = false;
         this.status = InviteStatus.ACCEPTED
         return this.save()

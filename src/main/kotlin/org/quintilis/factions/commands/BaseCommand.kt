@@ -51,13 +51,12 @@ abstract class BaseCommand(
         return true;
     }
 
-    protected fun noPlayer(sender: CommandSender): Boolean{
+    protected fun noPlayer(sender: CommandSender){
         sender.sendMessage {
             Component.translatable(
                 "error.no_player",
             )
         }
-        return true;
     }
 
     protected fun argumentsMissing(sender: CommandSender): Boolean{

@@ -1,6 +1,7 @@
 package org.quintilis.factions.entities.player
 
 import org.bukkit.Bukkit
+import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.annotations.Column
 import org.quintilis.factions.entities.annotations.PrimaryKey
@@ -17,5 +18,7 @@ data class PlayerEntity(
     @Column("points")
     var points: Int
 ): BaseEntity() {
-    fun getPlayer(): Player? = Bukkit.getPlayer(id)
+    fun getPlayer(): OfflinePlayer = Bukkit.getOfflinePlayer(id)
+
+    fun getOnlinePlayer(): Player? = Bukkit.getPlayer(id)
 }

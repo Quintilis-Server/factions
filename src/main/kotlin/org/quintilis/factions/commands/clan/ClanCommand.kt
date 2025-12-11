@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.cache.MemberInviteCache
+import org.quintilis.factions.cache.PlayerCache
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.commands.Commands
 import org.quintilis.factions.dao.ClanDao
@@ -31,7 +32,9 @@ class ClanCommand: BaseCommand(
     private val clanDao = DatabaseManager.getDAO(ClanDao::class)
     private val clanCache = ClanCache(clanDao)
     private val playerDao = DatabaseManager.getDAO(PlayerDao::class)
+    private val playerCache = PlayerCache(playerDao)
     private val memberInviteDao = DatabaseManager.getDAO(MemberInviteDao::class)
+    private val memberInviteCache = MemberInviteCache(memberInviteDao)
 
     //
     // Errors
@@ -287,25 +290,26 @@ class ClanCommand: BaseCommand(
                 this.noPlayer(sender)
                 return
             }
-            val player = playerEntity.getPlayer()!!
+            val player = playerEntity.getPlayer()
             val isMember: Boolean = clanDao.isMember(player.uniqueId)
             if(isMember){
                 sender.sendMessage {
                     Component.translatable(
                         "error.already_in_a_clan",
-                        Argument.string("player_name",player.name)
+                        Argument.string("player_name",player.name!!)
                     )
                 }
                 return
             }
             val clan = clanDao.findByLeaderId(sender.uniqueId) ?: return this.noClanLeader(sender)
             try{
-                MemberInviteService.createInvite(clan, playerEntity)
+                val invite = MemberInviteService.createInvite(clan, playerEntity)
+                memberInviteCache.put(playerEntity.id, listOf(invite.getClan(clanDao)!!.name))
             }catch (e: Exception){
                 sender.sendMessage {
                     Component.translatable(
                         "error.already_invited",
-                        Argument.string("name", player.name)
+                        Argument.string("name", player.name!!)
                     )
                 }
                 return
@@ -314,7 +318,7 @@ class ClanCommand: BaseCommand(
             sender.sendMessage {
                 Component.translatable(
                     "clan.invite.response",
-                    Argument.string("player_name", player.name)
+                    Argument.string("player_name", player.name!!)
                 )
             }
 
@@ -392,13 +396,28 @@ class ClanCommand: BaseCommand(
             }
         }
 
+        fun cancel(args: List<String>){
+            val playerName = args.getOrNull(0) ?: return this.noPlayer(sender)
+            val player = playerCache.getPlayer(playerName) ?: return this.noPlayer(sender)
+
+            memberInviteDao.cancelInvite(player.id)
+            memberInviteCache.invalidate(player.id)
+
+            sender.sendMessage {
+                Component.translatable(
+                    "clan.invite.cancel.response",
+                    Argument.string("player_name", player.name)
+                )
+            }
+        }
+
         val inviteCommand = findSubCommand(sender, args, InviteSubCommands.entries) ?:
             return this.unknownSubCommand(sender, args[0])
 
         when(inviteCommand){
             InviteSubCommands.ACCEPT -> accept(args.drop(1))
             InviteSubCommands.REJECT -> reject(args.drop(1))
-            else ->{}
+            InviteSubCommands.CANCEL -> cancel(args.drop(1))
         }
     }
 
@@ -455,12 +474,14 @@ class ClanCommand: BaseCommand(
             3 ->{
                 val subcommand = args[1]
                 val clan = clanDao.findByLeaderId(commandSender.uniqueId)
-                val inviteCache = MemberInviteCache(memberInviteDao)
                 when(subcommand){
-                    InviteSubCommands.ACCEPT.command, InviteSubCommands.REJECT.command -> {
+                    InviteSubCommands.ACCEPT.command, InviteSubCommands.REJECT.command-> {
                         // Busca apenas as Strings (nomes dos clãs) numa única query rápida
-                        val clanNames = inviteCache.getClanNames(commandSender.uniqueId)
+                        val clanNames = memberInviteCache.getClanNames(commandSender.uniqueId)
                         suggestions.addAll(clanNames)
+                    }
+                    InviteSubCommands.CANCEL.command -> {
+                        suggestions.addAll(memberInviteCache.getPlayerNames(commandSender.uniqueId))
                     }
 
                     MemberSubCommands.INVITE.command -> {

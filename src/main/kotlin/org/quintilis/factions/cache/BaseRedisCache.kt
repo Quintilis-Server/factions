@@ -34,18 +34,7 @@ abstract class BaseRedisCache<K, V>(
         val dbValue = dbFetcher(key)
 
         // 3. Salva no Redis (apenas se o valor for válido)
-        if (shouldCache(dbValue)) {
-            try {
-                RedisManager.run { jedis ->
-                    writeToRedis(jedis, redisKey, dbValue)
-                    if (ttlSeconds > 0) {
-                        jedis.expire(redisKey, ttlSeconds)
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        put(key, dbValue)
 
         return dbValue
     }
@@ -54,6 +43,28 @@ abstract class BaseRedisCache<K, V>(
         try {
             RedisManager.run { jedis ->
                 jedis.del("$keyPrefix$key")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * Salva ou Atualiza um valor manualmente no Cache.
+     * Útil quando você já tem o objeto atualizado e quer evitar um round-trip no Banco.
+     */
+    fun put(key: K, value: V) {
+        // Respeita a regra de negócio (ex: não salvar nulos)
+        if (!shouldCache(value)) return
+
+        val redisKey = "$keyPrefix$key"
+
+        try {
+            RedisManager.run { jedis ->
+                writeToRedis(jedis, redisKey, value)
+                if (ttlSeconds > 0) {
+                    jedis.expire(redisKey, ttlSeconds)
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()

@@ -21,30 +21,26 @@ import kotlin.reflect.full.memberProperties
  */
 interface BaseDao<T: BaseEntity, ID>: SqlObject {
 
-    val entityClass: KClass<T>
+    fun getEntityClass(): Class<T>
+
+    // --- MÉTODOS COM LÓGICA (Default Methods) ---
+    // O JDBI ignora métodos com corpo, então ele não tenta rodar SQL aqui.
 
     fun getTableName(): String {
-        return entityClass.findAnnotation<TableName>()?.name
-            ?: throw IllegalArgumentException("A classe ${entityClass.simpleName} não tem @TableName")
+        // Pegamos a classe via o método abstrato
+        val clazz = getEntityClass().kotlin
+        return clazz.findAnnotation<TableName>()?.name
+            ?: throw IllegalArgumentException("A classe ${clazz.simpleName} não tem @TableName")
     }
 
     fun getPkColumnName(): String {
-        val pkProp = entityClass.memberProperties.find { it.hasAnnotation<PrimaryKey>() }
-            ?: entityClass.memberProperties.find { it.name == "id" } // Fallback para "id"
-            ?: throw IllegalArgumentException("Não foi possível achar a PK de ${entityClass.simpleName}")
+        val clazz = getEntityClass().kotlin
+        val pkProp = clazz.memberProperties.find { it.hasAnnotation<PrimaryKey>() }
+            ?: clazz.memberProperties.find { it.name == "id" }
+            ?: throw IllegalArgumentException("PK não encontrada em ${clazz.simpleName}")
 
         return pkProp.findAnnotation<Column>()?.name ?: pkProp.name
     }
-
-    @SqlQuery("SELECT * FROM <table_name>")
-    fun findAllInternal(@Define("table_name") tableName: String): List<T>
-
-    @SqlQuery("SELECT * FROM <table_name> WHERE <pk_col> = :id")
-    fun findByIdInternal(
-        @Define("table_name") tableName: String,
-        @Define("pk_col") pkCol: String,
-        @Bind("id") id: ID // O JDBI sabe lidar com Int, UUID, String aqui
-    ): T?
 
     fun findAll(): List<T> {
         return findAllInternal(getTableName())
@@ -53,4 +49,16 @@ interface BaseDao<T: BaseEntity, ID>: SqlObject {
     fun findById(id: ID): T? {
         return findByIdInternal(getTableName(), getPkColumnName(), id)
     }
+
+    // --- QUERIES GENÉRICAS DO JDBI ---
+
+    @SqlQuery("SELECT * FROM <table_name>")
+    fun findAllInternal(@Define("table_name") tableName: String): List<T>
+
+    @SqlQuery("SELECT * FROM <table_name> WHERE <pk_col> = :id")
+    fun findByIdInternal(
+        @Define("table_name") tableName: String,
+        @Define("pk_col") pkCol: String,
+        @Bind("id") id: ID
+    ): T?
 }
