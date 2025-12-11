@@ -12,10 +12,12 @@ import org.quintilis.factions.cache.PlayerCache
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.commands.Commands
 import org.quintilis.factions.dao.ClanDao
+import org.quintilis.factions.dao.ClanRelationDao
 import org.quintilis.factions.dao.MemberInviteDao
 import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanMemberEntity
+import org.quintilis.factions.entities.clan.Relation
 import org.quintilis.factions.gui.ClanListMenu
 import org.quintilis.factions.managers.DatabaseManager
 import org.quintilis.factions.services.MemberInviteService
@@ -31,6 +33,7 @@ class ClanCommand: BaseCommand(
 ) {
     private val clanDao = DatabaseManager.getDAO(ClanDao::class)
     private val clanCache = ClanCache(clanDao)
+    private val clanRelationDao = DatabaseManager.getDAO(ClanRelationDao::class)
     private val playerDao = DatabaseManager.getDAO(PlayerDao::class)
     private val playerCache = PlayerCache(playerDao)
     private val memberInviteDao = DatabaseManager.getDAO(MemberInviteDao::class)
@@ -247,9 +250,16 @@ class ClanCommand: BaseCommand(
      * Handler ally commands
      */
     private fun handleAllyCommand(sender: CommandSender, args: List<String>) {
+        sender as Player
+        val clan = clanDao.findByLeaderId(sender.uniqueId) ?: return this.noClanLeader(sender)
 
-        fun add(){
+        fun add(args: List<String>){
+            if(args.isEmpty()) return
+            val targetClan = clanDao.findByName(args[0]) ?: return this.clanNotFound(sender)
 
+            if(clanRelationDao.isRelation(clan.id!!, targetClan.id!!, Relation.ALLY)){
+                return
+            }
         }
 
         fun remove(){
@@ -271,7 +281,7 @@ class ClanCommand: BaseCommand(
         val subCommand = findSubCommand(sender, args, AllySubCommands.entries) ?: return
 
         when(subCommand){
-            AllySubCommands.ADD -> add()
+            AllySubCommands.ADD -> add(args.drop(1))
             AllySubCommands.REMOVE -> remove()
             AllySubCommands.LIST -> list()
             AllySubCommands.ACCEPT -> accept()
@@ -494,14 +504,16 @@ class ClanCommand: BaseCommand(
                         }
 
                     }
+
+                    AllySubCommands.ADD.command -> {
+                        if(clan != null){
+                            suggestions.addAll(clanDao.findNames().filter { it != clan.name })
+                        }
+                    }
                 }
             }
         }
 
         return suggestions
     }
-
-    /**
-     * Errors for clan commands
-     */
 }

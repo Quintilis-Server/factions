@@ -74,4 +74,10 @@ interface ClanDao: BaseDao<ClanEntity, Int> {
 
     @SqlQuery("SELECT * FROM clan_member WHERE clan_id = :clanId AND active = true")
     fun findMembersByClan(@Bind("clanId") clanId: Int): List<ClanMemberEntity>
+
+    @SqlQuery("""
+        SELECT c.name
+        FROM clans c
+        """)
+    fun findNames(): List<String>
 }
