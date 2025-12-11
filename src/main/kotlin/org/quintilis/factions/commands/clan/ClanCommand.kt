@@ -20,6 +20,7 @@ import org.quintilis.factions.entities.clan.ClanMemberEntity
 import org.quintilis.factions.entities.clan.Relation
 import org.quintilis.factions.gui.ClanListMenu
 import org.quintilis.factions.managers.DatabaseManager
+import org.quintilis.factions.services.AllyInviteService
 import org.quintilis.factions.services.MemberInviteService
 import kotlin.math.ceil
 import kotlin.math.max
@@ -258,8 +259,20 @@ class ClanCommand: BaseCommand(
             val targetClan = clanDao.findByName(args[0]) ?: return this.clanNotFound(sender)
 
             if(clanRelationDao.isRelation(clan.id!!, targetClan.id!!, Relation.ALLY)){
+                sender.sendMessage {
+                    Component.translatable("clan.ally.error.is_ally")
+                }
                 return
             }
+            if(clanRelationDao.isRelation(clan.id, targetClan.id, Relation.ENEMY)){
+                sender.sendMessage {
+                    Component.translatable("clan.ally.error.is_enemy")
+                }
+                return
+            }
+
+            AllyInviteService.createInvite()
+
         }
 
         fun remove(){
@@ -493,6 +506,7 @@ class ClanCommand: BaseCommand(
                     InviteSubCommands.CANCEL.command -> {
                         suggestions.addAll(memberInviteCache.getPlayerNames(commandSender.uniqueId))
                     }
+
 
                     MemberSubCommands.INVITE.command -> {
 
