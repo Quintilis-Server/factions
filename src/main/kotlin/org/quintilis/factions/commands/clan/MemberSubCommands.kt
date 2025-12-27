@@ -23,5 +23,10 @@ enum class MemberSubCommands(
         "promote",
         "/clan member promote <member>",
         HelpEntry("member.promote.description", "factions.usage"),
+    ),
+    LIST(
+        "list",
+        "/clan member list",
+        HelpEntry("member.list.description", "factions.usage"),
     )
 }
