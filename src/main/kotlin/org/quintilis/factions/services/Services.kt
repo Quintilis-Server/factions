@@ -57,4 +57,11 @@ object Services {
     val allyInviteCache: AllyInviteCache by lazy { 
         AllyInviteCache(allyInviteDao) 
     }
+    
+    // ============================================
+    // Services
+    // ============================================
+    val clanService: ClanService by lazy {
+        ClanService()
+    }
 }
