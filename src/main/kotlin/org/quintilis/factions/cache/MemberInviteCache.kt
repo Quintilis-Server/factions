@@ -2,8 +2,6 @@ package org.quintilis.factions.cache
 
 import org.quintilis.factions.dao.MemberInviteDao
 import org.quintilis.factions.managers.ConfigManager
-import org.quintilis.factions.managers.RedisManager
-import java.lang.Exception
 import java.util.UUID
 
 class MemberInviteCache(
@@ -17,6 +15,12 @@ class MemberInviteCache(
         // Se não tiver no Redis, ele executa o bloco { ... } (o dbFetcher)
         return getOrFetch(playerId) { id ->
             memberInviteDao.findClanNamesForInvites(id)
+        }
+    }
+
+    fun getPlayerNames(leaderId: UUID): List<String> {
+        return getOrFetch(leaderId) {id->
+            memberInviteDao.findPlayerNamesForInvites(id)
         }
     }
 }

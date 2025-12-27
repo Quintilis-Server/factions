@@ -23,5 +23,10 @@ enum class InviteSubCommands(
         "cancel",
         "/clan invite cancel <player_name>",
         HelpEntry("clan.invite.cancel", "factions.usage")
+    ),
+    LIST(
+        "list",
+        "/clan invite list",
+        HelpEntry("clan.invite.list", "factions.usage")
     )
 }

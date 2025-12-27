@@ -6,6 +6,8 @@ database:
   dbName: "minecraft"
 invite:
   maxInvitationTime: 5 # * minutes
+  maxAllyInvitationTime: 1 # * dias
 redis:
   host: localhost
   port: 6379
+  database: 1

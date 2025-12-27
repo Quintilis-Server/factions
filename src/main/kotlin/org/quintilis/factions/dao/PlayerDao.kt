@@ -6,6 +6,8 @@ import org.quintilis.factions.entities.player.PlayerEntity
 import java.util.UUID
 
 interface PlayerDao: BaseDao<PlayerEntity, UUID> {
+    override fun getEntityClass() = PlayerEntity::class.java
+
     @SqlQuery("SELECT EXISTS (SELECT 1 FROM players WHERE id = :id);")
     fun isInDatabase(@Bind("id")id: UUID): Boolean
 

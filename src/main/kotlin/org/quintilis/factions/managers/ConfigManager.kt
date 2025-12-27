@@ -45,11 +45,19 @@ object ConfigManager {
         return this.getInt("invite.maxInvitationTime")
     }
 
+    fun getMaxAllyInvitationTime(): Int{
+        return this.getInt("invite.maxAllyInvitationTime")
+    }
+
     fun getRedisPort(): Int{
         return this.getInt("redis.port")
     }
 
     fun getRedisHost(): String{
         return this.getString("redis.host")
+    }
+
+    fun getRedisDatabase(): Int{
+        return this.getInt("redis.database")
     }
 }

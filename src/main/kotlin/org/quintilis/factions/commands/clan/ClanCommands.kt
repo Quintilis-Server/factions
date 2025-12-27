@@ -61,5 +61,11 @@ enum class ClanCommands(
         "/clan invite <subcommand>",
         HelpEntry("clan.invite.description", "factions.usage"),
         InviteSubCommands.entries.toTypedArray()
+    ),
+    ADMIN(
+        "admin",
+        "/clan admin <subcommand>",
+        HelpEntry("clan.admin.description", "factions.admin"),
+        AdminSubCommands.entries.toTypedArray()
     )
 }

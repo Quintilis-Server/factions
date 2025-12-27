@@ -41,6 +41,25 @@ abstract class BaseCommand(
         }
         return;
     }
+    protected fun <T: Commands> findSubCommand(
+        sender: Player,
+        args: List<String>,
+        entries: List<T>
+    ): T? {
+        if (args.isEmpty()) {
+            argumentsMissing(sender)
+            return null
+        }
+
+        val subName = args[0]
+        val found = entries.find { it.command.equals(subName, ignoreCase = true) }
+
+        if (found == null) {
+            unknownSubCommand(sender, subName)
+            return null
+        }
+        return found
+    }
 
     protected fun noPermission(sender: CommandSender): Boolean {
         sender.sendMessage {
@@ -51,13 +70,12 @@ abstract class BaseCommand(
         return true;
     }
 
-    protected fun noPlayer(sender: CommandSender): Boolean{
+    protected fun noPlayer(sender: CommandSender){
         sender.sendMessage {
             Component.translatable(
                 "error.no_player",
             )
         }
-        return true;
     }
 
     protected fun argumentsMissing(sender: CommandSender): Boolean{
@@ -74,7 +92,7 @@ abstract class BaseCommand(
     private fun help(sender: CommandSender, alias: String, helpArguments: List<String>){
         val accessibleCommands = this.commands.filter { sender.hasPermission(it.helpEntry.permission) }
 
-        val totalPages = max(1, ceil(accessibleCommands.size.toDouble() / pageSize).toInt() + 1)
+        val totalPages = max(1, ceil(accessibleCommands.size.toDouble() / pageSize).toInt())
         val page = helpArguments.getOrNull(0)?.toIntOrNull() ?: 1
 
         if(page !in 1 .. totalPages){
