@@ -13,6 +13,8 @@ import java.util.UUID
 
 interface ClanDao: BaseDao<ClanEntity, Int> {
 
+    override fun getEntityClass() = ClanEntity::class.java
+
     @SqlQuery("SELECT * FROM clans WHERE active = true ORDER BY id LIMIT :pageSize OFFSET :startPage")
     fun findWithPage(@Bind("startPage")startPage: Int, @Bind("pageSize")pageSize: Int): List<ClanEntity>
 

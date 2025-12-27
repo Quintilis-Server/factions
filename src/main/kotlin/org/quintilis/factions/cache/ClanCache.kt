@@ -1,21 +1,12 @@
 package org.quintilis.factions.cache
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonElement
-import com.google.gson.JsonPrimitive
-import com.google.gson.JsonSerializationContext
-import com.google.gson.JsonSerializer
 import com.google.gson.reflect.TypeToken
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.entities.clan.ClanEntity
+import org.quintilis.factions.entities.clan.ClanMemberEntity
+import org.quintilis.factions.managers.RedisManager
 import redis.clients.jedis.Jedis
-import java.time.OffsetDateTime
 import java.util.UUID
-import java.lang.reflect.Type
-import java.time.format.DateTimeFormatter
 
 class ClanCache(
     private val clanDao: ClanDao
@@ -27,38 +18,24 @@ class ClanCache(
     private val gson = GsonProvider.gson
 
     private val clanListType = object : TypeToken<List<ClanEntity>>() {}.type
+    private val memberListType = object : TypeToken<List<ClanMemberEntity>>() {}.type
 
     private val PAGE_TTL = 60L
+    private val SHORT_TTL = 30L
 
+    // ============================================
+    // Cache por página (listagem paginada)
+    // ============================================
     private val pageCache = object : BaseRedisCache<Int, List<ClanEntity>>(
         keyPrefix = "factions:clan:page:",
-        ttlSeconds = PAGE_TTL // TTL curto para listagens
+        ttlSeconds = PAGE_TTL
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): List<ClanEntity>? {
-//            println("[ClanCache.pageCache] readFromRedis chamado para key: $key")
-            val json = jedis.get(key)
-            
-            if (json == null) {
-//                println("[ClanCache.pageCache] JSON é null - retornando null")
-                return null
-            }
-            
-//            println("[ClanCache.pageCache] JSON lido (${json.length} chars): ${json}...")
-
-            // Se o JSON for uma lista vazia "[]", ignoramos o cache e forçamos ir ao DB.
-            // Isso resolve o problema de ficar retornando vazio se o cache estiver "sujo".
-            if (json.trim() == "[]" || json.isBlank()) {
-//                println("[ClanCache.pageCache] JSON é lista vazia - retornando null para forçar DB")
-                return null
-            }
-
+            val json = jedis.get(key) ?: return null
+            if (json.trim() == "[]" || json.isBlank()) return null
             return try {
-                // IMPORTANTE: Usa o gson customizado da classe externa (com adaptadores)
-                val result = this@ClanCache.gson.fromJson<List<ClanEntity>>(json, clanListType)
-//                println("[ClanCache.pageCache] Deserialização bem-sucedida: ${result?.size ?: 0} clãs")
-                result
+                this@ClanCache.gson.fromJson<List<ClanEntity>>(json, clanListType)
             } catch (e: Exception) {
-//                println("[ClanCache.pageCache] ❌ Erro ao deserializar lista de clãs do Redis: ${e.message}")
                 e.printStackTrace()
                 null
             }
@@ -67,27 +44,173 @@ class ClanCache(
         override fun writeToRedis(jedis: Jedis, key: String, value: List<ClanEntity>) {
             if (value.isNotEmpty()) {
                 try {
-                    // IMPORTANTE: Usa o gson customizado da classe externa (com adaptadores)
                     val json = this@ClanCache.gson.toJson(value, clanListType)
                     jedis.set(key, json)
-//                    println("Cache atualizado para página: salvos ${value.size} clãs")
                 } catch (e: Exception) {
-//                    println("Erro ao serializar lista de clãs para Redis: ${e.message}")
                     e.printStackTrace()
                 }
             }
         }
 
-        // Garante que nunca salvaremos uma lista vazia no Redis
-        override fun shouldCache(value: List<ClanEntity>): Boolean {
-            return value.isNotEmpty()
-        }
+        override fun shouldCache(value: List<ClanEntity>): Boolean = value.isNotEmpty()
     }
+
+    // ============================================
+    // Cache por nome do clã
+    // ============================================
+    private val nameCache = object : BaseRedisCache<String, ClanEntity?>(
+        keyPrefix = "factions:clan:name:",
+        ttlSeconds = 300L
+    ) {
+        override fun readFromRedis(jedis: Jedis, key: String): ClanEntity? {
+            val json = jedis.get(key) ?: return null
+            return try {
+                this@ClanCache.gson.fromJson(json, ClanEntity::class.java)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+
+        override fun writeToRedis(jedis: Jedis, key: String, value: ClanEntity?) {
+            if (value != null) {
+                try {
+                    val json = this@ClanCache.gson.toJson(value)
+                    jedis.set(key, json)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        override fun shouldCache(value: ClanEntity?): Boolean = value != null
+    }
+
+    // ============================================
+    // Cache por UUID do líder
+    // ============================================
+    private val leaderCache = object : BaseRedisCache<UUID, ClanEntity?>(
+        keyPrefix = "factions:clan:leader:",
+        ttlSeconds = 300L
+    ) {
+        override fun readFromRedis(jedis: Jedis, key: String): ClanEntity? {
+            val json = jedis.get(key) ?: return null
+            return try {
+                this@ClanCache.gson.fromJson(json, ClanEntity::class.java)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+
+        override fun writeToRedis(jedis: Jedis, key: String, value: ClanEntity?) {
+            if (value != null) {
+                try {
+                    val json = this@ClanCache.gson.toJson(value)
+                    jedis.set(key, json)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        override fun shouldCache(value: ClanEntity?): Boolean = value != null
+    }
+
+    // ============================================
+    // Cache por UUID do membro
+    // ============================================
+    private val memberClanCache = object : BaseRedisCache<UUID, ClanEntity?>(
+        keyPrefix = "factions:clan:member:",
+        ttlSeconds = 300L
+    ) {
+        override fun readFromRedis(jedis: Jedis, key: String): ClanEntity? {
+            val json = jedis.get(key) ?: return null
+            return try {
+                this@ClanCache.gson.fromJson(json, ClanEntity::class.java)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+
+        override fun writeToRedis(jedis: Jedis, key: String, value: ClanEntity?) {
+            if (value != null) {
+                try {
+                    val json = this@ClanCache.gson.toJson(value)
+                    jedis.set(key, json)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        override fun shouldCache(value: ClanEntity?): Boolean = value != null
+    }
+
+    // ============================================
+    // Cache de membros do clã
+    // ============================================
+    private val membersCache = object : BaseRedisCache<Int, List<ClanMemberEntity>>(
+        keyPrefix = "factions:clan:members:",
+        ttlSeconds = 120L
+    ) {
+        override fun readFromRedis(jedis: Jedis, key: String): List<ClanMemberEntity>? {
+            val json = jedis.get(key) ?: return null
+            if (json.trim() == "[]" || json.isBlank()) return null
+            return try {
+                this@ClanCache.gson.fromJson<List<ClanMemberEntity>>(json, memberListType)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+
+        override fun writeToRedis(jedis: Jedis, key: String, value: List<ClanMemberEntity>) {
+            try {
+                val json = this@ClanCache.gson.toJson(value, memberListType)
+                jedis.set(key, json)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        override fun shouldCache(value: List<ClanMemberEntity>): Boolean = true
+    }
+
+    // ============================================
+    // Cache de nomes de clãs (para autocomplete)
+    // ============================================
+    private val namesCache = object : StringSetCache<String>(
+        prefix = "factions:clan:names",
+        ttl = 120L
+    ) {}
+
+    // ============================================
+    // Cache do total de clãs
+    // ============================================
+    private val totalCache = object : BaseRedisCache<String, Int>(
+        keyPrefix = "factions:clan:total:",
+        ttlSeconds = SHORT_TTL
+    ) {
+        override fun readFromRedis(jedis: Jedis, key: String): Int? {
+            val value = jedis.get(key) ?: return null
+            return value.toIntOrNull()
+        }
+
+        override fun writeToRedis(jedis: Jedis, key: String, value: Int) {
+            jedis.set(key, value.toString())
+        }
+
+        override fun shouldCache(value: Int): Boolean = true
+    }
+
+    // ============================================
+    // Métodos públicos de leitura
+    // ============================================
+
     /**
      * Busca um clã pelo ID.
-     * 1. Tenta Redis.
-     * 2. Se falhar, busca no Postgres via ClanDao.
-     * 3. Salva no Redis e retorna.
      */
     fun getClan(id: Int): ClanEntity? {
         return getOrFetch(id) { dbId ->
@@ -95,28 +218,144 @@ class ClanCache(
         }
     }
 
+    /**
+     * Busca clãs com paginação.
+     */
     fun getClans(page: Int, pageSize: Int = 45): List<ClanEntity> {
-//        println("Buscando clãs - Página: $page, PageSize: $pageSize")
-        // Se o Redis retornar null (ou falhar), executa o bloco do DAO
         val result = pageCache.getOrFetch(page) { pageNum ->
             try {
                 val offset = (pageNum - 1) * pageSize
-//                println("Cache miss - Buscando do banco de dados (offset: $offset, limit: $pageSize)")
-                val clans = clanDao.findWithPage(offset, pageSize)
-//                println("Retornados ${clans.size} clãs do banco de dados")
-                clans
+                clanDao.findWithPage(offset, pageSize)
             } catch (e: Exception) {
-//                println("ERRO CRÍTICO NO DAO/JDBI: ${e.message}")
                 e.printStackTrace()
                 emptyList()
             }
         }
-//        println("Retornando ${result.size} clãs")
         return result
     }
 
+    /**
+     * Busca um clã pelo nome.
+     */
+    fun getClanByName(name: String): ClanEntity? {
+        return nameCache.getOrFetch(name.lowercase()) { dbName ->
+            clanDao.findByName(dbName)
+        }
+    }
+
+    /**
+     * Busca um clã pelo UUID do líder.
+     */
+    fun getClanByLeaderId(leaderUuid: UUID): ClanEntity? {
+        return leaderCache.getOrFetch(leaderUuid) { uuid ->
+            clanDao.findByLeaderId(uuid)
+        }
+    }
+
+    /**
+     * Busca o clã de um membro pelo UUID.
+     */
+    fun getClanByMember(memberUuid: UUID): ClanEntity? {
+        return memberClanCache.getOrFetch(memberUuid) { uuid ->
+            clanDao.findByMember(uuid)
+        }
+    }
+
+    /**
+     * Busca membros de um clã pelo ID do clã.
+     */
+    fun getMembers(clanId: Int): List<ClanMemberEntity> {
+        return membersCache.getOrFetch(clanId) { id ->
+            clanDao.findMembersByClan(id)
+        }
+    }
+
+    /**
+     * Retorna o total de clãs ativos.
+     */
+    fun getTotalClans(): Int {
+        return totalCache.getOrFetch("count") { _ ->
+            clanDao.totalClans()
+        }
+    }
+
+    /**
+     * Retorna lista de nomes de clãs (para autocomplete).
+     */
+    fun getClanNames(): List<String> {
+        return namesCache.getOrFetch("all") { _ ->
+            clanDao.findNames()
+        }
+    }
+
+    /**
+     * Verifica se existe um clã com o nome (usa cache).
+     */
+    fun existsByName(name: String): Boolean {
+        return getClanByName(name) != null
+    }
+
+    /**
+     * Verifica se o jogador é membro de algum clã (usa cache).
+     */
+    fun isMember(playerUuid: UUID): Boolean {
+        return getClanByMember(playerUuid) != null
+    }
+
+    // ============================================
+    // Métodos de invalidação de cache
+    // ============================================
+
+    /**
+     * Invalida cache de um clã específico (id, nome, líder).
+     */
+    fun invalidateClan(clan: ClanEntity) {
+        if (clan.id != null) {
+            invalidate(clan.id)
+            membersCache.invalidate(clan.id)
+        }
+        nameCache.invalidate(clan.name.lowercase())
+        leaderCache.invalidate(clan.leaderUuid)
+        invalidateGlobalCaches()
+    }
+
+    /**
+     * Invalida cache por UUID do membro.
+     */
+    fun invalidateMember(memberUuid: UUID) {
+        memberClanCache.invalidate(memberUuid)
+    }
+
+    /**
+     * Invalida cache de membros de um clã específico.
+     */
+    fun invalidateMembersOfClan(clanId: Int) {
+        membersCache.invalidate(clanId)
+    }
+
+    /**
+     * Invalida caches globais (total, nomes, páginas).
+     */
+    fun invalidateGlobalCaches() {
+        totalCache.invalidate("count")
+        namesCache.invalidate("all")
+        // Invalida todas as páginas de cache
+        try {
+            RedisManager.run { jedis ->
+                val keys = jedis.keys("factions:clan:page:*")
+                if (keys.isNotEmpty()) {
+                    jedis.del(*keys.toTypedArray())
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * Atualiza (invalida) o cache de um clã após modificação.
+     */
     fun update(clan: ClanEntity) {
-        if (clan.id == null) return
-        invalidate(clan.id)
+        invalidateClan(clan)
     }
 }

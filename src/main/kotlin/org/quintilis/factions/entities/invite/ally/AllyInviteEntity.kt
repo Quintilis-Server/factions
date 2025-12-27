@@ -23,6 +23,12 @@ data class AllyInviteEntity(
     @Column("created_at")
     val createdAt: Instant = Instant.now(),
 
+    @Column("updated_at")
+    val updatedAt: Instant = Instant.now(),
+
+    @Column("expires_at")
+    val expiresAt: Instant,
+
     @Column("active")
     val active: Boolean = true,
 

@@ -10,16 +10,22 @@ import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanMemberEntity
 import org.quintilis.factions.entities.invite.member.MemberInviteEntity
 import org.quintilis.factions.entities.player.PlayerEntity
+import org.quintilis.factions.exceptions.invite.AlreadyInvitedError
 import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.managers.DatabaseManager
 import java.time.Instant
 
 class MemberInviteService {
     companion object {
+        val memberInviteDao: MemberInviteDao = DatabaseManager.getDAO(MemberInviteDao::class)
         val maxInvitationTime: Instant = Instant.now().plusSeconds(ConfigManager.getMaxInvitationTime() * 60.toLong())
         fun createInvite(clan: ClanEntity, player: PlayerEntity): MemberInviteEntity{
+            if(memberInviteDao.hasInvite(player.id, clan.id!!)){
+                throw AlreadyInvitedError(player.name)
+            }
+
             val invite = MemberInviteEntity(
-                clanId = clan.id!!,
+                clanId = clan.id,
                 playerId = player.id,
                 expiresAt = this.maxInvitationTime
             ).save<MemberInviteEntity>()

@@ -73,4 +73,14 @@ interface MemberInviteDao: BaseDao<MemberInviteEntity, Int>{
         RETURNING *;
     """)
     fun cancelInvite(@Bind("playerId") playerId: UUID)
+
+    @SqlQuery("""SELECT EXISTS(
+            SELECT 1 FROM member_invite 
+            WHERE ACTIVE = 1 AND 
+            clan_id = :clanId AND 
+            player_id = :playerId AND
+            status = 'PENDING'
+        )
+    """)
+    fun hasInvite(@Bind("playerId") playerId: UUID, @Bind("clanId") clanId: Int): Boolean
 }

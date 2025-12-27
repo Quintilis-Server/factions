@@ -21,7 +21,9 @@ import kotlin.reflect.full.memberProperties
  */
 interface BaseDao<T: BaseEntity, ID>: SqlObject {
 
-    fun getEntityClass(): Class<T>
+    fun getEntityClass(): Class<T> {
+        throw UnsupportedOperationException("A DAO filha deve implementar o método getEntityClass()!")
+    }
 
     // --- MÉTODOS COM LÓGICA (Default Methods) ---
     // O JDBI ignora métodos com corpo, então ele não tenta rodar SQL aqui.

@@ -65,7 +65,7 @@ class ClanListMenu(
     }
 
     private fun updateNavigationButton() {
-        val totalClans = clanDao.totalClans()
+        val totalClans = clanCache.getTotalClans()
         val totalPages = ceil(totalClans.toDouble() / pageSize).toInt()
 
         if(currentPageIndex > 1){
