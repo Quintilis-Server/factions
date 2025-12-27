@@ -46,17 +46,12 @@ abstract class BaseGUI(
         val bundle = java.util.ResourceBundle.getBundle("translations.factions", player.locale())
         val template = bundle.getString(key)
         
-        println("DEBUG - template: '$template'")
-        
         // Split by <newline> tag first
         val lines = template.split("<newline>")
-        
-        println("DEBUG - split into ${lines.size} lines")
         
         // Deserialize each line with tag resolvers
         return lines.map { line ->
             val trimmed = line.trim()
-            println("DEBUG - processing line: '$trimmed'")
             mm.deserialize(trimmed, *resolvers)
         }
     }

@@ -36,7 +36,7 @@ interface ClanRelationDao: BaseDao<ClanRelationEntity, Int> {
     )
 
     @SqlUpdate("""
-        DELETE FROM clan_relation 
+        UPDATE clan_relation SET active = false
         WHERE (clan1_id = :clan1Id AND clan2_id = :clan2Id)
         OR (clan1_id = :clan2Id AND clan2_id = :clan1Id)
     """)
