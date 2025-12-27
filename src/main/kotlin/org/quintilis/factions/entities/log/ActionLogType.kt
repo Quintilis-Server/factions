@@ -36,5 +36,9 @@ enum class ActionLogType(val description: String) {
     
     // Admin actions
     ADMIN_POINTS_GIVE("Admin gave points"),
-    ADMIN_POINTS_TAKE("Admin took points")
+    ADMIN_POINTS_TAKE("Admin took points"),
+    ADMIN_CLAN_DELETE("Admin deleted clan"),
+    ADMIN_CLAN_SET_NAME("Admin changed clan name"),
+    ADMIN_CLAN_SET_TAG("Admin changed clan tag"),
+    ADMIN_CLAN_SET_LEADER("Admin changed clan leader")
 }

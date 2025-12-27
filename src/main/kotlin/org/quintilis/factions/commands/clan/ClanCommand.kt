@@ -10,6 +10,7 @@ import org.quintilis.factions.commands.Commands
 import org.quintilis.factions.extensions.getClanAsLeader
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.gui.ClanListMenu
+import org.quintilis.factions.handlers.AdminCommandHandler
 import org.quintilis.factions.handlers.AllyCommandHandler
 import org.quintilis.factions.handlers.InviteCommandHandler
 import org.quintilis.factions.handlers.MemberCommandHandler
@@ -34,6 +35,7 @@ class ClanCommand: BaseCommand(
     private val allyHandler = AllyCommandHandler()
     private val memberHandler = MemberCommandHandler()
     private val inviteHandler = InviteCommandHandler()
+    private val adminHandler = AdminCommandHandler()
     
     // Services e Caches (via singleton)
     private val clanService get() = Services.clanService
@@ -229,6 +231,23 @@ class ClanCommand: BaseCommand(
         }
     }
 
+    private fun handleAdminCommand(sender: Player, args: List<String>) {
+        // Verifica permissão de admin
+        if (!sender.hasPermission("factions.admin")) {
+            sender.sendTranslatable("error.no_permission")
+            return
+        }
+        
+        val subCommand = findSubCommand(sender, args, AdminSubCommands.entries) ?: return
+        
+        when (subCommand) {
+            AdminSubCommands.DELETE -> adminHandler.delete(sender, args.drop(1))
+            AdminSubCommands.SETNAME -> adminHandler.setName(sender, args.drop(1))
+            AdminSubCommands.SETTAG -> adminHandler.setTag(sender, args.drop(1))
+            AdminSubCommands.SETLEADER -> adminHandler.setLeader(sender, args.drop(1))
+        }
+    }
+
     // ============================================
     // Command wrapper
     // ============================================
@@ -260,6 +279,7 @@ class ClanCommand: BaseCommand(
                 ClanCommands.MEMBER -> handleMemberCommand(sender, subArgs)
                 ClanCommands.INVITE -> handleInviteCommand(sender, subArgs)
                 ClanCommands.QUIT -> handleQuit(sender)
+                ClanCommands.ADMIN -> handleAdminCommand(sender, subArgs)
             }
         }
         return true
@@ -325,6 +345,12 @@ class ClanCommand: BaseCommand(
                     ClanCommands.ALLY.command -> {
                         if (clan != null) {
                             suggestions.addAll(allyHandler.getSuggestions(subCommand, clan))
+                        }
+                    }
+                    // /clan admin <subcommand>
+                    ClanCommands.ADMIN.command -> {
+                        if (sender.hasPermission("factions.admin")) {
+                            suggestions.addAll(adminHandler.getSuggestions(subCommand))
                         }
                     }
                 }

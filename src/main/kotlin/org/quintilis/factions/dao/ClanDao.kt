@@ -86,4 +86,10 @@ interface ClanDao: BaseDao<ClanEntity, Int> {
 
     @SqlUpdate("UPDATE clans SET leader_uuid = :newLeaderId WHERE id = :clanId AND active = true")
     fun updateLeader(@Bind("clanId") clanId: Int, @Bind("newLeaderId") newLeaderId: UUID)
+
+    @SqlUpdate("UPDATE clans SET name = :newName WHERE id = :clanId AND active = true")
+    fun updateName(@Bind("clanId") clanId: Int, @Bind("newName") newName: String)
+
+    @SqlUpdate("UPDATE clans SET tag = :newTag WHERE id = :clanId AND active = true")
+    fun updateTag(@Bind("clanId") clanId: Int, @Bind("newTag") newTag: String?)
 }
