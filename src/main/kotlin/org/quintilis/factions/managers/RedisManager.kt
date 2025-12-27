@@ -11,7 +11,14 @@ object RedisManager {
         val config = JedisPoolConfig()
         config.maxTotal = 16
 
-        pool = JedisPool(config, ConfigManager.getRedisHost(), ConfigManager.getRedisPort())
+        pool = JedisPool(
+            config,
+            ConfigManager.getRedisHost(),
+            ConfigManager.getRedisPort(),
+            2000,  // timeout em ms
+            null,  // password (null se não tiver)
+            ConfigManager.getRedisDatabase()  // database index (0-15)
+        )
     }
     fun close(){
         if(::pool.isInitialized) pool.close()

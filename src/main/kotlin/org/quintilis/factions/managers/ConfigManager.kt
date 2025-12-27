@@ -56,4 +56,8 @@ object ConfigManager {
     fun getRedisHost(): String{
         return this.getString("redis.host")
     }
+
+    fun getRedisDatabase(): Int{
+        return this.getInt("redis.database")
+    }
 }
