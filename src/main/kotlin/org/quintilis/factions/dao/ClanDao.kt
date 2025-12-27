@@ -80,6 +80,7 @@ interface ClanDao: BaseDao<ClanEntity, Int> {
     @SqlQuery("""
         SELECT c.name
         FROM clans c
+        WHERE c.active = true
         """)
     fun findNames(): List<String>
 }

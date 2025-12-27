@@ -41,6 +41,25 @@ abstract class BaseCommand(
         }
         return;
     }
+    protected fun <T: Commands> findSubCommand(
+        sender: Player,
+        args: List<String>,
+        entries: List<T>
+    ): T? {
+        if (args.isEmpty()) {
+            argumentsMissing(sender)
+            return null
+        }
+
+        val subName = args[0]
+        val found = entries.find { it.command.equals(subName, ignoreCase = true) }
+
+        if (found == null) {
+            unknownSubCommand(sender, subName)
+            return null
+        }
+        return found
+    }
 
     protected fun noPermission(sender: CommandSender): Boolean {
         sender.sendMessage {

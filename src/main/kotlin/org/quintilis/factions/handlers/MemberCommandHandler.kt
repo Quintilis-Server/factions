@@ -5,6 +5,7 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.extensions.sendTranslatable
+import org.quintilis.factions.commands.clan.MemberSubCommands
 import org.quintilis.factions.services.MemberInviteService
 import org.quintilis.factions.services.Services
 
@@ -73,8 +74,42 @@ class MemberCommandHandler {
             return
         }
         
-        // TODO: Implementar expulsão de membro
-        sender.sendTranslatable("error.not_implemented")
+        val playerEntity = playerDao.findByName(args[0])
+        if (playerEntity == null) {
+            sender.sendTranslatable("error.player_not_found")
+            return
+        }
+        
+        // Verifica se o jogador é membro do clã
+        val memberClan = clanCache.getClanByMember(playerEntity.id)
+        if (memberClan == null || memberClan.id != clan.id) {
+            sender.sendTranslatable("error.not_in_clan")
+            return
+        }
+        
+        // Não pode expulsar o líder (si mesmo)
+        if (playerEntity.id == clan.leaderUuid) {
+            sender.sendTranslatable("clan.quit.error.leader")
+            return
+        }
+        
+        // Remove o membro
+        clanDao.deleteMemberById(playerEntity.id)
+        
+        // Invalida caches
+        clanCache.invalidateMember(playerEntity.id)
+        clanCache.invalidateMembersOfClan(clan.id!!)
+        
+        // Notifica o jogador expulso
+        Bukkit.getPlayer(playerEntity.id)?.sendTranslatable(
+            "clan.member.kick.target_response",
+            Argument.string("leader_name", sender.name)
+        )
+        
+        sender.sendTranslatable(
+            "clan.member.kick.response",
+            Argument.string("player_name", playerEntity.name)
+        )
     }
     
     /**
@@ -92,11 +127,12 @@ class MemberCommandHandler {
         members.forEach { member ->
             val playerName = Bukkit.getOfflinePlayer(member.playerId).name ?: "Unknown"
             val isLeader = member.playerId == clan.leaderUuid
+            val role = if (isLeader) "Líder" else "Membro"
             
             sender.sendTranslatable(
                 "clan.member.list.entry",
                 Argument.string("player_name", playerName),
-                Argument.string("role", if (isLeader) "Leader" else "Member")
+                Argument.string("role", role)
             )
         }
     }
@@ -106,13 +142,13 @@ class MemberCommandHandler {
      */
     fun getSuggestions(subCommand: String, sender: Player, clan: ClanEntity): List<String> {
         return when (subCommand.lowercase()) {
-            "invite" -> {
+            MemberSubCommands.INVITE.command -> {
                 val members = clanCache.getMembers(clan.id!!).map { it.playerId }
                 Bukkit.getOnlinePlayers()
                     .filter { it.uniqueId !in members && it.uniqueId != sender.uniqueId }
                     .map { it.name }
             }
-            "kick" -> {
+            MemberSubCommands.REMOVE.command -> {
                 clanCache.getMembers(clan.id!!)
                     .filter { it.playerId != clan.leaderUuid }
                     .mapNotNull { Bukkit.getOfflinePlayer(it.playerId).name }

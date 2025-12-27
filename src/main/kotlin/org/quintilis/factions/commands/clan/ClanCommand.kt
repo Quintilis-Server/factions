@@ -266,30 +266,6 @@ class ClanCommand: BaseCommand(
     }
 
     // ============================================
-    // Utilitários
-    // ============================================
-
-    private fun <T: Commands> findSubCommand(
-        sender: Player,
-        args: List<String>,
-        entries: List<T>
-    ): T? {
-        if (args.isEmpty()) {
-            argumentsMissing(sender)
-            return null
-        }
-
-        val subName = args[0]
-        val found = entries.find { it.command.equals(subName, ignoreCase = true) }
-
-        if (found == null) {
-            unknownSubCommand(sender, subName)
-            return null
-        }
-        return found
-    }
-
-    // ============================================
     // Tab Complete
     // ============================================
 
@@ -324,30 +300,31 @@ class ClanCommand: BaseCommand(
             }
             3 -> {
                 val clan = sender.getClanAsLeader()
+                val mainCommand = args[0].lowercase()
+                val subCommand = args[1].lowercase()
                 
-                when (args[1].lowercase()) {
-                    // Invite subcommands
-                    "accept", "reject" -> {
-                        suggestions.addAll(memberInviteCache.getClanNames(sender.uniqueId))
-                    }
-                    "cancel" -> {
-                        suggestions.addAll(memberInviteCache.getPlayerNames(sender.uniqueId))
-                    }
-                    // Member subcommands
-                    "invite" -> {
-                        if (clan != null) {
-                            suggestions.addAll(memberHandler.getSuggestions("invite", sender, clan))
+                when (mainCommand) {
+                    // /clan invite <subcommand>
+                    ClanCommands.INVITE.command -> {
+                        when (subCommand) {
+                            InviteSubCommands.ACCEPT.command, InviteSubCommands.REJECT.command -> {
+                                suggestions.addAll(memberInviteCache.getClanNames(sender.uniqueId))
+                            }
+                            InviteSubCommands.CANCEL.command -> {
+                                suggestions.addAll(memberInviteCache.getPlayerNames(sender.uniqueId))
+                            }
                         }
                     }
-                    // Ally subcommands
-                    "add" -> {
+                    // /clan member <subcommand>
+                    ClanCommands.MEMBER.command -> {
                         if (clan != null) {
-                            suggestions.addAll(allyHandler.getSuggestions("add", clan))
+                            suggestions.addAll(memberHandler.getSuggestions(subCommand, sender, clan))
                         }
                     }
-                    AllySubCommands.ACCEPT.command, AllySubCommands.REJECT.command -> {
+                    // /clan ally <subcommand>
+                    ClanCommands.ALLY.command -> {
                         if (clan != null) {
-                            suggestions.addAll(allyHandler.getSuggestions(args[1], clan))
+                            suggestions.addAll(allyHandler.getSuggestions(subCommand, clan))
                         }
                     }
                 }

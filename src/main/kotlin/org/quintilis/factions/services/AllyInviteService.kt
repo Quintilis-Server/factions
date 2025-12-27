@@ -36,7 +36,7 @@ class AllyInviteService {
 
             invite.getTargetClan(clanDao)?.getLeader()?.sendMessage {
                 Component.translatable(
-                    "clan.ally.invite.message",
+                    "clan.ally.invite.invitation_text",
                     Argument.string("clan_name", clan.name)
                 )
             }

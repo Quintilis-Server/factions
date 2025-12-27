@@ -2,6 +2,7 @@ package org.quintilis.factions.dao
 
 import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.statement.SqlQuery
+import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import org.jdbi.v3.sqlobject.transaction.Transaction
 import org.quintilis.factions.entities.invite.ally.AllyInviteEntity
 
@@ -46,7 +47,7 @@ interface AllyInviteDao: BaseDao<AllyInviteEntity, Int> {
      */
     @SqlQuery("""
         SELECT c.name FROM ally_invite ai
-        JOIN clan c ON c.id = ai.sender_clan_id
+        JOIN clans c ON c.id = ai.sender_clan_id
         WHERE ai.target_clan_id = :targetClanId
             AND ai.status = 'PENDING'
             AND ai.active = true
@@ -58,10 +59,26 @@ interface AllyInviteDao: BaseDao<AllyInviteEntity, Int> {
      */
     @SqlQuery("""
         SELECT c.name FROM ally_invite ai
-        JOIN clan c ON c.id = ai.target_clan_id
+        JOIN clans c ON c.id = ai.target_clan_id
         WHERE ai.sender_clan_id = :senderClanId
             AND ai.status = 'PENDING'
             AND ai.active = true
     """)
     fun findTargetClanNamesForInvites(@Bind("senderClanId") senderClanId: Int): List<String>
+
+    /**
+     * Remove/desativa o convite de aliança.
+     */
+    @SqlUpdate("""
+        UPDATE ally_invite
+        SET status = 'REJECTED', active = false
+        WHERE sender_clan_id = :senderClanId
+            AND target_clan_id = :targetClanId
+            AND status = 'PENDING'
+            AND active = true
+    """)
+    fun deleteInvite(
+        @Bind("senderClanId") senderClanId: Int, 
+        @Bind("targetClanId") targetClanId: Int
+    )
 }

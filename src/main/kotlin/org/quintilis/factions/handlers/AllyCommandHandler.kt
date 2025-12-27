@@ -1,11 +1,13 @@
 package org.quintilis.factions.handlers
 
-import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.clan.ClanEntity
+import org.quintilis.factions.entities.clan.ClanRelationEntity
 import org.quintilis.factions.entities.clan.Relation
 import org.quintilis.factions.extensions.sendTranslatable
+import org.quintilis.factions.commands.clan.AllySubCommands
 import org.quintilis.factions.services.AllyInviteService
 import org.quintilis.factions.services.Services
 
@@ -15,7 +17,9 @@ import org.quintilis.factions.services.Services
 class AllyCommandHandler {
     
     private val clanCache get() = Services.clanCache
+    private val clanDao get() = Services.clanDao
     private val clanRelationDao get() = Services.clanRelationDao
+    private val allyInviteDao get() = Services.allyInviteDao
     private val allyInviteCache get() = Services.allyInviteCache
     
     /**
@@ -34,6 +38,12 @@ class AllyCommandHandler {
             return
         }
         
+        // Não pode se aliar ao próprio clã
+        if (targetClan.id == clan.id) {
+            sender.sendTranslatable("clan.ally.error.same_clan")
+            return
+        }
+        
         // Verifica se já são aliados
         if (clanRelationDao.isRelation(clan.id!!, targetClan.id!!, Relation.ALLY)) {
             sender.sendTranslatable("clan.ally.error.is_ally")
@@ -47,7 +57,7 @@ class AllyCommandHandler {
         }
         
         // Cria o convite
-        AllyInviteService.createInvite(Services.clanDao, clan, targetClan)
+        AllyInviteService.createInvite(clanDao, clan, targetClan)
         
         sender.sendTranslatable(
             "clan.ally.invite.response",
@@ -65,8 +75,31 @@ class AllyCommandHandler {
             return
         }
         
-        // TODO: Implementar remoção de aliança
-        sender.sendTranslatable("error.not_implemented")
+        val targetClan = clanCache.getClanByName(args[0])
+        if (targetClan == null) {
+            sender.sendTranslatable("error.no_clan")
+            return
+        }
+        
+        // Verifica se são aliados
+        if (!clanRelationDao.isRelation(clan.id!!, targetClan.id!!, Relation.ALLY)) {
+            sender.sendTranslatable("clan.ally.list.empty")
+            return
+        }
+        
+        // Remove a relação
+        clanRelationDao.removeRelation(clan.id, targetClan.id)
+        
+        // Notifica o outro clã
+        targetClan.getLeader()?.sendTranslatable(
+            "clan.ally.remove.target_response",
+            Argument.string("clan_name", clan.name)
+        )
+        
+        sender.sendTranslatable(
+            "clan.ally.remove.response",
+            Argument.string("clan_name", targetClan.name)
+        )
     }
     
     /**
@@ -79,8 +112,49 @@ class AllyCommandHandler {
             return
         }
         
-        // TODO: Implementar aceitação de aliança
-        sender.sendTranslatable("error.not_implemented")
+        val senderClan = clanCache.getClanByName(args[0])
+        if (senderClan == null) {
+            sender.sendTranslatable("error.no_clan")
+            return
+        }
+        
+        // Verifica se existe convite
+        val hasInvite = allyInviteDao.hasInvite(senderClan.id!!, clan.id!!)
+        if (!hasInvite) {
+            sender.sendTranslatable("clan.ally.error.no_invite")
+            return
+        }
+        
+        // Cria a relação de aliança (apenas uma entrada, com IDs ordenados)
+        // O constraint do banco exige clan1_id < clan2_id
+        val (smallerId, largerId) = if (clan.id < senderClan.id) {
+            clan.id to senderClan.id
+        } else {
+            senderClan.id to clan.id
+        }
+        
+        ClanRelationEntity(
+            id = null,
+            clan1Id = smallerId,
+            clan2Id = largerId,
+            relation = Relation.ALLY,
+            active = true
+        ).save<ClanRelationEntity>()
+        
+        // Remove o convite
+        allyInviteDao.deleteInvite(senderClan.id, clan.id)
+        allyInviteCache.invalidate(clan.id)
+        
+        // Notifica o clã que enviou o convite
+        senderClan.getLeader()?.sendTranslatable(
+            "clan.ally.accept.sender_response",
+            Argument.string("clan_name", clan.name)
+        )
+        
+        sender.sendTranslatable(
+            "clan.ally.accept.response",
+            Argument.string("clan_name", senderClan.name)
+        )
     }
     
     /**
@@ -93,8 +167,33 @@ class AllyCommandHandler {
             return
         }
         
-        // TODO: Implementar rejeição de aliança
-        sender.sendTranslatable("error.not_implemented")
+        val senderClan = clanCache.getClanByName(args[0])
+        if (senderClan == null) {
+            sender.sendTranslatable("error.no_clan")
+            return
+        }
+        
+        // Verifica se existe convite
+        val hasInvite = allyInviteDao.hasInvite(senderClan.id!!, clan.id!!)
+        if (!hasInvite) {
+            sender.sendTranslatable("clan.ally.error.no_invite")
+            return
+        }
+        
+        // Remove o convite
+        allyInviteDao.deleteInvite(senderClan.id, clan.id)
+        allyInviteCache.invalidate(clan.id)
+        
+        // Notifica o clã que enviou o convite
+        senderClan.getLeader()?.sendTranslatable(
+            "clan.ally.reject.sender_response",
+            Argument.string("clan_name", clan.name)
+        )
+        
+        sender.sendTranslatable(
+            "clan.ally.reject.response",
+            Argument.string("clan_name", senderClan.name)
+        )
     }
     
     /**
@@ -102,8 +201,24 @@ class AllyCommandHandler {
      * /clan ally list
      */
     fun list(sender: Player, clan: ClanEntity) {
-        // TODO: Implementar listagem de aliados
-        sender.sendTranslatable("error.not_implemented")
+        val allies = clanRelationDao.findRelatedClanNames(clan.id!!, Relation.ALLY)
+        
+        if (allies.isEmpty()) {
+            sender.sendTranslatable("clan.ally.list.empty")
+            return
+        }
+        
+        sender.sendTranslatable(
+            "clan.ally.list.header",
+            Argument.numeric("count", allies.size)
+        )
+        
+        allies.forEach { allyName ->
+            sender.sendTranslatable(
+                "clan.ally.list.entry",
+                Argument.string("clan_name", allyName)
+            )
+        }
     }
     
     /**
@@ -111,8 +226,9 @@ class AllyCommandHandler {
      */
     fun getSuggestions(subCommand: String, clan: ClanEntity): List<String> {
         return when (subCommand.lowercase()) {
-            "add" -> clanCache.getClanNames().filter { it != clan.name }
-            "accept", "reject" -> allyInviteCache.getSenderClanNames(clan.id!!)
+            AllySubCommands.ADD.command -> clanCache.getClanNames().filter { it != clan.name }
+            AllySubCommands.REMOVE.command -> clanRelationDao.findRelatedClanNames(clan.id!!, Relation.ALLY)
+            AllySubCommands.ACCEPT.command, AllySubCommands.REJECT.command -> allyInviteCache.getSenderClanNames(clan.id!!)
             else -> emptyList()
         }
     }

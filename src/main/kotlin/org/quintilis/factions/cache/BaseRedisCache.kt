@@ -39,7 +39,7 @@ abstract class BaseRedisCache<K, V>(
         return dbValue
     }
 
-    fun invalidate(key: K) {
+    open fun invalidate(key: K) {
         try {
             RedisManager.run { jedis ->
                 jedis.del("$keyPrefix$key")
