@@ -92,7 +92,7 @@ abstract class BaseCommand(
     private fun help(sender: CommandSender, alias: String, helpArguments: List<String>){
         val accessibleCommands = this.commands.filter { sender.hasPermission(it.helpEntry.permission) }
 
-        val totalPages = max(1, ceil(accessibleCommands.size.toDouble() / pageSize).toInt() + 1)
+        val totalPages = max(1, ceil(accessibleCommands.size.toDouble() / pageSize).toInt())
         val page = helpArguments.getOrNull(0)?.toIntOrNull() ?: 1
 
         if(page !in 1 .. totalPages){
