@@ -1,22 +1,29 @@
 package org.quintilis.factions.commands.clan
 
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.commands.Commands
-import org.quintilis.factions.dao.ClanDao
-import org.quintilis.factions.dao.PlayerDao
-import org.quintilis.factions.entities.clan.ClanEntity
+import org.quintilis.factions.extensions.getClanAsLeader
+import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.gui.ClanListMenu
-import org.quintilis.factions.managers.DatabaseManager
+import org.quintilis.factions.handlers.AdminCommandHandler
+import org.quintilis.factions.handlers.AllyCommandHandler
+import org.quintilis.factions.handlers.InviteCommandHandler
+import org.quintilis.factions.handlers.MemberCommandHandler
+import org.quintilis.factions.managers.ErrorManager
+import org.quintilis.factions.results.ClanResult
+import org.quintilis.factions.services.Services
 import kotlin.math.ceil
 import kotlin.math.max
 
+/**
+ * Comando principal de clã.
+ * Refatorado para usar handlers e services.
+ */
 class ClanCommand: BaseCommand(
     name = "clan",
     description = "Main clan command",
@@ -24,267 +31,328 @@ class ClanCommand: BaseCommand(
     aliases = listOf("c"),
     commands = ClanCommands.entries
 ) {
-    private val clanDao = DatabaseManager.getDAO(ClanDao::class)
-    private val playerDao = DatabaseManager.getDAO(PlayerDao::class)
+    // Handlers
+    private val allyHandler = AllyCommandHandler()
+    private val memberHandler = MemberCommandHandler()
+    private val inviteHandler = InviteCommandHandler()
+    private val adminHandler = AdminCommandHandler()
+    
+    // Services e Caches (via singleton)
+    private val clanService get() = Services.clanService
+    private val clanCache get() = Services.clanCache
+    private val memberInviteCache get() = Services.memberInviteCache
+    private val allyInviteCache get() = Services.allyInviteCache
 
-    //
-    // Errors
-    //
-    private fun noClanLeader(sender: CommandSender){
-        sender.sendMessage {
-            Component.translatable(
-                "clan.is_not_leader"
-            )
-        }
+    // ============================================
+    // Métodos de erro
+    // ============================================
+    
+    private fun noClanLeader(sender: Player) {
+        sender.sendTranslatable("clan.is_not_leader")
+    }
+    
+    private fun clanNotFound(sender: Player) {
+        sender.sendTranslatable("error.no_clan")
     }
 
-    //
-    // Clan commands
-    //
+    // ============================================
+    // Comandos principais
+    // ============================================
 
-    private fun create(sender: CommandSender, args: List<String> ) {
-        sender as Player
-
-        if(args.isEmpty()) {
-            this.argumentsMissing(sender)
+    private fun handleCreate(sender: Player, args: List<String>) {
+        if (args.isEmpty()) {
+            argumentsMissing(sender)
             return
         }
-
-        if(playerDao.isInClan(sender.uniqueId) || playerDao.isClanOwner(sender.uniqueId)) {
-            sender.sendMessage {
-                Component.translatable(
-                    "clan.already_in_clan"
-                )
-            }
-            return
-        }
+        
         val name = args[0]
         val tag = args.getOrNull(1)
-        if(clanDao.existsByName(name)){
-            sender.sendMessage {
-                Component.translatable(
-                    "clan.create.error.already_exists",
-                    Argument.string("clan_name", name)
+        
+        when (val result = clanService.createClan(sender, name, tag)) {
+            is ClanResult.Success -> {
+                sender.sendTranslatable(
+                    "clan.create.response",
+                    Argument.string("clan_name", result.args["clan_name"]?.toString() ?: name)
                 )
             }
-           return
-        }
-
-        val clan = ClanEntity(name = name, tag = tag, leaderUuid = sender.uniqueId).save<ClanEntity>()
-
-        sender.sendMessage {
-            Component.translatable(
-                "clan.create.response",
-                Argument.string("clan_name", clan.name)
-            )
-        }
-    }
-
-    private fun delete(sender: CommandSender) {
-        sender as Player
-        if(!playerDao.isClanOwner(sender.uniqueId)){
-            return this.noClanLeader(sender)
-        }
-
-        val clan = clanDao.findByLeaderId(sender.uniqueId) ?: return this.noClanLeader(sender)
-        val clanMembers = clanDao.findMembersByClan(clan.id!!)
-        try{
-            clanDao.deleteByIdAndLeader(clan.id, sender.uniqueId)
-        }catch(e: Exception){
-            sender.sendMessage(
-                Component.text("Error").color(NamedTextColor.RED)
-            )
-            e.printStackTrace()
-        }
-
-        clanMembers.forEach {
-            Bukkit.getPlayer(it.playerId)?.sendMessage {
-                Component.translatable(
-                    "clan.delete.member_response",
-                    Argument.string("leader_name",sender.name)
-                )
+            is ClanResult.Error -> {
+                if (result.args.isNotEmpty()) {
+                    sender.sendTranslatable(
+                        result.messageKey,
+                        *result.args.map { Argument.string(it.key, it.value.toString()) }.toTypedArray()
+                    )
+                } else {
+                    sender.sendTranslatable(result.messageKey)
+                }
             }
         }
-
-        sender.sendMessage {
-            Component.translatable(
-                "clan.delete.response",
-            )
-        }
     }
 
-    private fun listGui(sender: CommandSender) {
-        val menu = ClanListMenu(sender as Player)
-        menu.open()
-    }
-
-    private fun list(sender: CommandSender, args: List<String>) {
-        sender as Player
-
-        val page = args.getOrNull(0)?.toIntOrNull() ?: return this.listGui(sender)
-
-        if(page <= 0){
+    private fun handleDelete(sender: Player) {
+        val clan = clanCache.getClanByLeaderId(sender.uniqueId)
+        if (clan == null) {
+            noClanLeader(sender)
             return
         }
+        
+        // Buscar membros antes de deletar (para notificar)
+        val members = clanCache.getMembers(clan.id!!)
+        
+        when (val result = clanService.deleteClan(sender)) {
+            is ClanResult.Success -> {
+                // Notifica membros
+                members.forEach { member ->
+                    Bukkit.getPlayer(member.playerId)?.sendTranslatable(
+                        "clan.delete.member_response",
+                        Argument.string("leader_name", sender.name)
+                    )
+                }
+                sender.sendTranslatable("clan.delete.response")
+            }
+            is ClanResult.Error -> {
+                sender.sendTranslatable(result.messageKey)
+            }
+        }
+    }
 
-        val totalClans = clanDao.totalClans();
-
+    private fun handleList(sender: Player, args: List<String>) {
+        val page = args.getOrNull(0)?.toIntOrNull()
+        
+        if (page == null) {
+            // Abre GUI
+            ClanListMenu(sender).open()
+            return
+        }
+        
+        if (page <= 0) return
+        
+        val totalClans = clanService.getTotalClans()
         val totalPages = max(1, ceil(totalClans.toDouble() / pageSize).toInt())
-
+        
         if (page !in 1..totalPages) {
-            sender.sendMessage {
-                Component.translatable(
-                    "error.invalid_page", // Crie essa chave no seu properties
-                    Argument.numeric("total_page", totalPages)
-                )
-            }
-            return
-        }
-        val pageOffset = (page - 1) * pageSize
-
-        val clans = clanDao.findWithPage(pageOffset, pageSize)
-
-        sender.sendMessage {
-            Component.translatable(
-                "clan.list.header",
-                Argument.numeric("page", page),
+            sender.sendTranslatable(
+                "error.invalid_page",
                 Argument.numeric("total_page", totalPages)
             )
+            return
         }
-
-        clans.forEach {
-            sender.sendMessage {
-                Component.translatable(
-                    "clan.list.response",
-                    Argument.string("clan_name", it.name),
-                    Argument.string("tag", it.tag?: ""),
-                    Argument.string("leader_name", it.getLeader()!!.name)
-                )
-            }
-        }
-
-        sender.sendMessage {
-            Component.translatable(
-                "clan.list.footer",
-                Argument.string("command", ClanCommands.LIST.usage)
+        
+        val clans = clanService.listClans(page, pageSize)
+        
+        sender.sendTranslatable(
+            "clan.list.header",
+            Argument.numeric("page", page),
+            Argument.numeric("total_page", totalPages)
+        )
+        
+        clans.forEach { clan ->
+            sender.sendTranslatable(
+                "clan.list.response",
+                Argument.string("clan_name", clan.name),
+                Argument.string("tag", clan.tag ?: ""),
+                Argument.string("leader_name", clan.getLeader()?.name ?: "Unknown")
             )
         }
+        
+        sender.sendTranslatable(
+            "clan.list.footer",
+            Argument.string("command", ClanCommands.LIST.usage)
+        )
     }
+
+    private fun handleQuit(sender: Player) {
+        val clan = clanCache.getClanByMember(sender.uniqueId)
+        
+        when (val result = clanService.quitClan(sender)) {
+            is ClanResult.Success -> {
+                // Notifica o líder
+                val leaderUuid = result.args["leader_uuid"]
+                if (leaderUuid != null) {
+                    Bukkit.getPlayer(leaderUuid as java.util.UUID)?.sendTranslatable(
+                        "clan.quit.leader_response",
+                        Argument.component("player_name", Component.text(sender.name))
+                    )
+                }
+                sender.sendTranslatable("clan.quit.response")
+            }
+            is ClanResult.Error -> {
+                sender.sendTranslatable(result.messageKey)
+            }
+        }
+    }
+
+    // ============================================
+    // Handlers de subcomandos
+    // ============================================
+
+    private fun handleAllyCommand(sender: Player, args: List<String>) {
+        val clan = sender.getClanAsLeader()
+        if (clan == null) {
+            noClanLeader(sender)
+            return
+        }
+        
+        val subCommand = findSubCommand(sender, args, AllySubCommands.entries) ?: return
+        
+        when (subCommand) {
+            AllySubCommands.ADD -> allyHandler.add(sender, clan, args.drop(1))
+            AllySubCommands.REMOVE -> allyHandler.remove(sender, clan, args.drop(1))
+            AllySubCommands.LIST -> allyHandler.list(sender, clan)
+            AllySubCommands.ACCEPT -> allyHandler.accept(sender, clan, args.drop(1))
+            AllySubCommands.REJECT -> allyHandler.reject(sender, clan, args.drop(1))
+        }
+    }
+
+    private fun handleMemberCommand(sender: Player, args: List<String>) {
+        val clan = sender.getClanAsLeader()
+        if (clan == null) {
+            noClanLeader(sender)
+            return
+        }
+        
+        val subCommand = findSubCommand(sender, args, MemberSubCommands.entries) ?: return
+        
+        when (subCommand) {
+            MemberSubCommands.INVITE -> memberHandler.invite(sender, clan, args.drop(1))
+            MemberSubCommands.REMOVE -> memberHandler.kick(sender, clan, args.drop(1))
+            MemberSubCommands.PROMOTE -> memberHandler.promote(sender, clan, args.drop(1))
+            MemberSubCommands.LIST -> memberHandler.list(sender, clan)
+        }
+    }
+
+    private fun handleInviteCommand(sender: Player, args: List<String>) {
+        val subCommand = findSubCommand(sender, args, InviteSubCommands.entries) ?: return
+        
+        when (subCommand) {
+            InviteSubCommands.ACCEPT -> inviteHandler.accept(sender, args.drop(1))
+            InviteSubCommands.REJECT -> inviteHandler.reject(sender, args.drop(1))
+            InviteSubCommands.CANCEL -> inviteHandler.cancel(sender, args.drop(1))
+            InviteSubCommands.LIST -> inviteHandler.list(sender)
+        }
+    }
+
+    private fun handleAdminCommand(sender: Player, args: List<String>) {
+        // Verifica permissão de admin
+        if (!sender.hasPermission("factions.admin")) {
+            sender.sendTranslatable("error.no_permission")
+            return
+        }
+        
+        val subCommand = findSubCommand(sender, args, AdminSubCommands.entries) ?: return
+        
+        when (subCommand) {
+            AdminSubCommands.DELETE -> adminHandler.delete(sender, args.drop(1))
+            AdminSubCommands.SETNAME -> adminHandler.setName(sender, args.drop(1))
+            AdminSubCommands.SETTAG -> adminHandler.setTag(sender, args.drop(1))
+            AdminSubCommands.SETLEADER -> adminHandler.setLeader(sender, args.drop(1))
+        }
+    }
+
+    // ============================================
+    // Command wrapper
+    // ============================================
 
     override fun commandWrapper(
         commandSender: CommandSender,
         label: String,
         args: Array<out String>
     ): Boolean {
-        val rootCommand = ClanCommands.entries.find{
-            it.command.equals(args[0], ignoreCase = true)
-        } ?: return this.unknownSubCommand(commandSender, args[0])
+        ErrorManager.runSafe(commandSender) {
+            val sender = commandSender as Player
+            
+            val rootCommand = ClanCommands.entries.find {
+                it.command.equals(args[0], ignoreCase = true)
+            }
+            
+            if (rootCommand == null) {
+                unknownSubCommand(commandSender, args[0])
+                return true
+            }
 
-        val subArgs = args.drop(1)
+            val subArgs = args.drop(1)
 
-
-        when(rootCommand){
-            ClanCommands.CREATE -> this.create(sender = commandSender, subArgs)
-            ClanCommands.DELETE -> this.delete(sender = commandSender)
-            ClanCommands.LIST -> this.list(sender = commandSender, subArgs)
-            ClanCommands.ALLY -> this.handleAllyCommand(commandSender, subArgs)
-            ClanCommands.MEMBER -> this.handleMemberCommand(commandSender, subArgs)
+            when (rootCommand) {
+                ClanCommands.CREATE -> handleCreate(sender, subArgs)
+                ClanCommands.DELETE -> handleDelete(sender)
+                ClanCommands.LIST -> handleList(sender, subArgs)
+                ClanCommands.ALLY -> handleAllyCommand(sender, subArgs)
+                ClanCommands.MEMBER -> handleMemberCommand(sender, subArgs)
+                ClanCommands.INVITE -> handleInviteCommand(sender, subArgs)
+                ClanCommands.QUIT -> handleQuit(sender)
+                ClanCommands.ADMIN -> handleAdminCommand(sender, subArgs)
+            }
         }
         return true
     }
 
-    /**
-     * Handler ally commands
-     */
-    private fun handleAllyCommand(sender: CommandSender, args: List<String>) {
-
-        fun add(){
-
-        }
-
-        fun remove(){
-
-        }
-
-        fun list(){
-
-        }
-
-        fun accept(){
-
-        }
-
-        fun reject(){
-
-        }
-
-        val subCommand = findSubCommand(sender, args, AllySubCommands.entries) ?: return
-
-        when(subCommand){
-            AllySubCommands.ADD -> add()
-            AllySubCommands.REMOVE -> remove()
-            AllySubCommands.LIST -> list()
-            AllySubCommands.ACCEPT -> accept()
-            AllySubCommands.REJECT -> reject()
-        }
-    }
-
-    private fun handleMemberCommand(sender: CommandSender, args: List<String>){
-        val subCommand = findSubCommand(sender, args, MemberSubCommands.entries) ?: return
-
-        when(subCommand){
-
-            else -> {}
-        }
-    }
-
-    private fun <T: Commands> findSubCommand(
-        sender: CommandSender,
-        args: List<String>,
-        entries: List<T>
-    ): T?{
-        if(args.isEmpty()){
-            this.argumentsMissing(sender)
-            return null
-        }
-
-        val subName = args[0]
-        val found = entries.find { it.command.equals(subName, ignoreCase = true) }
-
-        if(found == null){
-            this.unknownSubCommand(sender, subName)
-            return null
-        }
-        return found
-    }
+    // ============================================
+    // Tab Complete
+    // ============================================
 
     override fun onTabComplete(
         commandSender: CommandSender,
         alias: String,
         args: Array<out String>
     ): MutableList<String> {
+        val sender = commandSender as Player
         val suggestions = mutableListOf<String>()
 
         when (args.size) {
             1 -> {
-                val subcommands = ClanCommands.entries
-                    .filter { commandSender.hasPermission(it.helpEntry.permission) }
-                    .map { it.command }
-                suggestions.addAll(subcommands)
+                suggestions.addAll(
+                    ClanCommands.entries
+                        .filter { sender.hasPermission(it.helpEntry.permission) }
+                        .map { it.command }
+                )
             }
             2 -> {
-                val mainCommandName = args[0]
-
-                val mainCommand = this.commands.find {
-                    it.command.equals(mainCommandName, ignoreCase = true)
+                val mainCommand = commands.find {
+                    it.command.equals(args[0], ignoreCase = true)
                 }
-
-                if(mainCommand != null && mainCommand.subCommands != null){
-                    val subSuggestions = mainCommand.subCommands!!
-                        .filter { commandSender.hasPermission(it.helpEntry.permission) }
-                        .map { it.command }
-
-                    suggestions.addAll(subSuggestions)
+                
+                if (mainCommand?.subCommands != null) {
+                    suggestions.addAll(
+                        mainCommand.subCommands!!
+                            .filter { sender.hasPermission(it.helpEntry.permission) }
+                            .map { it.command }
+                    )
+                }
+            }
+            3 -> {
+                val clan = sender.getClanAsLeader()
+                val mainCommand = args[0].lowercase()
+                val subCommand = args[1].lowercase()
+                
+                when (mainCommand) {
+                    // /clan invite <subcommand>
+                    ClanCommands.INVITE.command -> {
+                        when (subCommand) {
+                            InviteSubCommands.ACCEPT.command, InviteSubCommands.REJECT.command -> {
+                                suggestions.addAll(memberInviteCache.getClanNames(sender.uniqueId))
+                            }
+                            InviteSubCommands.CANCEL.command -> {
+                                suggestions.addAll(memberInviteCache.getPlayerNames(sender.uniqueId))
+                            }
+                        }
+                    }
+                    // /clan member <subcommand>
+                    ClanCommands.MEMBER.command -> {
+                        if (clan != null) {
+                            suggestions.addAll(memberHandler.getSuggestions(subCommand, sender, clan))
+                        }
+                    }
+                    // /clan ally <subcommand>
+                    ClanCommands.ALLY.command -> {
+                        if (clan != null) {
+                            suggestions.addAll(allyHandler.getSuggestions(subCommand, clan))
+                        }
+                    }
+                    // /clan admin <subcommand>
+                    ClanCommands.ADMIN.command -> {
+                        if (sender.hasPermission("factions.admin")) {
+                            suggestions.addAll(adminHandler.getSuggestions(subCommand))
+                        }
+                    }
                 }
             }
         }

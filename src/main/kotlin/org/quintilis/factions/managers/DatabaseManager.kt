@@ -55,7 +55,7 @@ object DatabaseManager {
         return dataSource?.connection
     }
 
-    fun <T : BaseDao> getDAO(daoClass: KClass<T>):T{
+    fun <T : BaseDao<*, *>> getDAO(daoClass: KClass<T>): T {
         return this.jdbi.onDemand(daoClass.java)
     }
 

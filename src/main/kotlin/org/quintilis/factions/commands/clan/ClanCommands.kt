@@ -42,10 +42,30 @@ enum class ClanCommands(
         ),
         AllySubCommands.entries.toTypedArray()
     ),
+    QUIT(
+        "quit",
+        "/clan quit",
+        HelpEntry(
+            "clan.quit.description",
+            "factions.usage"
+        )
+    ),
     MEMBER(
         "member",
         "/clan member <subcommand>",
         HelpEntry("clan.member.description", "factions.usage"),
         MemberSubCommands.entries.toTypedArray()
+    ),
+    INVITE(
+        "invite",
+        "/clan invite <subcommand>",
+        HelpEntry("clan.invite.description", "factions.usage"),
+        InviteSubCommands.entries.toTypedArray()
+    ),
+    ADMIN(
+        "admin",
+        "/clan admin <subcommand>",
+        HelpEntry("clan.admin.description", "factions.admin"),
+        AdminSubCommands.entries.toTypedArray()
     )
 }
