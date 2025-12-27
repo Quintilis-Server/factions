@@ -4,6 +4,8 @@ import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.clan.ClanEntity
+import org.quintilis.factions.entities.log.ActionLogEntity
+import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.commands.clan.MemberSubCommands
 import org.quintilis.factions.services.MemberInviteService
@@ -96,9 +98,18 @@ class MemberCommandHandler {
         // Remove o membro
         clanDao.deleteMemberById(playerEntity.id)
         
+        // Log da ação
+        ActionLogEntity.log(
+            actionType = ActionLogType.MEMBER_KICK,
+            actorId = sender.uniqueId,
+            targetId = playerEntity.id,
+            clanId = clan.id!!,
+            details = "Kicked: ${playerEntity.name}"
+        )
+        
         // Invalida caches
         clanCache.invalidateMember(playerEntity.id)
-        clanCache.invalidateMembersOfClan(clan.id!!)
+        clanCache.invalidateMembersOfClan(clan.id)
         
         // Notifica o jogador expulso
         Bukkit.getPlayer(playerEntity.id)?.sendTranslatable(
@@ -138,6 +149,65 @@ class MemberCommandHandler {
     }
     
     /**
+     * Transfere a liderança do clã para outro membro.
+     * /clan member promote <playerName>
+     */
+    fun promote(sender: Player, clan: ClanEntity, args: List<String>) {
+        if (args.isEmpty()) {
+            sender.sendTranslatable("error.missing_arguments")
+            return
+        }
+        
+        val playerEntity = playerDao.findByName(args[0])
+        if (playerEntity == null) {
+            sender.sendTranslatable("error.player_not_found")
+            return
+        }
+        
+        // Verifica se o jogador é membro do clã
+        val memberClan = clanCache.getClanByMember(playerEntity.id)
+        if (memberClan == null || memberClan.id != clan.id) {
+            sender.sendTranslatable("error.not_in_clan")
+            return
+        }
+        
+        // Não pode promover a si mesmo
+        if (playerEntity.id == sender.uniqueId) {
+            sender.sendTranslatable("clan.member.promote.error.self")
+            return
+        }
+        
+        // Atualiza o líder no banco de dados
+        clanDao.updateLeader(clan.id!!, playerEntity.id)
+        
+        // Registra log da ação
+        ActionLogEntity.log(
+            actionType = ActionLogType.CLAN_LEADER_TRANSFER,
+            actorId = sender.uniqueId,
+            targetId = playerEntity.id,
+            clanId = clan.id
+        )
+        
+        // Invalida caches
+        clanCache.invalidateMembersOfClan(clan.id)
+        
+        // Invalida clã com líder antigo e novo
+        clanCache.invalidateClan(clan)
+        clanCache.invalidateClan(clan.copy(leaderUuid = playerEntity.id))
+        
+        // Notifica o novo líder
+        Bukkit.getPlayer(playerEntity.id)?.sendTranslatable(
+            "clan.member.promote.new_leader",
+            Argument.string("clan_name", clan.name)
+        )
+        
+        sender.sendTranslatable(
+            "clan.member.promote.response",
+            Argument.string("player_name", playerEntity.name)
+        )
+    }
+    
+    /**
      * Retorna sugestões de autocomplete para o subcomando.
      */
     fun getSuggestions(subCommand: String, sender: Player, clan: ClanEntity): List<String> {
@@ -148,7 +218,7 @@ class MemberCommandHandler {
                     .filter { it.uniqueId !in members && it.uniqueId != sender.uniqueId }
                     .map { it.name }
             }
-            MemberSubCommands.REMOVE.command -> {
+            MemberSubCommands.REMOVE.command, MemberSubCommands.PROMOTE.command -> {
                 clanCache.getMembers(clan.id!!)
                     .filter { it.playerId != clan.leaderUuid }
                     .mapNotNull { Bukkit.getOfflinePlayer(it.playerId).name }

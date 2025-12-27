@@ -6,6 +6,8 @@ import org.bukkit.entity.Player
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanRelationEntity
 import org.quintilis.factions.entities.clan.Relation
+import org.quintilis.factions.entities.log.ActionLogEntity
+import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.commands.clan.AllySubCommands
 import org.quintilis.factions.services.AllyInviteService
@@ -59,6 +61,14 @@ class AllyCommandHandler {
         // Cria o convite
         AllyInviteService.createInvite(clanDao, clan, targetClan)
         
+        // Log da ação
+        ActionLogEntity.log(
+            actionType = ActionLogType.ALLY_INVITE_SEND,
+            actorId = sender.uniqueId,
+            clanId = clan.id,
+            details = "Invited clan: ${targetClan.name}"
+        )
+        
         sender.sendTranslatable(
             "clan.ally.invite.response",
             Argument.string("clan_name", targetClan.name)
@@ -89,6 +99,14 @@ class AllyCommandHandler {
         
         // Remove a relação
         clanRelationDao.removeRelation(clan.id, targetClan.id)
+        
+        // Log da ação
+        ActionLogEntity.log(
+            actionType = ActionLogType.ALLY_REMOVE,
+            actorId = sender.uniqueId,
+            clanId = clan.id,
+            details = "Removed alliance with: ${targetClan.name}"
+        )
         
         // Notifica o outro clã
         targetClan.getLeader()?.sendTranslatable(
@@ -141,6 +159,14 @@ class AllyCommandHandler {
             active = true
         ).save<ClanRelationEntity>()
         
+        // Log da ação
+        ActionLogEntity.log(
+            actionType = ActionLogType.ALLY_INVITE_ACCEPT,
+            actorId = sender.uniqueId,
+            clanId = clan.id,
+            details = "Accepted alliance from: ${senderClan.name}"
+        )
+        
         // Remove o convite
         allyInviteDao.deleteInvite(senderClan.id, clan.id)
         allyInviteCache.invalidate(clan.id)
@@ -183,6 +209,14 @@ class AllyCommandHandler {
         // Remove o convite
         allyInviteDao.deleteInvite(senderClan.id, clan.id)
         allyInviteCache.invalidate(clan.id)
+        
+        // Log da ação
+        ActionLogEntity.log(
+            actionType = ActionLogType.ALLY_INVITE_REJECT,
+            actorId = sender.uniqueId,
+            clanId = clan.id,
+            details = "Rejected alliance from: ${senderClan.name}"
+        )
         
         // Notifica o clã que enviou o convite
         senderClan.getLeader()?.sendTranslatable(

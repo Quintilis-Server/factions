@@ -21,16 +21,16 @@ interface ClanDao: BaseDao<ClanEntity, Int> {
     @SqlQuery("SELECT COUNT(*) FROM clans WHERE active = TRUE")
     fun totalClans(): Int
 
-    @SqlQuery("SELECT * FROM clans WHERE name LIKE '%' || :name || '%'")
+    @SqlQuery("SELECT * FROM clans WHERE name LIKE '%' || :name || '%' AND active = true")
     fun findByName(@Bind("name") name: String): ClanEntity?
 
-    @SqlQuery("SELECT tag FROM clans WHERE id != :id")
+    @SqlQuery("SELECT tag FROM clans WHERE id != :id AND active = true")
     fun listTags(@Bind("id") id: Int): List<String>
 
-    @SqlQuery("SELECT EXISTS(SELECT 1 FROM clans WHERE name = :name)")
+    @SqlQuery("SELECT EXISTS(SELECT 1 FROM clans WHERE name = :name AND active = true)")
     fun existsByName(@Bind("name") name: String): Boolean
 
-    @SqlQuery("SELECT EXISTS(SELECT 1 FROM clans WHERE tag = :tag)")
+    @SqlQuery("SELECT EXISTS(SELECT 1 FROM clans WHERE tag = :tag AND active = true)")
     fun existsByTag(@Bind("tag") tag: String): Boolean
 
     @SqlQuery("SELECT * FROM clans WHERE leader_uuid = :leaderId AND active = TRUE")
@@ -83,4 +83,7 @@ interface ClanDao: BaseDao<ClanEntity, Int> {
         WHERE c.active = true
         """)
     fun findNames(): List<String>
+
+    @SqlUpdate("UPDATE clans SET leader_uuid = :newLeaderId WHERE id = :clanId AND active = true")
+    fun updateLeader(@Bind("clanId") clanId: Int, @Bind("newLeaderId") newLeaderId: UUID)
 }

@@ -13,6 +13,7 @@ interface ClanRelationDao: BaseDao<ClanRelationEntity, Int> {
             WHERE clan1_id = :clanId 
             AND clan2_id = :targetId 
             AND relation = :relation
+            AND active = true
         )
     """)
     fun isRelation(
@@ -50,6 +51,8 @@ interface ClanRelationDao: BaseDao<ClanRelationEntity, Int> {
         WHERE (cr.clan1_id = :clanId OR cr.clan2_id = :clanId)
         AND c.id != :clanId
         AND cr.relation = :relation
+        AND cr.active = true
+        AND c.active = true
     """)
     fun findRelatedClanNames(
         @Bind("clanId") clanId: Int,

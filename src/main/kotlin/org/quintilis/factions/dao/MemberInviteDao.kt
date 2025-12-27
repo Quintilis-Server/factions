@@ -50,6 +50,7 @@ interface MemberInviteDao: BaseDao<MemberInviteEntity, Int>{
         WHERE i.player_id = :playerId 
           AND i.active = true 
           AND i.status = 'PENDING'
+          AND c.active = true
     """)
     fun findClanNamesForInvites(@Bind("playerId") playerId: UUID): List<String>
 
@@ -61,6 +62,7 @@ interface MemberInviteDao: BaseDao<MemberInviteEntity, Int>{
         WHERE c.leader_uuid = :leaderId
         AND i.active = true
         AND i.status = 'PENDING'
+        AND c.active = true
     """)
     fun findPlayerNamesForInvites(@Bind("leaderId") leaderId: UUID): List<String>
 
@@ -76,7 +78,7 @@ interface MemberInviteDao: BaseDao<MemberInviteEntity, Int>{
 
     @SqlQuery("""SELECT EXISTS(
             SELECT 1 FROM member_invite 
-            WHERE ACTIVE = 1 AND 
+            WHERE active = true AND 
             clan_id = :clanId AND 
             player_id = :playerId AND
             status = 'PENDING'

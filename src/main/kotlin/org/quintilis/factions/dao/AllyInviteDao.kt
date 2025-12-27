@@ -51,6 +51,7 @@ interface AllyInviteDao: BaseDao<AllyInviteEntity, Int> {
         WHERE ai.target_clan_id = :targetClanId
             AND ai.status = 'PENDING'
             AND ai.active = true
+            AND c.active = true
     """)
     fun findSenderClanNamesForInvites(@Bind("targetClanId") targetClanId: Int): List<String>
 
@@ -63,6 +64,7 @@ interface AllyInviteDao: BaseDao<AllyInviteEntity, Int> {
         WHERE ai.sender_clan_id = :senderClanId
             AND ai.status = 'PENDING'
             AND ai.active = true
+            AND c.active = true
     """)
     fun findTargetClanNamesForInvites(@Bind("senderClanId") senderClanId: Int): List<String>
 

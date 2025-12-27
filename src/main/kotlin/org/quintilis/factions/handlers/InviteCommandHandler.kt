@@ -2,6 +2,8 @@ package org.quintilis.factions.handlers
 
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.entity.Player
+import org.quintilis.factions.entities.log.ActionLogEntity
+import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.services.MemberInviteService
 import org.quintilis.factions.services.Services
@@ -57,9 +59,17 @@ class InviteCommandHandler {
             Argument.string("player_name", sender.name)
         )
         
+        // Log da ação
+        ActionLogEntity.log(
+            actionType = ActionLogType.MEMBER_JOIN,
+            actorId = sender.uniqueId,
+            clanId = clan.id!!,
+            details = "Joined clan: ${clan.name}"
+        )
+        
         // Invalida cache
         clanCache.invalidateMember(sender.uniqueId)
-        clanCache.invalidateMembersOfClan(clan.id!!)
+        clanCache.invalidateMembersOfClan(clan.id)
         
         sender.sendTranslatable(
             "clan.invite.accept.response",
@@ -95,6 +105,14 @@ class InviteCommandHandler {
         clan.getLeader()?.sendTranslatable(
             "clan.invite.reject.clan_response",
             Argument.string("player_name", sender.name)
+        )
+        
+        // Log da ação
+        ActionLogEntity.log(
+            actionType = ActionLogType.MEMBER_INVITE,
+            actorId = sender.uniqueId,
+            clanId = clan.id!!,
+            details = "Rejected invite from: ${clan.name}"
         )
         
         sender.sendTranslatable(

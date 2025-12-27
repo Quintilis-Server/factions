@@ -213,7 +213,7 @@ class ClanCommand: BaseCommand(
         when (subCommand) {
             MemberSubCommands.INVITE -> memberHandler.invite(sender, clan, args.drop(1))
             MemberSubCommands.REMOVE -> memberHandler.kick(sender, clan, args.drop(1))
-            MemberSubCommands.PROMOTE -> {} // TODO
+            MemberSubCommands.PROMOTE -> memberHandler.promote(sender, clan, args.drop(1))
             MemberSubCommands.LIST -> memberHandler.list(sender, clan)
         }
     }

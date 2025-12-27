@@ -3,6 +3,8 @@ package org.quintilis.factions.services
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanMemberEntity
+import org.quintilis.factions.entities.log.ActionLogEntity
+import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.results.ClanResult
 
 /**
@@ -58,6 +60,14 @@ class ClanService {
         clanCache.invalidateGlobalCaches()
         clanCache.invalidateMember(leader.uniqueId)
         
+        // Log da ação
+        ActionLogEntity.log(
+            actionType = ActionLogType.CLAN_CREATE,
+            actorId = leader.uniqueId,
+            clanId = clan.id,
+            details = "Created clan: ${clan.name}"
+        )
+        
         return ClanResult.Success(
             "clan.create.response",
             mapOf("clan_name" to clan.name)
@@ -90,6 +100,14 @@ class ClanService {
         clanCache.invalidateClan(clan)
         members.forEach { clanCache.invalidateMember(it.playerId) }
         
+        // Log da ação
+        ActionLogEntity.log(
+            actionType = ActionLogType.CLAN_DELETE,
+            actorId = leader.uniqueId,
+            clanId = clan.id,
+            details = "Deleted clan: ${clan.name}"
+        )
+        
         return ClanResult.Success("clan.delete.response")
     }
     
@@ -118,6 +136,14 @@ class ClanService {
         // Invalida caches
         clanCache.invalidateMember(uuid)
         clanCache.invalidateMembersOfClan(clan.id!!)
+        
+        // Log da ação
+        ActionLogEntity.log(
+            actionType = ActionLogType.MEMBER_LEAVE,
+            actorId = uuid,
+            clanId = clan.id,
+            details = "Left clan: ${clan.name}"
+        )
         
         return ClanResult.Success(
             "clan.quit.response",
