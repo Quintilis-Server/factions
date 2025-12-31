@@ -27,12 +27,12 @@ class ClanService {
     fun createClan(leader: Player, name: String, tag: String?): ClanResult {
         // Verifica se já está em um clã
         if (clanCache.isMember(leader.uniqueId)) {
-            return ClanResult.Error("clan.already_in_clan")
+            return ClanResult.Error("error.already_in_clan")
         }
         
         // Verifica se é dono de outro clã
         if (clanCache.getClanByLeaderId(leader.uniqueId) != null) {
-            return ClanResult.Error("clan.already_in_clan")
+            return ClanResult.Error("error.already_in_clan")
         }
         
         // Verifica se nome já existe
