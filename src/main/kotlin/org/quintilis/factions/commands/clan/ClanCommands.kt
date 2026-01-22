@@ -67,5 +67,11 @@ enum class ClanCommands(
         "/clan admin <subcommand>",
         HelpEntry("clan.admin.description", "factions.admin"),
         AdminSubCommands.entries.toTypedArray()
+    ),
+    CLAIM(
+        "claim",
+        "/clan claim",
+        HelpEntry("clan.claim.description", "factions.usage"),
+        ClaimSubCommands.entries.toTypedArray()
     )
 }

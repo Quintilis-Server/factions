@@ -1,6 +1,7 @@
 package org.quintilis.factions.cache
 
 import com.google.gson.reflect.TypeToken
+import org.bukkit.Chunk
 import java.util.UUID
 import org.quintilis.factions.dao.ChunkDao
 import org.quintilis.factions.entities.chunk.ChunkEntity
@@ -103,6 +104,11 @@ class ChunkCache(private val chunkDao: ChunkDao) :
     // ============================================
     // Métodos públicos de leitura
     // ============================================
+
+    fun getChunk(chunk: Chunk): ChunkEntity? {
+        val coordKey = buildCoordKey(chunk.world.uid, chunk.x, chunk.z)
+        return getOrFetch(coordKey) { _-> chunkDao.findByCoordinates(chunk.world.uid, chunk.x, chunk.z) }
+    }
 
     /** Busca um chunk por suas coordenadas. */
     fun getChunk(worldUuid: UUID, chunkX: Int, chunkZ: Int): ChunkEntity? {

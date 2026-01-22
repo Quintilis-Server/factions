@@ -1,8 +1,8 @@
 package org.quintilis.factions.entities.clan
 
 import org.quintilis.factions.entities.BaseEntity
-import org.quintilis.factions.entities.annotations.Column
-import org.quintilis.factions.entities.annotations.TableName
+import org.quintilis.factions.annotations.Column
+import org.quintilis.factions.annotations.TableName
 
 @TableName("clan_chunk")
 data class ClanChunkEntity(

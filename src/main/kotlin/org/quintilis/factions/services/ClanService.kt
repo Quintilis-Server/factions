@@ -1,10 +1,13 @@
 package org.quintilis.factions.services
 
 import org.bukkit.entity.Player
+import org.quintilis.factions.entities.clan.ClanCoreEntity
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanMemberEntity
 import org.quintilis.factions.entities.log.ActionLogEntity
 import org.quintilis.factions.entities.log.ActionLogType
+import org.quintilis.factions.enums.CoreType
+import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.results.ClanResult
 
 /**
@@ -16,7 +19,7 @@ class ClanService {
     private val clanCache get() = Services.clanCache
     private val clanDao get() = Services.clanDao
     private val playerDao get() = Services.playerDao
-    
+    private val coreService get() = Services.coreService
     /**
      * Cria um novo clã.
      * 
@@ -55,11 +58,28 @@ class ClanService {
             clanId = clan.id!!,
             playerId = leader.uniqueId
         ).save<ClanMemberEntity>()
-        
+
+        val core = ClanCoreEntity(
+            clanId = clan.id,
+            type = CoreType.NEXUS
+        )
+
+
+
         // Invalida caches
         clanCache.invalidateGlobalCaches()
         clanCache.invalidateMember(leader.uniqueId)
-        
+
+        val nexusItem = coreService.createItem(core)
+
+        val leftovers = leader.inventory.addItem(nexusItem)
+        if(leftovers.isNotEmpty()) {
+            leftovers.values.forEach { leftover ->
+                leader.world.dropItem(leader.location, leftover)
+            }
+            leader.sendTranslatable("clan.create.dropped_item")
+        }
+
         // Log da ação
         ActionLogEntity.log(
             actionType = ActionLogType.CLAN_CREATE,

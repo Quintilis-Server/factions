@@ -3,12 +3,18 @@ package org.quintilis.factions
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslationStore
 import net.kyori.adventure.translation.GlobalTranslator
+import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
+import org.quintilis.factions.annotations.AutoRegister
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.commands.clan.ClanCommand
+import org.quintilis.factions.util.ClassScanner
 import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.managers.DatabaseManager
 import org.quintilis.factions.managers.RedisManager
+import org.quintilis.factions.services.CoreService
+import org.quintilis.factions.services.Services
+import org.quintilis.factions.util.Keys
 import java.util.Locale
 import java.util.MissingResourceException
 import java.util.ResourceBundle
@@ -41,6 +47,9 @@ class Factions : JavaPlugin() {
             server.pluginManager.disablePlugin(this)
             return
         }
+        Services.init(this)
+        Keys.load(this)
+
         this.registerCommands()
 
         this.registerTranslations()
@@ -58,11 +67,25 @@ class Factions : JavaPlugin() {
                 }
             }
         }
-
-        val commands = listOf(ClanCommand());
+        val coreService = CoreService(this)
+        val commands = listOf(ClanCommand(coreService));
         this.server.commandMap.registerAll("factions", commands)
         commands.forEach {
             printName(it)
+        }
+    }
+
+    private fun registerEvents(){
+        val classes:List<Class<Listener>> = ClassScanner.findAnnotatedClasses(
+            this,
+            "org.quintilis.factions",
+            AutoRegister::class.java,
+        )
+
+        var count = 0
+        for (clazz in classes) {
+            val instance = clazz.getDeclaredConstructor().newInstance()
+
         }
     }
 

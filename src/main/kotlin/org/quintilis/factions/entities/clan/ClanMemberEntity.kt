@@ -2,9 +2,9 @@ package org.quintilis.factions.entities.clan
 
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import org.quintilis.factions.entities.annotations.Column
-import org.quintilis.factions.entities.annotations.PrimaryKey
-import org.quintilis.factions.entities.annotations.TableName
+import org.quintilis.factions.annotations.Column
+import org.quintilis.factions.annotations.PrimaryKey
+import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.entities.BaseEntity

@@ -1,12 +1,17 @@
 package org.quintilis.factions.services
 
+import org.quintilis.factions.Factions
 import org.quintilis.factions.cache.AllyInviteCache
+import org.quintilis.factions.cache.ChunkCache
 import org.quintilis.factions.cache.ClanCache
+import org.quintilis.factions.cache.CoreCache
 import org.quintilis.factions.cache.MemberInviteCache
 import org.quintilis.factions.cache.PlayerCache
 import org.quintilis.factions.dao.AllyInviteDao
+import org.quintilis.factions.dao.ChunkDao
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.dao.ClanRelationDao
+import org.quintilis.factions.dao.CoreDao
 import org.quintilis.factions.dao.MemberInviteDao
 import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.managers.DatabaseManager
@@ -16,6 +21,12 @@ import org.quintilis.factions.managers.DatabaseManager
  * Evita criar múltiplas instâncias e facilita injeção de dependência.
  */
 object Services {
+
+    private lateinit var plugin: Factions
+
+    fun init(plugin: Factions) {
+        this.plugin = plugin
+    }
     // ============================================
     // DAOs
     // ============================================
@@ -38,7 +49,15 @@ object Services {
     val allyInviteDao: AllyInviteDao by lazy { 
         DatabaseManager.getDAO(AllyInviteDao::class) 
     }
-    
+
+    val chunkDao: ChunkDao by lazy {
+        DatabaseManager.getDAO(ChunkDao::class)
+    }
+
+    val coreDao: CoreDao by lazy {
+        DatabaseManager.getDAO(CoreDao::class)
+    }
+
     // ============================================
     // Caches
     // ============================================
@@ -57,11 +76,29 @@ object Services {
     val allyInviteCache: AllyInviteCache by lazy { 
         AllyInviteCache(allyInviteDao) 
     }
-    
+
+    val chunkCache: ChunkCache by lazy {
+        ChunkCache(chunkDao)
+    }
+
+    val coreCache: CoreCache by lazy {
+        CoreCache(coreDao)
+    }
     // ============================================
     // Services
     // ============================================
     val clanService: ClanService by lazy {
         ClanService()
+    }
+
+    val coreService: CoreService by lazy {
+        checkInitialized()
+        CoreService(plugin)
+    }
+
+    private fun checkInitialized() {
+        if (!::plugin.isInitialized) {
+            throw IllegalStateException("Services.init(plugin) não foi chamado no onEnable!")
+        }
     }
 }

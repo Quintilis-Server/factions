@@ -1,10 +1,10 @@
 package org.quintilis.factions.entities
 
 import org.jdbi.v3.sqlobject.transaction.Transaction
-import org.quintilis.factions.entities.annotations.Column
-import org.quintilis.factions.entities.annotations.PrimaryKey
-import org.quintilis.factions.entities.annotations.TableName
-import org.quintilis.factions.entities.annotations.Transient as CustomTransient
+import org.quintilis.factions.annotations.Column
+import org.quintilis.factions.annotations.PrimaryKey
+import org.quintilis.factions.annotations.TableName
+import org.quintilis.factions.annotations.Transient as CustomTransient
 import org.quintilis.factions.managers.DatabaseManager
 import kotlin.jvm.Transient
 import kotlin.reflect.KProperty1
@@ -14,29 +14,50 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
 /**
- * Propriedade da classe para achar a anotação `@Column`
+ * Propriedade da classe para achar a anotação `@Column`.
+ * Lógica:
+ * 1. Pega a anotação.
+ * 2. Se o nome na anotação não for nulo e nem vazio, usa ele.
+ * 3. Caso contrário, usa o nome da variável.
  */
 private val KProperty1<*, *>.columnName: String
-    get() = this.findAnnotation<Column>()?.name ?: this.name
-
+    get() {
+        val annotation = this.findAnnotation<Column>()
+        // Se a anotação existir E o nome não estiver em branco, usa o nome da anotação.
+        // O takeIf retorna null se a condição for falsa (se for string vazia).
+        return annotation?.name?.takeIf { it.isNotBlank() } ?: this.name
+    }
 /**
  * Classe abstrata que outras entidade herdam
  * Essa classe precisa da `@TableName`, `@Column` e pelo menos uma `@PrimaryKey`
  */
 abstract class BaseEntity {
-    @Transient
-    val tableName: String = this::class.findAnnotation<TableName>()?.name
-        ?: throw IllegalArgumentException("A classe ${this::class.simpleName} não tem @TableName")
+    @delegate:Transient
+    val tableName: String by lazy {
+        this::class.findAnnotation<TableName>()?.name
+            ?: throw IllegalArgumentException("A classe ${this::class.simpleName} não tem @TableName")
+    }
 
-    @Transient
-    val primaryKeyProperties: List<KProperty1<*, *>> = this::class.memberProperties
-        .filter { it.hasAnnotation<PrimaryKey>() }
-        .ifEmpty { // Fallback para "id" se nenhuma @PrimaryKey for encontrada
-            this::class.memberProperties.filter { it.name == "id" }
+    @delegate:Transient
+    val primaryKeyProperties: List<KProperty1<BaseEntity, *>> by lazy {
+        val props = this::class.memberProperties
+            .filter { it.hasAnnotation<PrimaryKey>() }
+            .map {
+                @Suppress("UNCHECKED_CAST")
+                it as KProperty1<BaseEntity, *>
+            }
+
+        props.ifEmpty {
+            // Fallback para "id" se não tiver anotação
+            val idProp = this::class.memberProperties.find { it.name == "id" }
+            if (idProp != null) listOf(idProp as KProperty1<BaseEntity, *>) else emptyList()
         }
+    }
 
-    @Transient
-    val primaryKeyColumnNames: List<String> = primaryKeyProperties.map { it.columnName }
+    @delegate:Transient
+    val primaryKeyColumnNames: List<String> by lazy {
+        primaryKeyProperties.map { it.columnName }
+    }
 
     @Transient
     val primaryKeyPropertyNames: List<String> = primaryKeyProperties.map { it.name }
@@ -50,61 +71,80 @@ abstract class BaseEntity {
      */
     @Transaction
     fun <T : BaseEntity> save(): T {
+        // 1. Verificação de Auto-Increment (Serial)
+        // Só consideramos auto-increment se tiver APENAS UMA PK e o valor dela for NULL.
+        val singlePk = primaryKeyProperties.singleOrNull()
+        val isAutoIncrementInsert = singlePk != null && singlePk.get(this) == null
 
-        val singlePkValue = if (primaryKeyProperties.size == 1) {
-            (primaryKeyProperties.first() as KProperty1<BaseEntity, *>).get(this)
-        } else {
-            false
-        }
-
-        val properties = this::class.primaryConstructor?.parameters
+        // 2. Filtra quais propriedades vamos enviar para o banco
+        val propertiesToSave = this::class.primaryConstructor?.parameters
             ?.mapNotNull { param ->
                 this::class.memberProperties.find { prop -> prop.name == param.name && !prop.hasAnnotation<CustomTransient>() }
             }
             ?.filter { prop ->
-                if (singlePkValue == null && prop.name == primaryKeyProperties.firstOrNull()?.name) {
+                // Se for um insert de ID automático, removemos a PK da lista de colunas para o Postgres gerar
+                if (isAutoIncrementInsert && prop.name == singlePk!!.name) {
                     false
                 } else {
                     true
                 }
-            }
-            ?: emptyList()
+            } ?: emptyList()
 
-        // Transforma para colunas sql
-        val columns = properties.joinToString(", ") { it.columnName }
-        // Transforma para tipos nomeados do jdbi
-        val namedParams = properties.joinToString(", ") { ":${it.name}" }
+        // 3. Montagem do SQL
+        val columns = propertiesToSave.joinToString(", ") { it.columnName }
+        val namedParams = propertiesToSave.joinToString(", ") { ":${it.name}" }
 
-        val updateSet = properties
-            .filter { it.name !in primaryKeyPropertyNames }
-            .joinToString(", ") { "${it.columnName} = :${it.name}" }
+        val sql: String
 
-        val conflictColumns = primaryKeyColumnNames.joinToString(", ")
+        if (isAutoIncrementInsert) {
+            // CASO A: Insert Simples (Deixa o banco gerar o ID)
+            // Não usamos ON CONFLICT aqui porque não podemos conflitar com NULL
+            sql = """
+                INSERT INTO $tableName ($columns) VALUES ($namedParams)
+                RETURNING *
+            """.trimIndent()
+        } else {
+            // CASO B: Upsert (Chave Composta ou Update de ID existente)
+            // Precisamos listar TODAS as chaves no ON CONFLICT (ex: clan_id, uuid)
+            val conflictTarget = primaryKeyColumnNames.joinToString(", ")
 
-        val sql = """
-            INSERT INTO $tableName ($columns)
-            VALUES ($namedParams)
-            ON CONFLICT ($conflictColumns) DO UPDATE SET
-            $updateSet
-            RETURNING *
-        """.trimIndent()
+            // Setamos todos os campos EXCETO as chaves primárias
+            val updateSet = propertiesToSave
+                .filter { prop ->
+                    // Não atualizamos colunas que fazem parte da PK
+                    primaryKeyProperties.none { pk -> pk.name == prop.name }
+                }
+                .joinToString(", ") { "${it.columnName} = :${it.name}" }
 
+            // Se o updateSet estiver vazio (ex: tabela só tem PKs), fazemos DO NOTHING
+            val doAction = if (updateSet.isNotEmpty()) "DO UPDATE SET $updateSet" else "DO NOTHING"
+
+            sql = """
+                INSERT INTO $tableName ($columns) VALUES ($namedParams)
+                ON CONFLICT ($conflictTarget) $doAction
+                RETURNING *
+            """.trimIndent()
+        }
+
+        // 4. Execução JDBI
         return DatabaseManager.jdbi.inTransaction<T, Exception> { handle ->
             val update = handle.createUpdate(sql)
 
-
-            val allProperties = this::class.memberProperties
-                .filter { !it.hasAnnotation<CustomTransient>() }
-
-            allProperties.forEach { prop ->
+            propertiesToSave.forEach { prop ->
                 @Suppress("UNCHECKED_CAST")
                 val typedProp = prop as KProperty1<BaseEntity, *>
-                val value = typedProp.get(this)
+                var value = typedProp.get(this)
+
+                // Tratamento para Enums (Salvar como String)
+                if (value is Enum<*>) {
+                    value = value.name
+                }
+
                 update.bind(prop.name, value)
             }
 
             update.executeAndReturnGeneratedKeys()
-                .mapTo(this.javaClass as Class<T>)
+                .mapTo(this::class.java as Class<T>)
                 .one()
         }
     }

@@ -4,11 +4,10 @@ import org.jdbi.v3.sqlobject.SqlObject
 import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.customizer.Define
 import org.jdbi.v3.sqlobject.statement.SqlQuery
-import org.quintilis.factions.entities.annotations.Column
-import org.quintilis.factions.entities.annotations.PrimaryKey
-import org.quintilis.factions.entities.annotations.TableName
+import org.quintilis.factions.annotations.Column
+import org.quintilis.factions.annotations.PrimaryKey
+import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.entities.BaseEntity
-import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties

@@ -12,10 +12,12 @@ import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.gui.ClanListMenu
 import org.quintilis.factions.handlers.AdminCommandHandler
 import org.quintilis.factions.handlers.AllyCommandHandler
+import org.quintilis.factions.handlers.ClaimCommandHandler
 import org.quintilis.factions.handlers.InviteCommandHandler
 import org.quintilis.factions.handlers.MemberCommandHandler
 import org.quintilis.factions.managers.ErrorManager
 import org.quintilis.factions.results.ClanResult
+import org.quintilis.factions.services.CoreService
 import org.quintilis.factions.services.Services
 import kotlin.math.ceil
 import kotlin.math.max
@@ -24,7 +26,9 @@ import kotlin.math.max
  * Comando principal de clã.
  * Refatorado para usar handlers e services.
  */
-class ClanCommand: BaseCommand(
+class ClanCommand(
+    private val coreService: CoreService,
+): BaseCommand(
     name = "clan",
     description = "Main clan command",
     usage = "/clan <subcommand>",
@@ -36,7 +40,8 @@ class ClanCommand: BaseCommand(
     private val memberHandler = MemberCommandHandler()
     private val inviteHandler = InviteCommandHandler()
     private val adminHandler = AdminCommandHandler()
-    
+    private val claimHandler = ClaimCommandHandler(coreService)
+
     // Services e Caches (via singleton)
     private val clanService get() = Services.clanService
     private val clanCache get() = Services.clanCache
@@ -204,11 +209,7 @@ class ClanCommand: BaseCommand(
     }
 
     private fun handleMemberCommand(sender: Player, args: List<String>) {
-        val clan = sender.getClanAsLeader()
-        if (clan == null) {
-            noClanLeader(sender)
-            return
-        }
+        val clan = sender.getClanAsLeader() ?: return this.noClanLeader(sender)
         
         val subCommand = findSubCommand(sender, args, MemberSubCommands.entries) ?: return
         
@@ -248,6 +249,15 @@ class ClanCommand: BaseCommand(
         }
     }
 
+    private fun handleClaimCommand(sender: Player, args: List<String>) {
+        val clan = sender.getClanAsLeader() ?: return this.noClanLeader(sender);
+        val subCommand = findSubCommand(sender, args, ClaimSubCommands.entries) ?: return
+        when (subCommand) {
+            ClaimSubCommands.BUY -> claimHandler.buy(sender, clan);
+
+        }
+    }
+
     // ============================================
     // Command wrapper
     // ============================================
@@ -280,6 +290,7 @@ class ClanCommand: BaseCommand(
                 ClanCommands.INVITE -> handleInviteCommand(sender, subArgs)
                 ClanCommands.QUIT -> handleQuit(sender)
                 ClanCommands.ADMIN -> handleAdminCommand(sender, subArgs)
+                ClanCommands.CLAIM -> handleClaimCommand(sender, subArgs)
             }
         }
         return true
