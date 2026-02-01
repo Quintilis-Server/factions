@@ -52,4 +52,36 @@ interface ChunkDao: BaseDao<ChunkEntity, Int> {
           AND active = true
     """)
     fun countByClanId(@Bind("clanId") clanId: Int): Int
+
+    @SqlQuery("""
+        SELECT COUNT(*) > 0 
+        FROM clan_chunk cc
+        JOIN chunk c ON cc.chunk_id = c.id
+        WHERE cc.clan_id = :clanId
+        AND cc.active = true
+        AND c.world_uuid = :worldUuid
+        AND (
+            (c.chunk_x = :x + 1 AND c.chunk_z = :z) OR 
+            (c.chunk_x = :x - 1 AND c.chunk_z = :z) OR 
+            (c.chunk_x = :x AND c.chunk_z = :z + 1) OR 
+            (c.chunk_x = :x AND c.chunk_z = :z - 1)
+        )
+    """)
+    fun hasNeighboringClaim(
+        @Bind("clanId") clanId: Int,
+        @Bind("worldUuid") worldUuid: java.util.UUID,
+        @Bind("x") x: Int,
+        @Bind("z") z: Int
+    ): Boolean
+
+    @SqlQuery("SELECT id FROM chunk WHERE chunk_x = :x AND chunk_z = :z AND world_uuid = :worldUuid")
+    fun findChunkId(@Bind("x") x: Int, @Bind("z") z: Int, @Bind("worldUuid") worldUuid: UUID): Int?
+
+    @SqlQuery("""
+        SELECT COUNT(*) > 0 
+        FROM clan_chunk cc
+        JOIN chunk c ON cc.chunk_id = c.id
+        WHERE c.chunk_x = :x AND c.chunk_z = :z AND c.world_uuid = :worldUuid AND cc.active = true
+    """)
+    fun isChunkOccupied(@Bind("x") x: Int, @Bind("z") z: Int, @Bind("worldUuid") worldUuid: java.util.UUID): Boolean
 }

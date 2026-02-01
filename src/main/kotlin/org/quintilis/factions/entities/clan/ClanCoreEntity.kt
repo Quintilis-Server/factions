@@ -54,12 +54,20 @@ data class ClanCoreEntity(
 ) : BaseEntity() {
     fun getLocation(world: World): Location? {
         if(placed && x != null && y != null && z != null) {
-            return Location(world, x.toDouble(), y.toDouble(), z.toDouble())
+            return Location(world, x!!.toDouble(), y!!.toDouble(), z!!.toDouble())
         }
         return null
     }
     fun takeDamage(amount: Int): Boolean {
         this.health -= amount
         return this.health <= 0
+    }
+
+    fun updateLocation(location: Location): ClanCoreEntity {
+        this.x = location.x.toInt()
+        this.y = location.y.toInt()
+        this.z = location.z.toInt()
+
+        return this
     }
 }

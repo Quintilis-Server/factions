@@ -3,6 +3,7 @@ package org.quintilis.factions
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslationStore
 import net.kyori.adventure.translation.GlobalTranslator
+import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.annotations.AutoRegister
@@ -50,6 +51,8 @@ class Factions : JavaPlugin() {
         Services.init(this)
         Keys.load(this)
 
+        this.registerEvents()
+
         this.registerCommands()
 
         this.registerTranslations()
@@ -76,16 +79,29 @@ class Factions : JavaPlugin() {
     }
 
     private fun registerEvents(){
-        val classes:List<Class<Listener>> = ClassScanner.findAnnotatedClasses(
+        val classes:List<Class<Listener>> = ClassScanner.findClasses<Listener, AutoRegister>(
             this,
             "org.quintilis.factions",
-            AutoRegister::class.java,
         )
 
-        var count = 0
-        for (clazz in classes) {
-            val instance = clazz.getDeclaredConstructor().newInstance()
+        classes.forEach { clazz ->
+            val listener = try {
+                // 1. Tenta achar o construtor que pede (Factions)
+                clazz.getConstructor(Factions::class.java).newInstance(this)
+            } catch (e: NoSuchMethodException) {
+                try {
+                    // 2. Se falhar, tenta o construtor vazio ()
+                    clazz.getConstructor().newInstance()
+                } catch (e2: Exception) {
+                    // Se falhar os dois, avisa no console
+                    logger.severe("Não foi possível registrar o listener ${clazz.simpleName}. Verifique os construtores.")
+                    e2.printStackTrace()
+                    return@forEach
+                }
+            }
 
+            server.pluginManager.registerEvents(listener, this)
+            logger.info("Listener registrado: ${clazz.simpleName}")
         }
     }
 

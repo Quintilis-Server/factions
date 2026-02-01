@@ -1,10 +1,12 @@
 package org.quintilis.factions.listeners
 
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.Sound
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.persistence.PersistentDataType
 import org.quintilis.factions.Factions
@@ -18,9 +20,8 @@ import java.time.Instant
 
 @AutoRegister
 class NexusStructureListener(private val plugin: Factions) : Listener {
-    private val coreDao get() = Services.coreDao
-
-    private val nexusKey = NamespacedKey(plugin, "nexus_core_item")
+//    private val coreDao get() = Services.coreDao
+    private val coreCache get() = Services.coreCache
 
     private val BASE_MATERIAL = Material.IRON_BLOCK
 
@@ -65,6 +66,49 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
         Material.VINE,
         Material.SHORT_GRASS
     )
+    /**
+     * Listener de evento de quebra de bloco para checagem de quebra de nexus
+     */
+    @EventHandler
+    fun onBlockBreak(event: BlockBreakEvent) {
+        val block = event.block
+        val location = block.location
+        val player = event.player
+
+        val core = coreCache.findByLocation(location)
+
+        if (core != null) {
+            if(player.hasPermission("factions.admin")) return
+
+            event.isCancelled = true
+            player.sendTranslatable("nexus.protect.indestructible")
+            return
+        }
+
+        if(block.type == Material.IRON_BLOCK) {
+            val world = block.world
+            val upY = block.y + 1
+
+            for(x in -1..1){
+                for(z in -1..1){
+                    val checkLocation = Location(
+                        world,
+                        (block.x + x).toDouble(),
+                        upY.toDouble(),
+                        (block.z + z).toDouble()
+                    )
+
+                    if(coreCache.findByLocation(checkLocation) != null) {
+                        if(player.hasPermission("factions.admin")) return
+
+                        event.isCancelled = true
+                        player.sendTranslatable("nexus.protect.indestructible")
+                        return
+                    }
+                }
+            }
+        }
+    }
 
     @EventHandler
     fun onPlace(event: BlockPlaceEvent) {
@@ -81,7 +125,7 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
                 val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
                 if(!block.isReplaceable && !REPLACEABLE_MATERIALS.contains(block.type)){
                     event.isCancelled = true
-
+                    //TODO: fazer funcionar a tradução do bloco usando o minimessages
                     player.sendTranslatable("nexus.place.error")
                     player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
 
@@ -100,7 +144,7 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
         val nexusId = event.itemInHand.itemMeta.persistentDataContainer
             .get(Keys.NEXUS_ITEM, PersistentDataType.STRING)?.toIntOrNull() ?: return
 
-        val core = coreDao.findById(nexusId)
+        val core = coreCache.findById(nexusId)
 
         if (core != null){
             core.placed = true

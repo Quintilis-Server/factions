@@ -2,6 +2,7 @@ package org.quintilis.factions.dao
 
 import org.bukkit.World
 import org.jdbi.v3.sqlobject.customizer.Bind
+import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import org.quintilis.factions.entities.clan.ClanCoreEntity
 import java.util.UUID
@@ -13,8 +14,14 @@ interface CoreDao: BaseDao<ClanCoreEntity, Int> {
     fun delete(core: ClanCoreEntity, world: World){
         if (core != null){
             val coreBlock = world.getBlockAt(core.getLocation(world)!!)
-            coreBlock.setBlockData()
+//            coreBlock.setBlockData()
         }
         this.deactivateCore(core.id!!)
     }
+
+    @SqlQuery("SELECT COUNT(*) FROM clan_cores WHERE clan_id = :clanId AND type = 'SUB_CORE' AND placed = true")
+    fun countActiveSubCores(@Bind("clanId") clanId: Int): Int
+
+    @SqlQuery("SELECT * FROM clan_cores WHERE x = :x AND y = :y AND z = :z AND placed = true AND active")
+    fun findByLocation(@Bind("x") x: Int, @Bind("y") y: Int, @Bind("z") z: Int): ClanCoreEntity?
 }

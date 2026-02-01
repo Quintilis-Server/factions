@@ -9,12 +9,13 @@ import redis.clients.jedis.Jedis
 import java.util.UUID
 
 class ClanCache(
-    private val clanDao: ClanDao
-): JsonCache<Int, ClanEntity>(
-    prefix = "factions:clan:id:",
+    private val daoImpl: ClanDao
+) : AbstractDaoCache<ClanDao, ClanEntity, Int>(
+    daoImpl,
+    "factions:clan:id:",
     ttl = 300L,
-    classType = ClanEntity::class.java,
-) {
+    classType = ClanEntity::class.java
+), ClanDao by daoImpl {
     private val gson = GsonProvider.gson
 
     private val clanListType = object : TypeToken<List<ClanEntity>>() {}.type
@@ -214,7 +215,7 @@ class ClanCache(
      */
     fun getClan(id: Int): ClanEntity? {
         return getOrFetch(id) { dbId ->
-            clanDao.findById(dbId)
+            daoImpl.findById(dbId)
         }
     }
 
@@ -225,7 +226,7 @@ class ClanCache(
         val result = pageCache.getOrFetch(page) { pageNum ->
             try {
                 val offset = (pageNum - 1) * pageSize
-                clanDao.findWithPage(offset, pageSize)
+                daoImpl.findWithPage(offset, pageSize)
             } catch (e: Exception) {
                 e.printStackTrace()
                 emptyList()
@@ -239,7 +240,7 @@ class ClanCache(
      */
     fun getClanByName(name: String): ClanEntity? {
         return nameCache.getOrFetch(name.lowercase()) { dbName ->
-            clanDao.findByName(dbName)
+            daoImpl.findByName(dbName)
         }
     }
 
@@ -248,7 +249,7 @@ class ClanCache(
      */
     fun getClanByLeaderId(leaderUuid: UUID): ClanEntity? {
         return leaderCache.getOrFetch(leaderUuid) { uuid ->
-            clanDao.findByLeaderId(uuid)
+            daoImpl.findByLeaderId(uuid)
         }
     }
 
@@ -257,7 +258,7 @@ class ClanCache(
      */
     fun getClanByMember(memberUuid: UUID): ClanEntity? {
         return memberClanCache.getOrFetch(memberUuid) { uuid ->
-            clanDao.findByMember(uuid)
+            daoImpl.findByMember(uuid)
         }
     }
 
@@ -266,7 +267,7 @@ class ClanCache(
      */
     fun getMembers(clanId: Int): List<ClanMemberEntity> {
         return membersCache.getOrFetch(clanId) { id ->
-            clanDao.findMembersByClan(id)
+            daoImpl.findMembersByClan(id)
         }
     }
 
@@ -275,7 +276,7 @@ class ClanCache(
      */
     fun getTotalClans(): Int {
         return totalCache.getOrFetch("count") { _ ->
-            clanDao.totalClans()
+            daoImpl.totalClans()
         }
     }
 
@@ -284,21 +285,21 @@ class ClanCache(
      */
     fun getClanNames(): List<String> {
         return namesCache.getOrFetch("all") { _ ->
-            clanDao.findNames()
+            daoImpl.findNames()
         }
     }
 
     /**
      * Verifica se existe um clã com o nome (usa cache).
      */
-    fun existsByName(name: String): Boolean {
+    override fun existsByName(name: String): Boolean {
         return getClanByName(name) != null
     }
 
     /**
      * Verifica se o jogador é membro de algum clã (usa cache).
      */
-    fun isMember(playerUuid: UUID): Boolean {
+    override fun isMember(playerUuid: UUID): Boolean {
         return getClanByMember(playerUuid) != null
     }
 

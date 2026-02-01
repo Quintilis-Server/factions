@@ -94,7 +94,7 @@ class ClanCommand(
     }
 
     private fun handleDelete(sender: Player) {
-        val clan = clanCache.getClanByLeaderId(sender.uniqueId)
+        val clan = clanCache.findByLeaderId(sender.uniqueId)
         if (clan == null) {
             noClanLeader(sender)
             return
