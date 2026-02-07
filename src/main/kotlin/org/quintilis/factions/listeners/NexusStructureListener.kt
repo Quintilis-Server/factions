@@ -120,42 +120,44 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
         val center = event.block.location.clone().subtract(0.0, 1.0, 0.0)
         val world = center.world
 
-        for (x in -1..1){
-            for (z in -1..1){
-                val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
-                if(!block.isReplaceable && !REPLACEABLE_MATERIALS.contains(block.type)){
-                    event.isCancelled = true
-                    //TODO: fazer funcionar a tradução do bloco usando o minimessages
-                    player.sendTranslatable("nexus.place.error")
-                    player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
+//        for (x in -1..1){
+//            for (z in -1..1){
+//                val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
+//                if(!block.isReplaceable && !REPLACEABLE_MATERIALS.contains(block.type)){
+//                    event.isCancelled = true
+//                    //TODO: fazer funcionar a tradução do bloco usando o minimessages
+//                    player.sendTranslatable("nexus.place.error")
+//                    player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
+//
+//                    return
+//                }
+//            }
+//        }
+//
 
-                    return
-                }
-            }
-        }
 
-        for(x in -1..1){
-            for (z in -1..1){
-                val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
-                block.type = BASE_MATERIAL
-            }
-        }
-
-        val nexusId = event.itemInHand.itemMeta.persistentDataContainer
-            .get(Keys.NEXUS_ITEM, PersistentDataType.STRING)?.toIntOrNull() ?: return
-
-        val core = coreCache.findById(nexusId)
-
-        if (core != null){
-            core.placed = true
-            core.placedAt = Instant.now()
-            core.x = event.block.x
-            core.y = event.block.y
-            core.z = event.block.z
-
-            core.save<ClanCoreEntity>()
-        }
-        player.sendTranslatable("nexus.place.success")
-        player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
+//        for(x in -1..1){
+//            for (z in -1..1){
+//                val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
+//                block.type = BASE_MATERIAL
+//            }
+//        }
+//
+//        val nexusId = event.itemInHand.itemMeta.persistentDataContainer
+//            .get(Keys.NEXUS_ITEM, PersistentDataType.STRING)?.toIntOrNull() ?: return
+//
+//        val core = coreCache.findById(nexusId)
+//
+//        if (core != null){
+//            core.placed = true
+//            core.placedAt = Instant.now()
+//            core.x = event.block.x
+//            core.y = event.block.y
+//            core.z = event.block.z
+//
+//            core.save<ClanCoreEntity>()
+//        }
+//        player.sendTranslatable("nexus.place.success")
+//        player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
     }
 }

@@ -7,8 +7,6 @@ import java.util.UUID
 
 interface ChunkDao: BaseDao<ChunkEntity, Int> {
 
-    override fun getEntityClass() = ChunkEntity::class.java
-
     /**
      * Busca um chunk por suas coordenadas.
      */

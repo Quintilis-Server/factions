@@ -6,7 +6,10 @@ import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.annotations.Transient as CustomTransient
 import org.quintilis.factions.managers.DatabaseManager
+import org.quintilis.factions.util.EntityCacheRegistry
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.jvm.Transient
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
@@ -15,52 +18,57 @@ import kotlin.reflect.full.primaryConstructor
 
 /**
  * Propriedade da classe para achar a anotação `@Column`.
- * Lógica:
- * 1. Pega a anotação.
- * 2. Se o nome na anotação não for nulo e nem vazio, usa ele.
- * 3. Caso contrário, usa o nome da variável.
  */
 private val KProperty1<*, *>.columnName: String
     get() {
         val annotation = this.findAnnotation<Column>()
-        // Se a anotação existir E o nome não estiver em branco, usa o nome da anotação.
-        // O takeIf retorna null se a condição for falsa (se for string vazia).
         return annotation?.name?.takeIf { it.isNotBlank() } ?: this.name
     }
+
 /**
- * Classe abstrata que outras entidade herdam
+ * Estrutura de dados para cachear a Reflexão da classe.
+ * Evita rodar reflection toda vez que salvar e resolve o bug do Lazy null.
+ */
+private data class EntityMetadata(
+    val tableName: String,
+    val primaryKeyProperties: List<KProperty1<BaseEntity, *>>,
+    val primaryKeyColumnNames: List<String>
+)
+
+/**
+ * Classe abstrata que outras entidades herdam
  * Essa classe precisa da `@TableName`, `@Column` e pelo menos uma `@PrimaryKey`
  */
 abstract class BaseEntity {
-    @delegate:Transient
-    val tableName: String by lazy {
-        this::class.findAnnotation<TableName>()?.name
-            ?: throw IllegalArgumentException("A classe ${this::class.simpleName} não tem @TableName")
-    }
 
-    @delegate:Transient
-    val primaryKeyProperties: List<KProperty1<BaseEntity, *>> by lazy {
-        val props = this::class.memberProperties
-            .filter { it.hasAnnotation<PrimaryKey>() }
-            .map {
+    companion object{
+        private val metadataCache = ConcurrentHashMap<KClass<*>, EntityMetadata>()
+
+
+        private fun getMetadata(clazz: KClass<*>): EntityMetadata {
+            return metadataCache.computeIfAbsent(clazz) { kClass ->
+                // 1. Table Name
+                val tableName = kClass.findAnnotation<TableName>()?.name
+                    ?: throw IllegalArgumentException("A classe ${kClass.simpleName} não tem @TableName")
+
+                // 2. PK Properties
                 @Suppress("UNCHECKED_CAST")
-                it as KProperty1<BaseEntity, *>
-            }
+                val allProps = kClass.memberProperties as Collection<KProperty1<BaseEntity, *>>
 
-        props.ifEmpty {
-            // Fallback para "id" se não tiver anotação
-            val idProp = this::class.memberProperties.find { it.name == "id" }
-            if (idProp != null) listOf(idProp as KProperty1<BaseEntity, *>) else emptyList()
+                val pkProps = allProps.filter { it.hasAnnotation<PrimaryKey>() }
+                    .ifEmpty {
+                        // Fallback para "id"
+                        val idProp = allProps.find { it.name == "id" }
+                        if (idProp != null) listOf(idProp) else emptyList()
+                    }
+
+                // 3. PK Column Names
+                val pkColNames = pkProps.map { it.columnName }
+
+                EntityMetadata(tableName, pkProps, pkColNames)
+            }
         }
     }
-
-    @delegate:Transient
-    val primaryKeyColumnNames: List<String> by lazy {
-        primaryKeyProperties.map { it.columnName }
-    }
-
-    @Transient
-    val primaryKeyPropertyNames: List<String> = primaryKeyProperties.map { it.name }
 
     /**
      * Salva a entidade na database
@@ -73,6 +81,12 @@ abstract class BaseEntity {
     fun <T : BaseEntity> save(): T {
         // 1. Verificação de Auto-Increment (Serial)
         // Só consideramos auto-increment se tiver APENAS UMA PK e o valor dela for NULL.
+        val meta = getMetadata(this::class)
+        val tableName = meta.tableName
+        val primaryKeyProperties = meta.primaryKeyProperties
+        val primaryKeyColumnNames = meta.primaryKeyColumnNames
+
+
         val singlePk = primaryKeyProperties.singleOrNull()
         val isAutoIncrementInsert = singlePk != null && singlePk.get(this) == null
 
@@ -127,7 +141,7 @@ abstract class BaseEntity {
         }
 
         // 4. Execução JDBI
-        return DatabaseManager.jdbi.inTransaction<T, Exception> { handle ->
+        val savedEntity = DatabaseManager.jdbi.inTransaction<T, Exception> { handle ->
             val update = handle.createUpdate(sql)
 
             propertiesToSave.forEach { prop ->
@@ -147,5 +161,8 @@ abstract class BaseEntity {
                 .mapTo(this::class.java as Class<T>)
                 .one()
         }
+
+        EntityCacheRegistry.updateCache(savedEntity)
+        return savedEntity
     }
 }

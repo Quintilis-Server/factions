@@ -19,7 +19,6 @@ import org.quintilis.factions.services.Services
 class AllyCommandHandler {
     
     private val clanCache get() = Services.clanCache
-    private val clanDao get() = Services.clanDao
     private val clanRelationDao get() = Services.clanRelationDao
     private val allyInviteDao get() = Services.allyInviteDao
     private val allyInviteCache get() = Services.allyInviteCache
@@ -59,7 +58,7 @@ class AllyCommandHandler {
         }
         
         // Cria o convite
-        AllyInviteService.createInvite(clanDao, clan, targetClan)
+        AllyInviteService.createInvite(clanCache, clan, targetClan)
         
         // Log da ação
         ActionLogEntity.log(

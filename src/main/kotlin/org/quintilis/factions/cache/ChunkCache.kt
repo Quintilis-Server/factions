@@ -17,103 +17,95 @@ import redis.clients.jedis.Jedis
  * - Chunks por clã: clanId -> List<ChunkEntity>
  */
 class ChunkCache(private val chunkDao: ChunkDao) :
-        JsonCache<String, ChunkEntity>(
-                prefix = "factions:chunk:coords:",
-                ttl = 600L, // 10 minutos
-                classType = ChunkEntity::class.java,
-        ) {
+    AbstractDaoCache<ChunkDao, ChunkEntity, Int>(
+        prefix = "factions:chunk:id:",
+        ttl = 600L, // 10 minutos
+        classType = ChunkEntity::class.java,
+        dao = chunkDao
+) {
     private val gson = GsonProvider.gson
     private val chunkListType = object : TypeToken<List<ChunkEntity>>() {}.type
 
     // ============================================
     // Cache do clã dono do chunk (chunkId -> clanId)
     // ============================================
-    private val ownerCache =
-            object :
-                    BaseRedisCache<Int, Int?>(
-                            keyPrefix = "factions:chunk:owner:",
-                            ttlSeconds = 600L
-                    ) {
-                override fun readFromRedis(jedis: Jedis, key: String): Int? {
-                    val value = jedis.get(key) ?: return null
-                    return value.toIntOrNull()
-                }
+    private val ownerCache = object : BaseRedisCache<Int, Int?>(
+        keyPrefix = "factions:chunk:owner:",
+        ttlSeconds = 600L
+    ) {
+        override fun readFromRedis(jedis: Jedis, key: String): Int? {
+            return jedis.get(key)?.toIntOrNull()
+        }
 
-                override fun writeToRedis(jedis: Jedis, key: String, value: Int?) {
-                    if (value != null) {
-                        jedis.set(key, value.toString())
-                    }
-                }
+        override fun writeToRedis(jedis: Jedis, key: String, value: Int?) {
+            if (value != null) jedis.set(key, value.toString())
+        }
 
-                override fun shouldCache(value: Int?): Boolean = value != null
-            }
+        // Correção: BaseRedisCache geralmente pede o método abstrato, se JsonCache não for usado aqui
+        override fun shouldCache(value: Int?): Boolean = value != null
+    }
 
     // ============================================
     // Cache de chunks por clã (clanId -> List<ChunkEntity>)
     // ============================================
-    private val clanChunksCache =
-            object :
-                    BaseRedisCache<Int, List<ChunkEntity>>(
-                            keyPrefix = "factions:chunk:clan:",
-                            ttlSeconds = 300L // 5 minutos
-                    ) {
-                override fun readFromRedis(jedis: Jedis, key: String): List<ChunkEntity>? {
-                    val json = jedis.get(key) ?: return null
-                    if (json.trim() == "[]" || json.isBlank()) return null
-                    return try {
-                        this@ChunkCache.gson.fromJson(json, chunkListType)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        null
-                    }
-                }
-
-                override fun writeToRedis(jedis: Jedis, key: String, value: List<ChunkEntity>) {
-                    try {
-                        val json = this@ChunkCache.gson.toJson(value, chunkListType)
-                        jedis.set(key, json)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-
-                override fun shouldCache(value: List<ChunkEntity>): Boolean = true
+    private val clanChunksCache = object : BaseRedisCache<Int, List<ChunkEntity>>(
+        keyPrefix = "factions:chunk:clan:",
+        ttlSeconds = 300L
+    ) {
+        override fun readFromRedis(jedis: Jedis, key: String): List<ChunkEntity>? {
+            val json = jedis.get(key) ?: return null
+            if (json.trim() == "[]" || json.isBlank()) return null
+            return try {
+                gson.fromJson(json, chunkListType)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
             }
+        }
+
+        override fun writeToRedis(jedis: Jedis, key: String, value: List<ChunkEntity>) {
+            val json = gson.toJson(value, chunkListType)
+            jedis.set(key, json)
+        }
+
+        override fun shouldCache(value: List<ChunkEntity>): Boolean = true
+    }
 
     // ============================================
     // Cache de contagem de chunks por clã
     // ============================================
-    private val countCache =
-            object :
-                    BaseRedisCache<Int, Int>(
-                            keyPrefix = "factions:chunk:count:",
-                            ttlSeconds = 120L
-                    ) {
-                override fun readFromRedis(jedis: Jedis, key: String): Int? {
-                    val value = jedis.get(key) ?: return null
-                    return value.toIntOrNull()
-                }
+    private val countCache = object : BaseRedisCache<Int, Int>(
+        keyPrefix = "factions:chunk:count:",
+        ttlSeconds = 120L
+    ) {
+        override fun readFromRedis(jedis: Jedis, key: String): Int? = jedis.get(key)?.toIntOrNull()
+        override fun writeToRedis(jedis: Jedis, key: String, value: Int) { jedis.set(key, value.toString()) }
+        override fun shouldCache(value: Int): Boolean = true
+    }
 
-                override fun writeToRedis(jedis: Jedis, key: String, value: Int) {
-                    jedis.set(key, value.toString())
-                }
-
-                override fun shouldCache(value: Int): Boolean = true
-            }
+    private val coordCache = object : JsonCache<String, ChunkEntity>(
+        prefix = "factions:chunk:coords:",
+        ttl = 600L,
+        classType = ChunkEntity::class.java
+    ) {
+        // JsonCache já implementa a serialização, não precisa reescrever
+    }
 
     // ============================================
     // Métodos públicos de leitura
     // ============================================
 
     fun getChunk(chunk: Chunk): ChunkEntity? {
-        val coordKey = buildCoordKey(chunk.world.uid, chunk.x, chunk.z)
-        return getOrFetch(coordKey) { _-> chunkDao.findByCoordinates(chunk.world.uid, chunk.x, chunk.z) }
+        return getChunk(chunk.world.uid, chunk.x, chunk.z)
     }
 
-    /** Busca um chunk por suas coordenadas. */
     fun getChunk(worldUuid: UUID, chunkX: Int, chunkZ: Int): ChunkEntity? {
         val coordKey = buildCoordKey(worldUuid, chunkX, chunkZ)
-        return getOrFetch(coordKey) { _ -> chunkDao.findByCoordinates(worldUuid, chunkX, chunkZ) }
+
+        // CORREÇÃO: Usamos 'coordCache' que aceita String, em vez de 'this' que aceita Int
+        return coordCache.getOrFetch(coordKey) { _ ->
+            chunkDao.findByCoordinates(worldUuid, chunkX, chunkZ)
+        }
     }
 
     /** Retorna o ID do clã dono de um chunk. */
@@ -142,11 +134,15 @@ class ChunkCache(private val chunkDao: ChunkDao) :
 
     /** Invalida cache de um chunk específico (por coordenadas e dono). */
     fun invalidateChunk(chunk: ChunkEntity) {
-        val coordKey = buildCoordKey(chunk.worldUuid, chunk.chunkX, chunk.chunkZ)
-        invalidate(coordKey)
+        // 1. Invalida ID (Cache pai)
+        chunk.id?.let { invalidate(it) }
 
-        // Invalida cache do dono se tiver ID
-        chunk.id?.let { chunkId -> ownerCache.invalidate(chunkId) }
+        // 2. Invalida Coordenada (Cache interno)
+        val coordKey = buildCoordKey(chunk.worldUuid, chunk.chunkX, chunk.chunkZ)
+        coordCache.invalidate(coordKey)
+
+        // 3. Invalida Dono
+        chunk.id?.let { ownerCache.invalidate(it) }
     }
 
     /** Invalida todos os caches relacionados a um clã. */

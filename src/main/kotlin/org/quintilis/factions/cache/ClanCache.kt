@@ -215,7 +215,7 @@ class ClanCache(
      */
     fun getClan(id: Int): ClanEntity? {
         return getOrFetch(id) { dbId ->
-            daoImpl.findById(dbId)
+            this.findById(dbId)
         }
     }
 

@@ -3,10 +3,11 @@ package org.quintilis.factions.services
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.quintilis.factions.cache.AllyInviteCache
+import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.dao.AllyInviteDao
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.entities.clan.ClanEntity
-import org.quintilis.factions.entities.invite.InviteStatus
+import org.quintilis.factions.enums.InviteStatus
 import org.quintilis.factions.entities.invite.ally.AllyInviteEntity
 import org.quintilis.factions.exceptions.invite.AlreadyInvitedError
 import org.quintilis.factions.managers.ConfigManager
@@ -19,7 +20,7 @@ class AllyInviteService {
         val allyInviteCache = AllyInviteCache(allyInviteDao)
         private val maxInviteTime: Instant = Instant.now().plusSeconds(ConfigManager.getMaxAllyInvitationTime() * 86400L)
 
-        fun createInvite(clanDao: ClanDao, clan: ClanEntity, target: ClanEntity){
+        fun createInvite(clanCache: ClanCache, clan: ClanEntity, target: ClanEntity){
             if(allyInviteDao.hasInvite(clan.id!!, targetId = target.id!!)){
                 throw AlreadyInvitedError(target.name)
             }
@@ -34,7 +35,7 @@ class AllyInviteService {
             allyInviteCache.invalidate(target.id)
             allyInviteCache.invalidate(clan.id)
 
-            invite.getTargetClan(clanDao)?.getLeader()?.sendMessage {
+            invite.getTargetClan(clanCache)?.getLeader()?.sendMessage {
                 Component.translatable(
                     "clan.ally.invite.invitation_text",
                     Argument.string("clan_name", clan.name)

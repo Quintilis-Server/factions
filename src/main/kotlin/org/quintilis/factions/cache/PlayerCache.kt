@@ -8,11 +8,12 @@ import java.util.UUID
 
 class PlayerCache(
     private val playerDao: PlayerDao,
-): JsonCache<UUID, PlayerEntity>(
+): AbstractDaoCache<PlayerDao, PlayerEntity, UUID>(
     prefix = "factions:player:uuid:",
     ttl = Duration.ofHours(2).seconds,
     classType = PlayerEntity::class.java,
-) {
+    dao = playerDao
+), PlayerDao by playerDao {
     private val gson = GsonProvider.gson
 
     private val nameCache = object : BaseRedisCache<String, UUID?>(
@@ -40,7 +41,7 @@ class PlayerCache(
 
     fun getPlayer(uuid: UUID): PlayerEntity? {
         return getOrFetch(uuid) { dbUuid ->
-            playerDao.findById(dbUuid)
+            this.findById(dbUuid)
         }
     }
 

@@ -4,7 +4,7 @@ import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import org.jdbi.v3.sqlobject.transaction.Transaction
-import org.quintilis.factions.entities.invite.InviteStatus
+import org.quintilis.factions.enums.InviteStatus
 import org.quintilis.factions.entities.invite.member.MemberInviteEntity
 import java.util.UUID
 

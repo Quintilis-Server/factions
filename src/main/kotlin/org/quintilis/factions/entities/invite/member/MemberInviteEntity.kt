@@ -5,12 +5,14 @@ import org.bukkit.entity.Player
 import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
+import org.quintilis.factions.cache.ClanCache
+import org.quintilis.factions.cache.PlayerCache
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.entities.player.PlayerEntity
 import org.quintilis.factions.entities.clan.ClanEntity
-import org.quintilis.factions.entities.invite.InviteStatus
+import org.quintilis.factions.enums.InviteStatus
 import java.time.Instant
 import java.util.UUID
 
@@ -38,7 +40,7 @@ data class MemberInviteEntity(
     var status: InviteStatus = InviteStatus.PENDING,
 
 ): BaseEntity() {
-    fun getClan(dao: ClanDao): ClanEntity? {
+    fun getClan(dao: ClanCache): ClanEntity? {
         return dao.findById(clanId)
     }
 
@@ -46,7 +48,7 @@ data class MemberInviteEntity(
         return Bukkit.getPlayer(playerId)
     }
 
-    fun getPlayer(dao: PlayerDao): PlayerEntity? {
+    fun getPlayer(dao: PlayerCache): PlayerEntity? {
         return dao.findById(playerId)
     }
 

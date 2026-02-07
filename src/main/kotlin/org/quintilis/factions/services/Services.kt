@@ -34,8 +34,8 @@ object Services {
         DatabaseManager.getDAO(ClanDao::class) 
     }
     
-    val playerDao: PlayerDao by lazy { 
-        DatabaseManager.getDAO(PlayerDao::class) 
+    val playerDao: PlayerDao by lazy {
+        DatabaseManager.getDAO(PlayerCache::class)
     }
     
     val clanRelationDao: ClanRelationDao by lazy { 

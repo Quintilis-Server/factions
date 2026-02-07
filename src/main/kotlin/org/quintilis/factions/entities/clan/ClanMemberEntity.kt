@@ -5,8 +5,9 @@ import org.bukkit.entity.Player
 import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
+import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.dao.ClanDao
-import org.quintilis.factions.dao.PlayerDao
+import org.quintilis.factions.cache.PlayerCache
 import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.entities.player.PlayerEntity
 import java.time.OffsetDateTime
@@ -33,11 +34,11 @@ data class ClanMemberEntity(
         return Bukkit.getPlayer(playerId)
     }
 
-    fun getPlayer(dao: PlayerDao): PlayerEntity? {
-        return dao.findById(playerId)
+    fun getPlayer(cache: PlayerCache): PlayerEntity? {
+        return cache.findById(playerId)
     }
 
-    fun getClan(dao: ClanDao): ClanEntity? {
+    fun getClan(dao: ClanCache): ClanEntity? {
         return dao.findById(clanId)
     }
 }
