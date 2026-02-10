@@ -1,6 +1,7 @@
 package org.quintilis.factions.cache
 
 import com.google.gson.reflect.TypeToken
+import org.jdbi.v3.core.HandleConsumer
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanMemberEntity
@@ -214,9 +215,7 @@ class ClanCache(
      * Busca um clã pelo ID.
      */
     fun getClan(id: Int): ClanEntity? {
-        return getOrFetch(id) { dbId ->
-            this.findById(dbId)
-        }
+        return findById(id)
     }
 
     /**

@@ -1,4 +1,4 @@
-package org.quintilis.factions.item
+package org.quintilis.factions.extensions
 
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemFlag

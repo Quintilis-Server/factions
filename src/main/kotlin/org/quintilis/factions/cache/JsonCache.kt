@@ -2,7 +2,10 @@ package org.quintilis.factions.cache
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import org.quintilis.factions.util.json.InstantAdapter
 import redis.clients.jedis.Jedis
+import java.lang.reflect.Modifier
+import java.time.Instant
 
 abstract class JsonCache<K, V>(
     prefix: String,
@@ -10,7 +13,11 @@ abstract class JsonCache<K, V>(
     val classType: Class<V>
 ): BaseRedisCache<K, V?>(prefix, ttl) {
     private val gson: Gson = GsonBuilder()
-        .excludeFieldsWithModifiers(java.lang.reflect.Modifier.TRANSIENT)
+        .registerTypeAdapter(Instant::class.java, InstantAdapter())
+        .excludeFieldsWithModifiers(
+            Modifier.TRANSIENT,
+            Modifier.STATIC
+        )
         .create()
 
     override fun readFromRedis(jedis: Jedis, key: String): V? {

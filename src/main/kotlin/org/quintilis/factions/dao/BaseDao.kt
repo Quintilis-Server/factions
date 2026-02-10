@@ -8,6 +8,7 @@ import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.entities.BaseEntity
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
@@ -19,30 +20,6 @@ import kotlin.reflect.full.memberProperties
  * @param ID o tipo de PrimaryKey do `T`
  */
 interface BaseDao<T: BaseEntity, ID>: SqlObject {
-
-//    fun getEntityClass(): Class<T> {
-//        throw UnsupportedOperationException("A DAO filha deve implementar o método getEntityClass()!")
-//    }
-//
-//    // --- MÉTODOS COM LÓGICA (Default Methods) ---
-//    // O JDBI ignora métodos com corpo, então ele não tenta rodar SQL aqui.
-//
-//    fun getTableName(): String {
-//        // Pegamos a classe via o método abstrato
-//        val clazz = getEntityClass().kotlin
-//        return clazz.findAnnotation<TableName>()?.name
-//            ?: throw IllegalArgumentException("A classe ${clazz.simpleName} não tem @TableName")
-//    }
-//
-//    fun getPkColumnName(): String {
-//        val clazz = getEntityClass().kotlin
-//        val pkProp = clazz.memberProperties.find { it.hasAnnotation<PrimaryKey>() }
-//            ?: clazz.memberProperties.find { it.name == "id" }
-//            ?: throw IllegalArgumentException("PK não encontrada em ${clazz.simpleName}")
-//
-//        return pkProp.findAnnotation<Column>()?.name ?: pkProp.name
-//    }
-
     @SqlQuery("SELECT * FROM <table_name>")
     fun findAllDynamic(@Define("table_name") tableName: String): List<T>
 

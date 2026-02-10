@@ -55,6 +55,9 @@
                 </executions>
                 <configuration>
                     <jvmTarget>${java.version}</jvmTarget>
+                    <args>
+                        <arg>-jvm-default=enable</arg>
+                    </args>
                 </configuration>
             </plugin>
             <plugin>
@@ -215,6 +218,13 @@
             <groupId>com.github.seeseemelk</groupId>
             <artifactId>MockBukkit-v1.21</artifactId>
             <version>3.102.0</version> <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.quintilis</groupId>
+            <artifactId>economy</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

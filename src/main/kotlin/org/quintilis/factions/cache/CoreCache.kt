@@ -8,8 +8,8 @@ import redis.clients.jedis.Jedis
 import java.lang.Exception
 
 class CoreCache(private val coreDao: CoreDao): AbstractDaoCache<CoreDao, ClanCoreEntity, Int>(
-    prefix = "core",
-    ttl = 1200,
+    prefix = "factions:core:",
+    ttl = 10800,
     classType = ClanCoreEntity::class.java,
     dao = coreDao
 ), CoreDao by coreDao {
@@ -35,14 +35,10 @@ class CoreCache(private val coreDao: CoreDao): AbstractDaoCache<CoreDao, ClanCor
         super<CoreDao>.useHandle(consumer)
     }
 
-    override fun findById(id: Int): ClanCoreEntity? {
-        return super<AbstractDaoCache>.findById(id)
-    }
-
     private val localLocationCache = mutableMapOf<String, Pair<Int?, Long>>()
     private val LOCAL_TTL_MS = 5000L
 
-    fun findByLocation(location: Location): ClanCoreEntity? {
+    override fun findByLocation(location: Location): ClanCoreEntity? {
         val key = genLocKey(location)
         val now = System.currentTimeMillis()
 

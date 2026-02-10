@@ -8,7 +8,7 @@ import org.quintilis.factions.entities.log.ActionLogEntity
 import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.enums.CoreType
 import org.quintilis.factions.extensions.sendTranslatable
-import org.quintilis.factions.results.ClanResult
+import org.quintilis.factions.results.Result
 
 /**
  * Serviço de lógica de negócio para operações de clã.
@@ -27,20 +27,20 @@ class ClanService {
      * - Jogador não pode já estar em um clã
      * - Nome do clã não pode já existir
      */
-    fun createClan(leader: Player, name: String, tag: String?): ClanResult {
+    fun createClan(leader: Player, name: String, tag: String?): Result {
         // Verifica se já está em um clã
         if (clanCache.isMember(leader.uniqueId)) {
-            return ClanResult.Error("error.already_in_clan")
+            return Result.Error("error.already_in_clan")
         }
         
         // Verifica se é dono de outro clã
         if (clanCache.getClanByLeaderId(leader.uniqueId) != null) {
-            return ClanResult.Error("error.already_in_clan")
+            return Result.Error("error.already_in_clan")
         }
         
         // Verifica se nome já existe
         if (clanCache.existsByName(name)) {
-            return ClanResult.Error(
+            return Result.Error(
                 "clan.create.error.already_exists",
                 mapOf("clan_name" to name)
             )
@@ -62,7 +62,7 @@ class ClanService {
         val core = ClanCoreEntity(
             clanId = clan.id,
             type = CoreType.NEXUS
-        )
+        ).save<ClanCoreEntity>()
 
 
 
@@ -88,7 +88,7 @@ class ClanService {
             details = "Created clan: ${clan.name}"
         )
         
-        return ClanResult.Success(
+        return Result.Success(
             "clan.create.response",
             mapOf("clan_name" to clan.name)
         )
@@ -100,10 +100,10 @@ class ClanService {
      * Validações:
      * - Jogador deve ser o líder do clã
      */
-    fun deleteClan(leader: Player): ClanResult {
+    fun deleteClan(leader: Player): Result {
         // Verifica se é líder
         val clan = clanCache.getClanByLeaderId(leader.uniqueId)
-            ?: return ClanResult.Error("clan.is_not_leader")
+            ?: return Result.Error("clan.is_not_leader")
         
         // Busca membros antes de deletar (para notificar)
         val members = clanCache.getMembers(clan.id!!)
@@ -113,7 +113,7 @@ class ClanService {
             clanDao.deleteByIdAndLeader(clan.id)
         } catch (e: Exception) {
             e.printStackTrace()
-            return ClanResult.Error("error.generic")
+            return Result.Error("error.generic")
         }
         
         // Invalida caches
@@ -128,7 +128,7 @@ class ClanService {
             details = "Deleted clan: ${clan.name}"
         )
         
-        return ClanResult.Success("clan.delete.response")
+        return Result.Success("clan.delete.response")
     }
     
     /**
@@ -138,16 +138,16 @@ class ClanService {
      * - Jogador deve estar em um clã
      * - Jogador não pode ser o líder (deve usar deleteClan)
      */
-    fun quitClan(member: Player): ClanResult {
+    fun quitClan(member: Player): Result {
         val uuid = member.uniqueId
         
         // Busca o clã do membro
         val clan = clanCache.getClanByMember(uuid)
-            ?: return ClanResult.Error("error.not_in_clan")
+            ?: return Result.Error("error.not_in_clan")
         
         // Verifica se não é o líder
         if (clan.leaderUuid == uuid) {
-            return ClanResult.Error("clan.quit.error.leader")
+            return Result.Error("clan.quit.error.leader")
         }
         
         // Remove o membro
@@ -165,7 +165,7 @@ class ClanService {
             details = "Left clan: ${clan.name}"
         )
         
-        return ClanResult.Success(
+        return Result.Success(
             "clan.quit.response",
             mapOf("clan_name" to clan.name, "leader_uuid" to clan.leaderUuid)
         )

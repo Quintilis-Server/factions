@@ -6,7 +6,6 @@ import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.quintilis.factions.commands.BaseCommand
-import org.quintilis.factions.commands.Commands
 import org.quintilis.factions.extensions.getClanAsLeader
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.gui.ClanListMenu
@@ -16,7 +15,7 @@ import org.quintilis.factions.handlers.ClaimCommandHandler
 import org.quintilis.factions.handlers.InviteCommandHandler
 import org.quintilis.factions.handlers.MemberCommandHandler
 import org.quintilis.factions.managers.ErrorManager
-import org.quintilis.factions.results.ClanResult
+import org.quintilis.factions.results.Result
 import org.quintilis.factions.services.CoreService
 import org.quintilis.factions.services.Services
 import kotlin.math.ceil
@@ -74,13 +73,13 @@ class ClanCommand(
         val tag = args.getOrNull(1)
         
         when (val result = clanService.createClan(sender, name, tag)) {
-            is ClanResult.Success -> {
+            is Result.Success -> {
                 sender.sendTranslatable(
                     "clan.create.response",
                     Argument.string("clan_name", result.args["clan_name"]?.toString() ?: name)
                 )
             }
-            is ClanResult.Error -> {
+            is Result.Error -> {
                 if (result.args.isNotEmpty()) {
                     sender.sendTranslatable(
                         result.messageKey,
@@ -104,7 +103,7 @@ class ClanCommand(
         val members = clanCache.getMembers(clan.id!!)
         
         when (val result = clanService.deleteClan(sender)) {
-            is ClanResult.Success -> {
+            is Result.Success -> {
                 // Notifica membros
                 members.forEach { member ->
                     Bukkit.getPlayer(member.playerId)?.sendTranslatable(
@@ -114,7 +113,7 @@ class ClanCommand(
                 }
                 sender.sendTranslatable("clan.delete.response")
             }
-            is ClanResult.Error -> {
+            is Result.Error -> {
                 sender.sendTranslatable(result.messageKey)
             }
         }
@@ -169,7 +168,7 @@ class ClanCommand(
         val clan = clanCache.getClanByMember(sender.uniqueId)
         
         when (val result = clanService.quitClan(sender)) {
-            is ClanResult.Success -> {
+            is Result.Success -> {
                 // Notifica o líder
                 val leaderUuid = result.args["leader_uuid"]
                 if (leaderUuid != null) {
@@ -180,7 +179,7 @@ class ClanCommand(
                 }
                 sender.sendTranslatable("clan.quit.response")
             }
-            is ClanResult.Error -> {
+            is Result.Error -> {
                 sender.sendTranslatable(result.messageKey)
             }
         }

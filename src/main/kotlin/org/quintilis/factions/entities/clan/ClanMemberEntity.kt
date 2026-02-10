@@ -6,7 +6,6 @@ import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.cache.ClanCache
-import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.cache.PlayerCache
 import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.entities.player.PlayerEntity
@@ -38,7 +37,7 @@ data class ClanMemberEntity(
         return cache.findById(playerId)
     }
 
-    fun getClan(dao: ClanCache): ClanEntity? {
-        return dao.findById(clanId)
+    fun getClan(cache: ClanCache): ClanEntity? {
+        return cache.findById(clanId)
     }
 }

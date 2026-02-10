@@ -1,11 +1,15 @@
 package org.quintilis.factions.dao
 
 import org.jdbi.v3.sqlobject.customizer.Bind
+import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys
 import org.jdbi.v3.sqlobject.statement.SqlQuery
+import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import org.quintilis.factions.entities.chunk.ChunkEntity
 import java.util.UUID
 
 interface ChunkDao: BaseDao<ChunkEntity, Int> {
+
+    fun getEntityClass() = ChunkEntity::class.java
 
     /**
      * Busca um chunk por suas coordenadas.
@@ -50,6 +54,37 @@ interface ChunkDao: BaseDao<ChunkEntity, Int> {
           AND active = true
     """)
     fun countByClanId(@Bind("clanId") clanId: Int): Int
+
+    @SqlQuery("""
+        SELECT cc.clan_id FROM clan_chunk cc
+            JOIN chunk c ON c.id = cc.chunk_id
+        WHERE c.world_uuid = :worldUuid 
+            AND c.chunk_x = :x 
+            AND c.chunk_z = :z
+            AND cc.active = true
+    """)
+    fun findClanIdByChunkCoordinates(
+        @Bind("worldUuid") worldUuid: UUID,
+        @Bind("x") x: Int,
+        @Bind("z") z: Int
+    ): Int?
+
+    @SqlUpdate("""
+        INSERT INTO clan_chunk (chunk_id, clan_id, transaction_id, active) 
+        VALUES (:chunkId, :clanId, :transactionId, true)
+    """)
+    @GetGeneratedKeys("id")
+    fun claimChunk(
+        @Bind("chunkId") chunkId: Int,
+        @Bind("clanId") clanId: Int,
+        @Bind("transactionId") transactionId: Int
+    ): Int
+
+    @SqlUpdate("UPDATE clan_chunk SET active = false WHERE chunk_id = :chunkId AND active = true")
+    fun unclaimChunk(@Bind("chunkId") chunkId: Int): Int
+
+    @SqlUpdate("UPDATE clan_chunk SET active = false WHERE clan_id = :clanId AND active = true")
+    fun unclaimAllChunksByClan(@Bind("clanId") clanId: Int): Int
 
     @SqlQuery("""
         SELECT COUNT(*) > 0 

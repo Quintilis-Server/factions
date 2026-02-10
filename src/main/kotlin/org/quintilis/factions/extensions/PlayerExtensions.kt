@@ -5,6 +5,7 @@ import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.clan.ClanEntity
+import org.quintilis.factions.results.Result
 import org.quintilis.factions.services.Services
 
 /**
@@ -31,6 +32,25 @@ fun Player.sendTranslatable(key: String, vararg args: ComponentLike) {
 fun Player.sendTranslatable(key: String) {
     this.sendMessage {
         Component.translatable(key)
+    }
+}
+
+/**
+ * Envia uma mensagem traduzível de um Result
+ *
+ * Uso: sender.sendTranslatable(result)
+ */
+fun Player.sendTranslatable(result: Result) {
+    when (result) {
+        is Result.Success -> {
+            result.messageKey?.let { key ->
+                // Chama sua função base que aceita (String, Map)
+                this.sendTranslatable(key, result.args as ComponentLike)
+            }
+        }
+        is Result.Error -> {
+            this.sendTranslatable(result.messageKey, result.args as ComponentLike)
+        }
     }
 }
 

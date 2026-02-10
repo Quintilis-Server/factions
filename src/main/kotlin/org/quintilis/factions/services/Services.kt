@@ -96,6 +96,11 @@ object Services {
         CoreService(plugin)
     }
 
+    val chunkService: ChunkService by lazy {
+        checkInitialized()
+        ChunkService()
+    }
+
     private fun checkInitialized() {
         if (!::plugin.isInitialized) {
             throw IllegalStateException("Services.init(plugin) não foi chamado no onEnable!")

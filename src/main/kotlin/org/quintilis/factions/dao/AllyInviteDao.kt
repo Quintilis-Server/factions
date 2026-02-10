@@ -7,6 +7,7 @@ import org.jdbi.v3.sqlobject.transaction.Transaction
 import org.quintilis.factions.entities.invite.ally.AllyInviteEntity
 
 interface AllyInviteDao: BaseDao<AllyInviteEntity, Int> {
+    fun getEntityClass() = AllyInviteEntity::class.java
 
     @SqlQuery("""
         SELECT EXISTS(
@@ -40,7 +41,6 @@ interface AllyInviteDao: BaseDao<AllyInviteEntity, Int> {
             AND expires_at < now()
     """)
     fun expireOverdueInvites(): Int
-
 
     /**
      * Busca os nomes dos clãs que enviaram convite de aliança para o clã alvo.

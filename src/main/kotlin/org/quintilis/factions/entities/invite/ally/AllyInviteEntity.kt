@@ -1,12 +1,12 @@
 package org.quintilis.factions.entities.invite.ally
 
+import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
-import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.entities.clan.ClanEntity
-import org.quintilis.factions.enums.InviteStatus
+import org.quintilis.factions.entities.invite.InviteStatus
 import java.time.Instant
 
 @TableName("ally_invite")

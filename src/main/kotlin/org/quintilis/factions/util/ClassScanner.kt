@@ -4,7 +4,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import java.util.jar.JarFile
 
 object ClassScanner {
-    inline fun <reified T, reified A : Annotation> findClasses(
+    inline fun <reified T, reified A: Annotation> findClasses(
         plugin: JavaPlugin,
         packageName: String,
     ): List<Class<T>> {
@@ -14,7 +14,6 @@ object ClassScanner {
         val annotationType = A::class.java
 
         val srcPath = plugin.javaClass.protectionDomain.codeSource.location
-        // Decodificação simples para evitar erros com espaços no caminho
         val jarPath = srcPath.path.replace("%20", " ")
 
         try {

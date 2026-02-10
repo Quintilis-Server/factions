@@ -7,12 +7,10 @@ import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.cache.PlayerCache
-import org.quintilis.factions.dao.ClanDao
-import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.entities.player.PlayerEntity
 import org.quintilis.factions.entities.clan.ClanEntity
-import org.quintilis.factions.enums.InviteStatus
+import org.quintilis.factions.entities.invite.InviteStatus
 import java.time.Instant
 import java.util.UUID
 
@@ -40,16 +38,16 @@ data class MemberInviteEntity(
     var status: InviteStatus = InviteStatus.PENDING,
 
 ): BaseEntity() {
-    fun getClan(dao: ClanCache): ClanEntity? {
-        return dao.findById(clanId)
+    fun getClan(cache: ClanCache): ClanEntity? {
+        return cache.findById(clanId)
     }
 
     fun getPlayer(): Player? {
         return Bukkit.getPlayer(playerId)
     }
 
-    fun getPlayer(dao: PlayerCache): PlayerEntity? {
-        return dao.findById(playerId)
+    fun getPlayer(cache: PlayerCache): PlayerEntity? {
+        return cache.findById(playerId)
     }
 
     fun accept(): MemberInviteEntity{

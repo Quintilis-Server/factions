@@ -41,7 +41,7 @@ class Factions : JavaPlugin() {
         try{
             logger.info("Conectando ao banco de dados Redis...")
             RedisManager.connect()
-            logger.info("Conexão com o banco de dados estabelecida com sucesso!")
+            logger.info("Conexão com o banco de dados REDIS estabelecida com sucesso!")
         }catch (e: Exception){
             logger.severe("FALHA AO CONECTAR COM O REDIS! Desabilitando o plugin...")
             e.printStackTrace()
