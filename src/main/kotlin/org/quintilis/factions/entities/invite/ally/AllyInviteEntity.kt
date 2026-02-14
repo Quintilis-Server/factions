@@ -6,7 +6,7 @@ import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.entities.clan.ClanEntity
-import org.quintilis.factions.entities.invite.InviteStatus
+import org.quintilis.factions.enums.InviteStatus
 import java.time.Instant
 
 @TableName("ally_invite")
@@ -35,7 +35,7 @@ data class AllyInviteEntity(
     @Column("status")
     val status: InviteStatus,
 
-): BaseEntity(){
+    ): BaseEntity(){
     fun getSenderClan(clanCache: ClanCache): ClanEntity?{
         return clanCache.findById(senderClanId)
     }

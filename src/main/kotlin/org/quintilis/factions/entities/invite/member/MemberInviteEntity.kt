@@ -10,7 +10,7 @@ import org.quintilis.factions.cache.PlayerCache
 import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.entities.player.PlayerEntity
 import org.quintilis.factions.entities.clan.ClanEntity
-import org.quintilis.factions.entities.invite.InviteStatus
+import org.quintilis.factions.enums.InviteStatus
 import java.time.Instant
 import java.util.UUID
 
@@ -37,7 +37,7 @@ data class MemberInviteEntity(
     @Column("status")
     var status: InviteStatus = InviteStatus.PENDING,
 
-): BaseEntity() {
+    ): BaseEntity() {
     fun getClan(cache: ClanCache): ClanEntity? {
         return cache.findById(clanId)
     }
