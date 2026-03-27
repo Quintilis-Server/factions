@@ -31,7 +31,7 @@ class CoreService(private val plugin: Factions) {
         val item = ItemBuilder.from(Material.BEACON)
             .name(Component.translatable("nexus.name"))
             .pdc { pdc ->
-                pdc.set(Keys.NEXUS_ITEM, PersistentDataType.STRING, nexusEntity.id.toString())
+                pdc.set(Keys.NEXUS_ITEM, PersistentDataType.INTEGER, nexusEntity.id!!)
             }
             .build()
         item.setGlowing(true)

@@ -6,6 +6,7 @@ import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.annotations.AutoRegister
+import org.quintilis.factions.annotations.AutoTask
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.commands.clan.ClanCommand
 import org.quintilis.factions.util.ClassScanner
@@ -52,6 +53,8 @@ class Factions : JavaPlugin() {
 
         this.registerEvents()
 
+        this.registerTasks()
+
         this.registerCommands()
 
         this.registerTranslations()
@@ -74,6 +77,45 @@ class Factions : JavaPlugin() {
         this.server.commandMap.registerAll("factions", commands)
         commands.forEach {
             printName(it)
+        }
+    }
+
+    private fun registerTasks() {
+        logger.info("Registering tasks")
+        val classes = ClassScanner.findClasses<Runnable, AutoTask>(
+            this,
+            "org.quintilis.factions"
+        )
+        classes.forEach { clazz ->
+            try{
+                val annotation = clazz.getAnnotation(AutoTask::class.java)
+
+                val taskInstance = try{
+                    clazz.getConstructor(Factions::class.java).newInstance(this)
+                } catch (e: NoSuchMethodException){
+                    clazz.getConstructor().newInstance()
+                }
+
+                if(annotation.async){
+                    server.scheduler.runTaskTimerAsynchronously(
+                        this,
+                        taskInstance,
+                        annotation.delay,
+                        annotation.period
+                    )
+                } else {
+                    server.scheduler.runTaskTimer(
+                        this,
+                        taskInstance,
+                        annotation.delay,
+                        annotation.period
+                    )
+                }
+                logger.info("Task registrada automaticamente: ${clazz.simpleName}")
+            }catch (e: Exception){
+                logger.severe("Falha ao registrar task: ${clazz.simpleName}")
+                e.printStackTrace()
+            }
         }
     }
 

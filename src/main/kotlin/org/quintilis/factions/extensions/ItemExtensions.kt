@@ -7,8 +7,26 @@ import org.bukkit.persistence.PersistentDataType
 import org.quintilis.factions.util.Keys
 
 fun ItemStack.isNexusItem(): Boolean{
+    val meta = itemMeta ?: return false
+    val pdc = meta.persistentDataContainer
+
+    // Checa primeiro se tem como INTEGER (o novo padrão)
+    if (pdc.has(Keys.NEXUS_ITEM, PersistentDataType.INTEGER)) {
+        return true
+    }
+
+    // Fallback de segurança: Caso você tenha itens antigos soltos pelo mapa
+    // salvos como STRING, ele ainda vai reconhecer.
+    return pdc.has(Keys.NEXUS_ITEM, PersistentDataType.STRING)
+}
+
+fun ItemStack.isCoreItem(): Boolean{
     val meta = this.itemMeta ?: return false
-    return meta.persistentDataContainer.has(Keys.NEXUS_ITEM, PersistentDataType.STRING)
+    val pdc = meta.persistentDataContainer
+    if (pdc.has(Keys.CORE_ITEM, PersistentDataType.INTEGER)) {
+        return true
+    }
+    return pdc.has(Keys.CORE_ITEM, PersistentDataType.STRING)
 }
 
 fun ItemStack.setGlowing(glowing: Boolean): ItemStack {

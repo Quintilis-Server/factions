@@ -82,7 +82,7 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
         val core = coreCache.findByLocation(location)
 
         if (core != null) {
-            if(player.hasPermission("factions.admin")) return
+//            if(player.hasPermission("factions.admin")) return
 
             event.isCancelled = true
             player.sendTranslatable("nexus.protect.indestructible")

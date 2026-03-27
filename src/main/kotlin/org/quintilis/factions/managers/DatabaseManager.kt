@@ -27,8 +27,10 @@ object DatabaseManager {
         val user = ConfigManager.getUsername()
         val pass = ConfigManager.getPassword()
 
+        val dbUrl = "jdbc:postgresql://$host:$port/$dbName"
+        println("Connecting to database: $dbUrl")
         val config = HikariConfig().apply {
-            jdbcUrl = "jdbc:postgresql://$host:$port/$dbName"
+            jdbcUrl = dbUrl
             username = user
             password = pass
             driverClassName = "org.postgresql.Driver"
