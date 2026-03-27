@@ -220,12 +220,12 @@
             <version>3.102.0</version> <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.quintilis</groupId>
-            <artifactId>economy</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.quintilis</groupId>-->
+<!--            <artifactId>economy</artifactId>-->
+<!--            <version>1.0-SNAPSHOT</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
     </dependencies>
 </project>

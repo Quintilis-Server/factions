@@ -17,20 +17,7 @@ import java.time.Instant
 
 class CoreService(private val plugin: Factions) {
 
-//    private val nexusKey = NamespacedKey(plugin, "nexus_core_item")
-
-    private val coreDao = Services.coreCache
-
-//    fun createItem(clan: ClanEntity): ItemStack {
-//
-//        val item = ItemBuilder.from(Material.BEACON)
-//            .name(Component.translatable("nexus.name", Argument.component("tag", Component.text(clan.tag?:clan.name))))
-//            .pdc { pdc ->
-//                pdc.set(Keys.NEXUS_ITEM, PersistentDataType.STRING, "NEW")
-//            }
-//            .build()
-//        return item
-//    }
+    private val coreDao = FactionsServices.coreCache
 
     fun placeCore(location: Location, core: ClanCoreEntity) {
         core.placed = true

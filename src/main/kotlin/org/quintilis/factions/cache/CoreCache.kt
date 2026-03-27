@@ -19,7 +19,7 @@ class CoreCache(private val coreDao: CoreDao): AbstractDaoCache<CoreDao, ClanCor
         ttlSeconds = 10800
     ){
         override fun readFromRedis(jedis: Jedis, key: String): Int? {
-            return jedis.get(key).toIntOrNull()
+            return jedis.get(key)?.toIntOrNull()
         }
 
         override fun writeToRedis(jedis: Jedis, key: String, value: Int?) {

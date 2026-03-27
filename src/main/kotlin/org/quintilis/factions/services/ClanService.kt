@@ -16,10 +16,10 @@ import org.quintilis.factions.results.Result
  */
 class ClanService {
     
-    private val clanCache get() = Services.clanCache
-    private val clanDao get() = Services.clanDao
-    private val playerDao get() = Services.playerDao
-    private val coreService get() = Services.coreService
+    private val clanCache get() = FactionsServices.clanCache
+    private val clanDao get() = FactionsServices.clanDao
+    private val playerDao get() = FactionsServices.playerDao
+    private val coreService get() = FactionsServices.coreService
     /**
      * Cria um novo clã.
      * 

@@ -17,7 +17,7 @@ import org.quintilis.factions.handlers.MemberCommandHandler
 import org.quintilis.factions.managers.ErrorManager
 import org.quintilis.factions.results.Result
 import org.quintilis.factions.services.CoreService
-import org.quintilis.factions.services.Services
+import org.quintilis.factions.services.FactionsServices
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -42,10 +42,10 @@ class ClanCommand(
     private val claimHandler = ClaimCommandHandler(coreService)
 
     // Services e Caches (via singleton)
-    private val clanService get() = Services.clanService
-    private val clanCache get() = Services.clanCache
-    private val memberInviteCache get() = Services.memberInviteCache
-    private val allyInviteCache get() = Services.allyInviteCache
+    private val clanService get() = FactionsServices.clanService
+    private val clanCache get() = FactionsServices.clanCache
+    private val memberInviteCache get() = FactionsServices.memberInviteCache
+    private val allyInviteCache get() = FactionsServices.allyInviteCache
 
     // ============================================
     // Métodos de erro

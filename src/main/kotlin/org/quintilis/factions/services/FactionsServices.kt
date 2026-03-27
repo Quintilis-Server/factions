@@ -20,7 +20,7 @@ import org.quintilis.factions.managers.DatabaseManager
  * Singleton de serviços - ponto central de acesso a DAOs e Caches.
  * Evita criar múltiplas instâncias e facilita injeção de dependência.
  */
-object Services {
+object FactionsServices {
 
     private lateinit var plugin: Factions
 
@@ -35,7 +35,7 @@ object Services {
     }
     
     val playerDao: PlayerDao by lazy {
-        DatabaseManager.getDAO(PlayerCache::class)
+        DatabaseManager.getDAO(PlayerDao::class)
     }
     
     val clanRelationDao: ClanRelationDao by lazy { 

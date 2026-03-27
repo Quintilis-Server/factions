@@ -16,9 +16,9 @@ import java.util.UUID
  */
 class ChunkService {
     
-    private val chunkDao get() = Services.chunkDao
-    private val chunkCache get() = Services.chunkCache
-    private val clanCache get() = Services.clanCache
+    private val chunkDao get() = FactionsServices.chunkDao
+    private val chunkCache get() = FactionsServices.chunkCache
+    private val clanCache get() = FactionsServices.clanCache
     
     /**
      * Reivindica um chunk para um clã.

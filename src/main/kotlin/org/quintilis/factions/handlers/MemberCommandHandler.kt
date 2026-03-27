@@ -9,16 +9,16 @@ import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.commands.clan.MemberSubCommands
 import org.quintilis.factions.services.MemberInviteService
-import org.quintilis.factions.services.Services
+import org.quintilis.factions.services.FactionsServices
 
 /**
  * Handler para comandos de membros (/clan member).
  */
 class MemberCommandHandler {
     
-    private val clanCache get() = Services.clanCache
-    private val playerDao get() = Services.playerDao
-    private val memberInviteCache get() = Services.memberInviteCache
+    private val clanCache get() = FactionsServices.clanCache
+    private val playerDao get() = FactionsServices.playerDao
+    private val memberInviteCache get() = FactionsServices.memberInviteCache
     
     /**
      * Convida um jogador para o clã.

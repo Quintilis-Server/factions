@@ -3,7 +3,6 @@ package org.quintilis.factions
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslationStore
 import net.kyori.adventure.translation.GlobalTranslator
-import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.annotations.AutoRegister
@@ -14,7 +13,7 @@ import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.managers.DatabaseManager
 import org.quintilis.factions.managers.RedisManager
 import org.quintilis.factions.services.CoreService
-import org.quintilis.factions.services.Services
+import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.util.Keys
 import java.util.Locale
 import java.util.MissingResourceException
@@ -48,7 +47,7 @@ class Factions : JavaPlugin() {
             server.pluginManager.disablePlugin(this)
             return
         }
-        Services.init(this)
+        FactionsServices.init(this)
         Keys.load(this)
 
         this.registerEvents()
