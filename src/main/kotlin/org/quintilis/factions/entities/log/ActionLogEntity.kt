@@ -1,9 +1,9 @@
 package org.quintilis.factions.entities.log
 
 import org.quintilis.factions.entities.BaseEntity
-import org.quintilis.factions.entities.annotations.Column
-import org.quintilis.factions.entities.annotations.PrimaryKey
-import org.quintilis.factions.entities.annotations.TableName
+import org.quintilis.factions.annotations.Column
+import org.quintilis.factions.annotations.PrimaryKey
+import org.quintilis.factions.annotations.TableName
 import java.time.Instant
 import java.util.UUID
 

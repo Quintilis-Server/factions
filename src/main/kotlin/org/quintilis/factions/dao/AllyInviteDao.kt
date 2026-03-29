@@ -7,7 +7,7 @@ import org.jdbi.v3.sqlobject.transaction.Transaction
 import org.quintilis.factions.entities.invite.ally.AllyInviteEntity
 
 interface AllyInviteDao: BaseDao<AllyInviteEntity, Int> {
-    override fun getEntityClass() = AllyInviteEntity::class.java
+    fun getEntityClass() = AllyInviteEntity::class.java
 
     @SqlQuery("""
         SELECT EXISTS(

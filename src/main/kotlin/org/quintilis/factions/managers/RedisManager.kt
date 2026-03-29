@@ -11,13 +11,19 @@ object RedisManager {
         val config = JedisPoolConfig()
         config.maxTotal = 16
 
-        pool = JedisPool(
+        val host = ConfigManager.getRedisHost()
+        val port = ConfigManager.getRedisPort()
+        val database = ConfigManager.getRedisDatabase()
+
+        println("[RedisManager] Database host: $host, port: $port")
+        println("[RedisManager] Database number: $database")
+        this.pool = JedisPool(
             config,
-            ConfigManager.getRedisHost(),
-            ConfigManager.getRedisPort(),
+            host,
+            port,
             2000,  // timeout em ms
             null,  // password (null se não tiver)
-            ConfigManager.getRedisDatabase()  // database index (0-15)
+            database  // database index (0-15)
         )
     }
     fun close(){

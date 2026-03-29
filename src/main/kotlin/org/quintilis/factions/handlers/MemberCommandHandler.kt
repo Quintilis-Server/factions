@@ -9,17 +9,16 @@ import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.commands.clan.MemberSubCommands
 import org.quintilis.factions.services.MemberInviteService
-import org.quintilis.factions.services.Services
+import org.quintilis.factions.services.FactionsServices
 
 /**
  * Handler para comandos de membros (/clan member).
  */
 class MemberCommandHandler {
     
-    private val clanCache get() = Services.clanCache
-    private val clanDao get() = Services.clanDao
-    private val playerDao get() = Services.playerDao
-    private val memberInviteCache get() = Services.memberInviteCache
+    private val clanCache get() = FactionsServices.clanCache
+    private val playerDao get() = FactionsServices.playerDao
+    private val memberInviteCache get() = FactionsServices.memberInviteCache
     
     /**
      * Convida um jogador para o clã.
@@ -51,7 +50,7 @@ class MemberCommandHandler {
         // Cria o convite
         try {
             val invite = MemberInviteService.createInvite(clan, playerEntity)
-            memberInviteCache.put(playerEntity.id, listOf(invite.getClan(clanDao)!!.name))
+            memberInviteCache.put(playerEntity.id, listOf(invite.getClan(clanCache)!!.name))
         } catch (e: Exception) {
             sender.sendTranslatable(
                 "error.already_invited",
@@ -96,7 +95,7 @@ class MemberCommandHandler {
         }
         
         // Remove o membro
-        clanDao.deleteMemberById(playerEntity.id)
+        clanCache.deleteMemberById(playerEntity.id)
         
         // Log da ação
         ActionLogEntity.log(
@@ -178,7 +177,7 @@ class MemberCommandHandler {
         }
         
         // Atualiza o líder no banco de dados
-        clanDao.updateLeader(clan.id!!, playerEntity.id)
+        clanCache.updateLeader(clan.id!!, playerEntity.id)
         
         // Registra log da ação
         ActionLogEntity.log(

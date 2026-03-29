@@ -2,10 +2,10 @@ package org.quintilis.factions.extensions
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.ComponentLike
-import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.clan.ClanEntity
-import org.quintilis.factions.services.Services
+import org.quintilis.factions.results.Result
+import org.quintilis.factions.services.FactionsServices
 
 /**
  * Extension functions para Player
@@ -35,17 +35,36 @@ fun Player.sendTranslatable(key: String) {
 }
 
 /**
+ * Envia uma mensagem traduzível de um Result
+ *
+ * Uso: sender.sendTranslatable(result)
+ */
+fun Player.sendTranslatable(result: Result) {
+    when (result) {
+        is Result.Success -> {
+            result.messageKey?.let { key ->
+                // Chama sua função base que aceita (String, Map)
+                this.sendTranslatable(key, result.args as ComponentLike)
+            }
+        }
+        is Result.Error -> {
+            this.sendTranslatable(result.messageKey, result.args as ComponentLike)
+        }
+    }
+}
+
+/**
  * Obtém o clã do jogador (como membro), se existir.
  */
 fun Player.getClan(): ClanEntity? {
-    return Services.clanCache.getClanByMember(this.uniqueId)
+    return FactionsServices.clanCache.getClanByMember(this.uniqueId)
 }
 
 /**
  * Obtém o clã do jogador como líder, se for líder de algum.
  */
 fun Player.getClanAsLeader(): ClanEntity? {
-    return Services.clanCache.getClanByLeaderId(this.uniqueId)
+    return FactionsServices.clanCache.getClanByLeaderId(this.uniqueId)
 }
 
 /**
@@ -59,5 +78,5 @@ fun Player.isClanLeader(): Boolean {
  * Verifica se o jogador é membro de algum clã.
  */
 fun Player.isInClan(): Boolean {
-    return Services.clanCache.isMember(this.uniqueId)
+    return FactionsServices.clanCache.isMember(this.uniqueId)
 }

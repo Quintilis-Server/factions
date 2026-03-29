@@ -1,5 +1,6 @@
 package org.quintilis.factions.cache
 
+import org.jdbi.v3.core.HandleConsumer
 import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.entities.player.PlayerEntity
 import redis.clients.jedis.Jedis
@@ -7,12 +8,13 @@ import java.time.Duration
 import java.util.UUID
 
 class PlayerCache(
-    private val playerDao: PlayerDao,
-): JsonCache<UUID, PlayerEntity>(
+    private val playerDaoImpl: PlayerDao,
+): AbstractDaoCache<PlayerDao, PlayerEntity, UUID>(
+    dao = playerDaoImpl,
     prefix = "factions:player:uuid:",
     ttl = Duration.ofHours(2).seconds,
     classType = PlayerEntity::class.java,
-) {
+), PlayerDao by playerDaoImpl {
     private val gson = GsonProvider.gson
 
     private val nameCache = object : BaseRedisCache<String, UUID?>(
@@ -38,10 +40,12 @@ class PlayerCache(
         override fun shouldCache(value: UUID?): Boolean = value != null
     }
 
+    override fun <X : Exception?> useHandle(consumer: HandleConsumer<X?>?) {
+        super<PlayerDao>.useHandle(consumer)
+    }
+
     fun getPlayer(uuid: UUID): PlayerEntity? {
-        return getOrFetch(uuid) { dbUuid ->
-            playerDao.findById(dbUuid)
-        }
+        return findById(uuid)
     }
 
     fun getPlayer(name: String): PlayerEntity? {
@@ -51,7 +55,7 @@ class PlayerCache(
         val uuid = nameCache.getOrFetch(lowerName) { _ ->
             // ATENÇÃO: Seu PlayerDao precisa ter um método para buscar por nome
             // Retorna o objeto completo ou apenas o UUID se tiver um método otimizado
-            val player = playerDao.findByName(name)
+            val player = playerDaoImpl.findByName(name)
             player?.id
         }
 

@@ -1,12 +1,12 @@
 package org.quintilis.factions.entities.invite.ally
 
-import org.quintilis.factions.dao.ClanDao
+import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.entities.BaseEntity
-import org.quintilis.factions.entities.annotations.Column
-import org.quintilis.factions.entities.annotations.PrimaryKey
-import org.quintilis.factions.entities.annotations.TableName
+import org.quintilis.factions.annotations.Column
+import org.quintilis.factions.annotations.PrimaryKey
+import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.entities.clan.ClanEntity
-import org.quintilis.factions.entities.invite.InviteStatus
+import org.quintilis.factions.enums.InviteStatus
 import java.time.Instant
 
 @TableName("ally_invite")
@@ -35,12 +35,12 @@ data class AllyInviteEntity(
     @Column("status")
     val status: InviteStatus,
 
-): BaseEntity(){
-    fun getSenderClan(clanDao: ClanDao): ClanEntity?{
-        return clanDao.findById(senderClanId)
+    ): BaseEntity(){
+    fun getSenderClan(clanCache: ClanCache): ClanEntity?{
+        return clanCache.findById(senderClanId)
     }
 
-    fun getTargetClan(clanDao: ClanDao): ClanEntity?{
-        return clanDao.findById(targetClanId)
+    fun getTargetClan(clanCache: ClanCache): ClanEntity?{
+        return clanCache.findById(targetClanId)
     }
 }

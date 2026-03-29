@@ -1,4 +1,4 @@
-package org.quintilis.factions.entities.annotations
+package org.quintilis.factions.annotations
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.PROPERTY)

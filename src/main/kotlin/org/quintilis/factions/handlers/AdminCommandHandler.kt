@@ -6,8 +6,7 @@ import org.bukkit.entity.Player
 import org.quintilis.factions.entities.log.ActionLogEntity
 import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.extensions.sendTranslatable
-import org.quintilis.factions.services.Services
-import java.util.UUID
+import org.quintilis.factions.services.FactionsServices
 
 /**
  * Handler para comandos de admin de clãs (/clan admin).
@@ -15,9 +14,9 @@ import java.util.UUID
  */
 class AdminCommandHandler {
     
-    private val clanCache get() = Services.clanCache
-    private val clanDao get() = Services.clanDao
-    private val playerCache get() = Services.playerCache
+    private val clanCache get() = FactionsServices.clanCache
+    private val clanDao get() = FactionsServices.clanDao
+    private val playerCache get() = FactionsServices.playerCache
     
     /**
      * Deleta um clã como admin.

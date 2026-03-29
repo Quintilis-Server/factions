@@ -4,7 +4,7 @@ package org.quintilis.factions.results
  * Resultado de operações de clã.
  * Usa sealed class para garantir tipo seguro e exaustividade no when.
  */
-sealed class ClanResult {
+sealed class Result {
     /**
      * Operação bem-sucedida.
      * @param messageKey Chave de tradução para mensagem de sucesso (opcional)
@@ -13,7 +13,7 @@ sealed class ClanResult {
     data class Success(
         val messageKey: String? = null,
         val args: Map<String, Any> = emptyMap()
-    ) : ClanResult()
+    ) : Result()
     
     /**
      * Operação falhou.
@@ -23,5 +23,5 @@ sealed class ClanResult {
     data class Error(
         val messageKey: String,
         val args: Map<String, Any> = emptyMap()
-    ) : ClanResult()
+    ) : Result()
 }

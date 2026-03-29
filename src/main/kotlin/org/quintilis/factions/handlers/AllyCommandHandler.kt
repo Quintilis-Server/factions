@@ -1,7 +1,6 @@
 package org.quintilis.factions.handlers
 
 import net.kyori.adventure.text.minimessage.translation.Argument
-import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanRelationEntity
@@ -11,18 +10,17 @@ import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.commands.clan.AllySubCommands
 import org.quintilis.factions.services.AllyInviteService
-import org.quintilis.factions.services.Services
+import org.quintilis.factions.services.FactionsServices
 
 /**
  * Handler para comandos de aliança (/clan ally).
  */
 class AllyCommandHandler {
     
-    private val clanCache get() = Services.clanCache
-    private val clanDao get() = Services.clanDao
-    private val clanRelationDao get() = Services.clanRelationDao
-    private val allyInviteDao get() = Services.allyInviteDao
-    private val allyInviteCache get() = Services.allyInviteCache
+    private val clanCache get() = FactionsServices.clanCache
+    private val clanRelationDao get() = FactionsServices.clanRelationDao
+    private val allyInviteDao get() = FactionsServices.allyInviteDao
+    private val allyInviteCache get() = FactionsServices.allyInviteCache
     
     /**
      * Adiciona uma aliança (envia convite).
@@ -59,7 +57,7 @@ class AllyCommandHandler {
         }
         
         // Cria o convite
-        AllyInviteService.createInvite(clanDao, clan, targetClan)
+        AllyInviteService.createInvite(clanCache, clan, targetClan)
         
         // Log da ação
         ActionLogEntity.log(

@@ -6,17 +6,18 @@ import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.quintilis.factions.commands.BaseCommand
-import org.quintilis.factions.commands.Commands
 import org.quintilis.factions.extensions.getClanAsLeader
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.gui.ClanListMenu
 import org.quintilis.factions.handlers.AdminCommandHandler
 import org.quintilis.factions.handlers.AllyCommandHandler
+import org.quintilis.factions.handlers.ClaimCommandHandler
 import org.quintilis.factions.handlers.InviteCommandHandler
 import org.quintilis.factions.handlers.MemberCommandHandler
 import org.quintilis.factions.managers.ErrorManager
-import org.quintilis.factions.results.ClanResult
-import org.quintilis.factions.services.Services
+import org.quintilis.factions.results.Result
+import org.quintilis.factions.services.CoreService
+import org.quintilis.factions.services.FactionsServices
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -24,7 +25,9 @@ import kotlin.math.max
  * Comando principal de clã.
  * Refatorado para usar handlers e services.
  */
-class ClanCommand: BaseCommand(
+class ClanCommand(
+    private val coreService: CoreService,
+): BaseCommand(
     name = "clan",
     description = "Main clan command",
     usage = "/clan <subcommand>",
@@ -36,12 +39,13 @@ class ClanCommand: BaseCommand(
     private val memberHandler = MemberCommandHandler()
     private val inviteHandler = InviteCommandHandler()
     private val adminHandler = AdminCommandHandler()
-    
+    private val claimHandler = ClaimCommandHandler(coreService)
+
     // Services e Caches (via singleton)
-    private val clanService get() = Services.clanService
-    private val clanCache get() = Services.clanCache
-    private val memberInviteCache get() = Services.memberInviteCache
-    private val allyInviteCache get() = Services.allyInviteCache
+    private val clanService get() = FactionsServices.clanService
+    private val clanCache get() = FactionsServices.clanCache
+    private val memberInviteCache get() = FactionsServices.memberInviteCache
+    private val allyInviteCache get() = FactionsServices.allyInviteCache
 
     // ============================================
     // Métodos de erro
@@ -69,13 +73,13 @@ class ClanCommand: BaseCommand(
         val tag = args.getOrNull(1)
         
         when (val result = clanService.createClan(sender, name, tag)) {
-            is ClanResult.Success -> {
+            is Result.Success -> {
                 sender.sendTranslatable(
                     "clan.create.response",
                     Argument.string("clan_name", result.args["clan_name"]?.toString() ?: name)
                 )
             }
-            is ClanResult.Error -> {
+            is Result.Error -> {
                 if (result.args.isNotEmpty()) {
                     sender.sendTranslatable(
                         result.messageKey,
@@ -89,7 +93,7 @@ class ClanCommand: BaseCommand(
     }
 
     private fun handleDelete(sender: Player) {
-        val clan = clanCache.getClanByLeaderId(sender.uniqueId)
+        val clan = clanCache.findByLeaderId(sender.uniqueId)
         if (clan == null) {
             noClanLeader(sender)
             return
@@ -99,7 +103,7 @@ class ClanCommand: BaseCommand(
         val members = clanCache.getMembers(clan.id!!)
         
         when (val result = clanService.deleteClan(sender)) {
-            is ClanResult.Success -> {
+            is Result.Success -> {
                 // Notifica membros
                 members.forEach { member ->
                     Bukkit.getPlayer(member.playerId)?.sendTranslatable(
@@ -109,7 +113,7 @@ class ClanCommand: BaseCommand(
                 }
                 sender.sendTranslatable("clan.delete.response")
             }
-            is ClanResult.Error -> {
+            is Result.Error -> {
                 sender.sendTranslatable(result.messageKey)
             }
         }
@@ -164,7 +168,7 @@ class ClanCommand: BaseCommand(
         val clan = clanCache.getClanByMember(sender.uniqueId)
         
         when (val result = clanService.quitClan(sender)) {
-            is ClanResult.Success -> {
+            is Result.Success -> {
                 // Notifica o líder
                 val leaderUuid = result.args["leader_uuid"]
                 if (leaderUuid != null) {
@@ -175,7 +179,7 @@ class ClanCommand: BaseCommand(
                 }
                 sender.sendTranslatable("clan.quit.response")
             }
-            is ClanResult.Error -> {
+            is Result.Error -> {
                 sender.sendTranslatable(result.messageKey)
             }
         }
@@ -204,11 +208,7 @@ class ClanCommand: BaseCommand(
     }
 
     private fun handleMemberCommand(sender: Player, args: List<String>) {
-        val clan = sender.getClanAsLeader()
-        if (clan == null) {
-            noClanLeader(sender)
-            return
-        }
+        val clan = sender.getClanAsLeader() ?: return this.noClanLeader(sender)
         
         val subCommand = findSubCommand(sender, args, MemberSubCommands.entries) ?: return
         
@@ -248,6 +248,15 @@ class ClanCommand: BaseCommand(
         }
     }
 
+    private fun handleClaimCommand(sender: Player, args: List<String>) {
+        val clan = sender.getClanAsLeader() ?: return this.noClanLeader(sender);
+        val subCommand = findSubCommand(sender, args, ClaimSubCommands.entries) ?: return
+        when (subCommand) {
+            ClaimSubCommands.BUY -> claimHandler.buy(sender, clan);
+
+        }
+    }
+
     // ============================================
     // Command wrapper
     // ============================================
@@ -280,6 +289,7 @@ class ClanCommand: BaseCommand(
                 ClanCommands.INVITE -> handleInviteCommand(sender, subArgs)
                 ClanCommands.QUIT -> handleQuit(sender)
                 ClanCommands.ADMIN -> handleAdminCommand(sender, subArgs)
+                ClanCommands.CLAIM -> handleClaimCommand(sender, subArgs)
             }
         }
         return true
