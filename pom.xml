@@ -220,6 +220,16 @@
             <version>3.102.0</version> <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>12.2.0</version> </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <version>12.2.0</version>
+        </dependency>
+
 <!--        <dependency>-->
 <!--            <groupId>org.quintilis</groupId>-->
 <!--            <artifactId>economy</artifactId>-->

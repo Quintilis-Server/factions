@@ -29,7 +29,7 @@ class Factions : JavaPlugin() {
 
         try {
             logger.info("Conectando ao banco de dados PostgreSQL...")
-            DatabaseManager.connect()
+            DatabaseManager.connect(logger)
             logger.info("Conexão com o banco de dados estabelecida com sucesso!")
         } catch (e: Exception) {
             logger.severe("FALHA AO CONECTAR COM O BANCO DE DADOS! Desabilitando o plugin...")
