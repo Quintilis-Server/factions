@@ -4,6 +4,7 @@ import org.quintilis.factions.Factions
 import org.quintilis.factions.cache.AllyInviteCache
 import org.quintilis.factions.cache.ChunkCache
 import org.quintilis.factions.cache.ClanCache
+import org.quintilis.factions.cache.ClanRelationCache
 import org.quintilis.factions.cache.CoreCache
 import org.quintilis.factions.cache.MemberInviteCache
 import org.quintilis.factions.cache.PlayerCache
@@ -64,7 +65,11 @@ object FactionsServices {
     val clanCache: ClanCache by lazy { 
         ClanCache(clanDao) 
     }
-    
+
+    val clanRelationCache: ClanRelationCache by lazy {
+        ClanRelationCache(clanRelationDao)
+    }
+
     val playerCache: PlayerCache by lazy { 
         PlayerCache(playerDao) 
     }

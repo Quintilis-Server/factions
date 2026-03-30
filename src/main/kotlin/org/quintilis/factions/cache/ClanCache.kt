@@ -14,7 +14,7 @@ class ClanCache(
 ) : AbstractDaoCache<ClanDao, ClanEntity, Int>(
     daoImpl,
     "factions:clan:id:",
-    ttl = 300L,
+    ttl = 3600L,
     classType = ClanEntity::class.java
 ), ClanDao by daoImpl {
     private val gson = GsonProvider.gson

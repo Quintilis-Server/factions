@@ -11,3 +11,7 @@ redis:
   host: localhost
   port: 6379
   database: 1
+war:
+  enemy-points: 10
+  neutral-points: 5
+  ally-points: 0

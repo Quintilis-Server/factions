@@ -4,8 +4,10 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.ComponentLike
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.clan.ClanEntity
+import org.quintilis.factions.entities.player.PlayerEntity
 import org.quintilis.factions.results.Result
 import org.quintilis.factions.services.FactionsServices
+import org.quintilis.factions.services.FactionsServices.playerCache
 
 /**
  * Extension functions para Player
@@ -79,4 +81,8 @@ fun Player.isClanLeader(): Boolean {
  */
 fun Player.isInClan(): Boolean {
     return FactionsServices.clanCache.isMember(this.uniqueId)
+}
+
+fun Player.getPlayerEntity(): PlayerEntity? {
+    return playerCache.getPlayer(this.uniqueId)
 }

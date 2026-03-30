@@ -60,4 +60,16 @@ object ConfigManager {
     fun getRedisDatabase(): Int{
         return this.getInt("redis.database")
     }
+
+    fun getWarEnemyPoints(): Int{
+        return this.getInt("war.enemy-points")
+    }
+
+    fun getWarNeutralPoints(): Int{
+        return this.getInt("war.neutral-points")
+    }
+
+    fun getWarAllyPoints(): Int{
+        return this.getInt("war.ally-points")
+    }
 }

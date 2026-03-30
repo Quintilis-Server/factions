@@ -9,7 +9,7 @@ import java.time.Instant
 @TableName("clan_relation")
 data class ClanRelationEntity(
     @PrimaryKey
-    val id: Int?,
+    val id: Int? = null,
 
     @Column("clan1_id")
     val clan1Id: Int,
@@ -21,7 +21,7 @@ data class ClanRelationEntity(
     val relation: Relation,
 
     @Column("active")
-    val active: Boolean,
+    val active: Boolean = true,
 
     @Column("created_at")
     val createdAt: Instant = Instant.now()

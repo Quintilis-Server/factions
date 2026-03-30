@@ -25,15 +25,15 @@ interface ClanRelationDao: BaseDao<ClanRelationEntity, Int> {
         relation: Relation
     ): Boolean
 
-    @SqlUpdate("""
-        INSERT INTO clan_relation (clan1_id, clan2_id, relation)
-        VALUES (:clan1Id, :clan2Id, :relation)
-    """)
-    fun createRelation(
-        @Bind("clan1Id") clan1Id: Int,
-        @Bind("clan2Id") clan2Id: Int,
-        @Bind("relation") relation: Relation
-    )
+//    @SqlUpdate("""
+//        INSERT INTO clan_relation (clan1_id, clan2_id, relation)
+//        VALUES (:clan1Id, :clan2Id, :relation)
+//    """)
+//    fun createRelation(
+//        @Bind("clan1Id") clan1Id: Int,
+//        @Bind("clan2Id") clan2Id: Int,
+//        @Bind("relation") relation: Relation
+//    )
 
     @SqlUpdate("""
         UPDATE clan_relation SET active = false
@@ -58,4 +58,13 @@ interface ClanRelationDao: BaseDao<ClanRelationEntity, Int> {
         @Bind("clanId") clanId: Int,
         @Bind("relation") relation: Relation
     ): List<String>
+
+    @SqlQuery("""
+        SELECT * FROM clan_relation 
+        WHERE (clan1_id = :clanId OR clan2_id = :clanId) 
+        AND active = true
+    """)
+    fun findAllActiveByClanId(
+        @Bind("clanId") clanId: Int
+    ): List<ClanRelationEntity>
 }
