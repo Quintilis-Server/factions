@@ -3,11 +3,13 @@ package org.quintilis.factions.services
 import org.bukkit.Chunk
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.chunk.ChunkEntity
+import org.quintilis.factions.entities.clan.ClanChunkEntity
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.log.ActionLogEntity
 import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.results.Result
 import org.quintilis.factions.entities.clan.ClanCoreEntity
+import org.quintilis.factions.extensions.toEntity
 import java.util.UUID
 
 /**
@@ -57,11 +59,15 @@ class ChunkService {
             Pair(-1, 0)  // Checa pra Esquerda (X-)
         )
 
+        val world = chunk.world
+
+        val chunksToClaim = mutableSetOf<ChunkEntity>()
+
         for(checkX in (centerX-1)..(centerX+1)){
             for(checkZ in (centerZ-1)..(centerZ+1)){
-
+                val currentChunk = world.getChunkAt(checkX, checkZ).toEntity()
                 //Checagem de ocupação
-                val ownerId = chunkCache.getChunkOwner(worldUuid, checkX, checkZ)
+                val ownerId = chunkCache.getChunkOwner(currentChunk)
 
                 if(ownerId != null){
                     if(ownerId != clan.id){
@@ -69,6 +75,8 @@ class ChunkService {
                     }else{
                         isConnected = true
                     }
+                } else{
+                    chunksToClaim.add(currentChunk)
                 }
             }
             if(!isConnected) {
@@ -92,7 +100,32 @@ class ChunkService {
             if(!isConnected){
                 return Result.Error("chunk.error.not_connected")
             }
+
         }
+
+        //Claim dos chunks
+        if(chunksToClaim.isEmpty()) {
+            return Result.Error("chunk.error.already_claimed")
+        }
+
+        for(chunkEntity in chunksToClaim) {
+            ClanChunkEntity(
+                chunkId = chunkEntity.id!!,
+                clanId = clan.id,
+                ownerCore = core.id!!,
+                transactionId = transactionId,
+                active = true
+            ).save<ClanChunkEntity>()
+
+            chunkCache.invalidateChunkAndClan(worldUuid, chunkEntity.chunkX, chunkEntity.chunkZ, clan.id)
+        }
+
+        ActionLogEntity.log(
+            actionType = ActionLogType.CHUNK_CLAIM,
+            actorId = player.uniqueId,
+            clanId = clan.id,
+            details = "Claimed ${chunksToClaim.size} chunks around $centerX, $centerZ in ${world.name}"
+        )
 
 
         return Result.Success("chunk.success")

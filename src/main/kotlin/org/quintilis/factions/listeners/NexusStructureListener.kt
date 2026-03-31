@@ -127,64 +127,70 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
 
     @EventHandler
     fun onPlace(event: BlockPlaceEvent) {
-        val item = event.itemInHand
-
-        if (!item.isNexusItem()) return
-
-        val nexusId = event.itemInHand.itemMeta.persistentDataContainer
-            .get(Keys.NEXUS_ITEM, PersistentDataType.STRING)?.toIntOrNull()
-        if(nexusId == null) {
-            //TODO: Mandar a mensagem ao usuario
-            event.isCancelled = true
-            return
-        }
-        val clan = event.player.getClanAsLeader()
-
-        if(!event.player.isClanLeader() || clan == null) {
-            return cancelEventWithError(event, event.player)
-        }
-
-        val core = coreCache.findById(nexusId) ?: return cancelEventWithError(event, event.player)
-
-        coreService.placeCore(event.block.location, core)
-        val chunkResult = chunkService.claimChunk(
-            player = event.player,
-            clan = clan,
-            chunk = event.block.chunk,
-            core
-        )
-        if(chunkResult is Result.Error){
-            cancelEventWithError(event, event.player, chunkResult)
-        }
-        core.save<ClanCoreEntity>()
-
         val player = event.player
-        val center = event.block.location.clone().subtract(0.0, 1.0, 0.0)
-        val world = center.world
+        try {
+            val item = event.itemInHand
 
-        for (x in -1..1){
-            for (z in -1..1){
-                val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
-                if(!block.isReplaceable && !REPLACEABLE_MATERIALS.contains(block.type)){
-                    event.isCancelled = true
-                    //TODO: fazer funcionar a tradução do bloco usando o minimessages
-                    player.sendTranslatable("nexus.place.error")
-                    player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
+            if (!item.isNexusItem()) return
 
-                    return
+            val nexusId = event.itemInHand.itemMeta.persistentDataContainer
+                .get(Keys.NEXUS_ITEM, PersistentDataType.INTEGER)
+            if (nexusId == null) {
+                //TODO: Mandar a mensagem ao usuario
+                event.isCancelled = true
+                return
+            }
+            val clan = event.player.getClanAsLeader()
+
+            if (!event.player.isClanLeader() || clan == null) {
+                return cancelEventWithError(event, event.player)
+            }
+
+            val core = coreCache.findById(nexusId) ?: return cancelEventWithError(event, event.player)
+
+            coreService.placeCore(event.block.location, core)
+            val chunkResult = chunkService.claimChunk(
+                player = event.player,
+                clan = clan,
+                chunk = event.block.chunk,
+                core
+            )
+            if (chunkResult is Result.Error) {
+                cancelEventWithError(event, event.player, chunkResult)
+            }
+            core.save<ClanCoreEntity>()
+
+            val center = event.block.location.clone().subtract(0.0, 1.0, 0.0)
+            val world = center.world
+
+            for (x in -1..1) {
+                for (z in -1..1) {
+                    val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
+                    if (!block.isReplaceable && !REPLACEABLE_MATERIALS.contains(block.type)) {
+                        event.isCancelled = true
+                        //TODO: fazer funcionar a tradução do bloco usando o minimessages
+                        player.sendTranslatable("nexus.place.error")
+                        player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
+
+                        return
+                    }
+
                 }
-
             }
-        }
 
-        for(x in -1..1){
-            for (z in -1..1){
-                val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
-                block.type = BASE_MATERIAL
+            for (x in -1..1) {
+                for (z in -1..1) {
+                    val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
+                    block.type = BASE_MATERIAL
+                }
             }
-        }
 
-        player.sendTranslatable("nexus.place.success")
-        player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
+            player.sendTranslatable("nexus.place.success")
+            player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
+        } catch (e: Exception) {
+            event.isCancelled = true
+            player.sendTranslatable("nexus.error")
+            e.printStackTrace()
+        }
     }
 }

@@ -105,7 +105,7 @@ CREATE TABLE clan_chunk(
     clan_id             INTEGER                     NOT NULL
        REFERENCES clans,
     active              BOOLEAN     DEFAULT TRUE    NOT NULL,
-    transaction_id      INTEGER                     NOT NULL
+    transaction_id      INTEGER
        REFERENCES transactions,
     owner_core          INTEGER                     NOT NULL
        REFERENCES clan_cores

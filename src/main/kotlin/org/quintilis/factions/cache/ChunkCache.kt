@@ -145,6 +145,11 @@ class ChunkCache(
             chunkDao.findClanIdByChunkCoordinates(worldUuid, x, z)
         }
     }
+
+    fun getChunkOwner(chunkEntity: ChunkEntity): Int? {
+        val chunk = chunkEntity.getChunk()
+        return this.getChunkOwner(chunk!!.world.uid, chunk.x, chunk.z)
+    }
     
     /**
      * Verifica se um chunk está reivindicado.

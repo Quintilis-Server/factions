@@ -1,5 +1,6 @@
 package org.quintilis.factions.dao
 
+import org.bukkit.Chunk
 import org.bukkit.Location
 import org.bukkit.World
 import org.jdbi.v3.sqlobject.customizer.Bind
@@ -14,6 +15,21 @@ interface CoreDao: BaseDao<ClanCoreEntity, Int> {
 
     @SqlQuery("SELECT * FROM clan_cores WHERE x = :x AND y = :y AND z = :z AND active = true")
     fun findByLocation(@Bind("x") x: Int, @Bind("y") y: Int, @Bind("z") z: Int): ClanCoreEntity?
+
+    @SqlQuery("""
+        SELECT * FROM clan_cores 
+        JOIN clan_chunk cc on clan_cores.id = cc.owner_core
+        JOIN chunk c on cc.chunk_id = c.id
+        where c.chunk_x = :chunk_x AND c.chunk_z = :chunk_z AND cc.active = true
+    """)
+    fun findByChunk(
+        @Bind("chunk_x") chunkX: Int,
+        @Bind("chunk_z") chunkZ: Int
+    ): ClanCoreEntity?
+
+    fun findByChunk(chunk: Chunk): ClanCoreEntity?{
+        return this.findByChunk(chunk.x, chunk.z)
+    }
 
     fun findByLocation(location: Location): ClanCoreEntity?{
         return this.findByLocation(location.blockX, location.blockY, location.blockZ)
