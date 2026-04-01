@@ -45,4 +45,27 @@ interface CoreDao: BaseDao<ClanCoreEntity, Int> {
 
     @SqlQuery("SELECT COUNT(*) FROM clan_cores WHERE clan_id = :clanId AND type = 'SUB_CORE' AND placed = true")
     fun countActiveSubCores(@Bind("clanId") clanId: Int): Int
+
+    @SqlQuery("""
+        SELECT * FROM clan_cores as cc
+        JOIN public.clans c on c.id = cc.clan_id
+        WHERE c.id = :clanId AND c.active = true
+    """)
+    fun findByClanId(@Bind("clanId") clanId: Int): List<ClanCoreEntity>
+
+    @SqlQuery("""
+        SELECT core.* FROM clan_cores core
+        JOIN clan_chunk cc ON cc.owner_core = core.id
+        JOIN chunk c ON c.id = cc.chunk_id
+        WHERE c.world_uuid = :worldUuid 
+        AND c.chunk_x = :chunkX 
+        AND c.chunk_z = :chunkZ
+        AND cc.active = true 
+        AND core.active = true
+    """)
+    fun findByChunkCoords(
+        @Bind("worldUuid") worldUuid: UUID,
+        @Bind("chunkX") chunkX: Int,
+        @Bind("chunkZ") chunkZ: Int
+    ): ClanCoreEntity?
 }

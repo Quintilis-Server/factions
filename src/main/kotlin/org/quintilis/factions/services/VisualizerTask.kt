@@ -14,6 +14,7 @@ import org.quintilis.factions.extensions.getClan
 import org.quintilis.factions.extensions.isCoreItem
 import org.quintilis.factions.extensions.isNexusItem
 import org.quintilis.factions.services.FactionsServices.chunkCache
+import org.quintilis.factions.services.FactionsServices.clanChunkCache
 import org.quintilis.factions.util.Keys
 import kotlin.ranges.step
 
@@ -49,7 +50,7 @@ class VisualizerTask: BukkitRunnable() {
 
         for(cx in (centerChunkX - viewRadius)..(centerChunkX+viewRadius)) {
             for(cz in (centerChunkZ-viewRadius)..(centerChunkZ+viewRadius)){
-                val chunkOwnerId = chunkCache.getChunkOwner(worldUuid, cx, cz) ?: continue
+                val chunkOwnerId = clanChunkCache.getChunkOwner(worldUuid, cx, cz) ?: continue
 
                 val color = if(chunkOwnerId == clanId) clanTerritoryColor else enemyClanTerritoryColor
 
@@ -58,25 +59,25 @@ class VisualizerTask: BukkitRunnable() {
                 val maxX = minX + 16;
                 val maxZ = minZ + 16;
 
-                if(chunkCache.getChunkOwner(worldUuid, cx, cz - 1) != chunkOwnerId) {
+                if(clanChunkCache.getChunkOwner(worldUuid, cx, cz - 1) != chunkOwnerId) {
                     for(x in minX..maxX){
                         player.spawnParticle(Particle.DUST, Location(world, x.toDouble(), y, minZ.toDouble()), 1, color)
                     }
                 }
 
-                if(chunkCache.getChunkOwner(worldUuid, cx, cz + 1) != chunkOwnerId) {
+                if(clanChunkCache.getChunkOwner(worldUuid, cx, cz + 1) != chunkOwnerId) {
                     for(x in minX..maxX){
                         player.spawnParticle(Particle.DUST, Location(world, x.toDouble(), y, maxZ.toDouble()), 1, color)
                     }
                 }
 
-                if(chunkCache.getChunkOwner(worldUuid, cx - 1, cz) != chunkOwnerId) {
+                if(clanChunkCache.getChunkOwner(worldUuid, cx - 1, cz) != chunkOwnerId) {
                     for(z in minZ..maxZ){
                         player.spawnParticle(Particle.DUST, Location(world, minX.toDouble(), y, z.toDouble()), 1, color)
                     }
                 }
 
-                if(chunkCache.getChunkOwner(worldUuid, cx + 1, cz) != chunkOwnerId) {
+                if(clanChunkCache.getChunkOwner(worldUuid, cx + 1, cz) != chunkOwnerId) {
                     for(z in minZ..maxZ){
                         player.spawnParticle(Particle.DUST, Location(world, maxX.toDouble(), y, z.toDouble()), 1, color)
                     }

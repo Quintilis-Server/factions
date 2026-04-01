@@ -38,25 +38,25 @@ class CoreService(private val plugin: Factions) {
         return item
     }
 
-    fun placeNexus(item: ItemStack, block: Block, clan: ClanEntity) {
-        val pdcValue = item.itemMeta.persistentDataContainer.get(Keys.NEXUS_ITEM, PersistentDataType.STRING)
-
-        var core: ClanCoreEntity
-
-        if (pdcValue == "NEW"){
-            core = ClanCoreEntity(
-                clanId = clan.id!!,
-                type = CoreType.NEXUS,
-            ).save()
-        }else{
-            val id = pdcValue?.toIntOrNull() ?: return
-            core = coreDao.findById(id) ?: return
-        }
-
-        core = core.updateLocation(block.location)
-
-
-        
-        core.save<ClanCoreEntity>()
-    }
+//    fun placeNexus(item: ItemStack, block: Block, clan: ClanEntity) {
+//        val pdcValue = item.itemMeta.persistentDataContainer.get(Keys.NEXUS_ITEM, PersistentDataType.STRING)
+//
+//        var core: ClanCoreEntity
+//
+//        if (pdcValue == "NEW"){
+//            core = ClanCoreEntity(
+//                clanId = clan.id!!,
+//                type = CoreType.NEXUS,
+//            ).save()
+//        }else{
+//            val id = pdcValue?.toIntOrNull() ?: return
+//            core = coreDao.findById(id) ?: return
+//        }
+//
+//        core = core.updateLocation(block.location)
+//
+//
+//
+//        core.save<ClanCoreEntity>()
+//    }
 }

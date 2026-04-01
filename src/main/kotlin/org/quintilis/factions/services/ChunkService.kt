@@ -10,6 +10,7 @@ import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.results.Result
 import org.quintilis.factions.entities.clan.ClanCoreEntity
 import org.quintilis.factions.extensions.toEntity
+import org.quintilis.factions.services.FactionsServices.clanChunkCache
 import java.util.UUID
 
 /**
@@ -67,7 +68,7 @@ class ChunkService {
             for(checkZ in (centerZ-1)..(centerZ+1)){
                 val currentChunk = world.getChunkAt(checkX, checkZ).toEntity()
                 //Checagem de ocupação
-                val ownerId = chunkCache.getChunkOwner(currentChunk)
+                val ownerId = clanChunkCache.getChunkOwner(currentChunk)
 
                 if(ownerId != null){
                     if(ownerId != clan.id){
@@ -89,7 +90,7 @@ class ChunkService {
                             continue
                         }
 
-                        if(chunkCache.getChunkOwner(worldUuid, neighborX, neighborZ) == clan.id){
+                        if(clanChunkCache.getChunkOwner(worldUuid, neighborX, neighborZ) == clan.id){
                             isConnected = true
                             break
                         }
@@ -154,10 +155,8 @@ class ChunkService {
         val z = chunk.z
         
         // Verifica se o chunk pertence ao clã
-        val currentOwner = chunkCache.getChunkOwner(worldUuid, x, z)
-        if (currentOwner == null) {
-            return Result.Error("chunk.error.not_claimed")
-        }
+        val currentOwner =
+            clanChunkCache.getChunkOwner(worldUuid, x, z) ?: return Result.Error("chunk.error.not_claimed")
         if (currentOwner != clan.id) {
             return Result.Error("chunk.error.not_owned")
         }
@@ -208,21 +207,21 @@ class ChunkService {
      * Verifica se um chunk está reivindicado.
      */
     fun isClaimed(worldUuid: UUID, x: Int, z: Int): Boolean {
-        return chunkCache.isClaimed(worldUuid, x, z)
+        return clanChunkCache.isClaimed(worldUuid, x, z)
     }
     
     /**
      * Retorna o ID do clã dono de um chunk.
      */
     fun getChunkOwner(worldUuid: UUID, x: Int, z: Int): Int? {
-        return chunkCache.getChunkOwner(worldUuid, x, z)
+        return clanChunkCache.getChunkOwner(worldUuid, x, z)
     }
     
     /**
      * Retorna o clã dono de um chunk.
      */
     fun getChunkOwnerClan(worldUuid: UUID, x: Int, z: Int): ClanEntity? {
-        val ownerId = chunkCache.getChunkOwner(worldUuid, x, z) ?: return null
+        val ownerId = clanChunkCache.getChunkOwner(worldUuid, x, z) ?: return null
         return clanCache.getClan(ownerId)
     }
     

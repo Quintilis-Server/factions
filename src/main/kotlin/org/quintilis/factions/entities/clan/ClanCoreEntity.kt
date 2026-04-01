@@ -1,5 +1,7 @@
 package org.quintilis.factions.entities.clan
 
+import org.bukkit.Bukkit
+import org.bukkit.Chunk
 import org.bukkit.Location
 import org.bukkit.World
 import org.quintilis.factions.entities.BaseEntity
@@ -7,7 +9,11 @@ import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.enums.CoreType
+import org.quintilis.factions.services.FactionsServices.chunkCache
+import org.quintilis.factions.services.FactionsServices.clanChunkDao
+import org.quintilis.factions.structure.CoreStructure
 import java.time.Instant
+import java.util.UUID
 
 @TableName("clan_cores")
 data class ClanCoreEntity(
@@ -58,16 +64,47 @@ data class ClanCoreEntity(
         }
         return null
     }
+
+    fun getChunk(): Chunk{
+        val world = getWorld()
+        val location = this.getLocation(world)!!
+        return world.getChunkAt(location)
+    }
+
+    fun getWorld(): World {
+        val chunks = chunkCache.getChunksByClan(clanId)
+        val world = Bukkit.getWorld(chunks.get(0).worldUuid)!!
+        return world
+    }
+
     fun takeDamage(amount: Int): Boolean {
         this.health -= amount
         return this.health <= 0
     }
 
-    fun updateLocation(location: Location): ClanCoreEntity {
-        this.x = location.x.toInt()
-        this.y = location.y.toInt()
-        this.z = location.z.toInt()
-
-        return this
+    fun getStructure(): CoreStructure {
+        return CoreStructure.fromCore(this)
     }
+
+    fun deleteCore(){
+        val structure = getStructure()
+        this.deletedAt = Instant.now()
+        this.active = false
+
+        val chunks = clanChunkDao.findByCore(this)
+
+        chunks.forEach {
+
+        }
+        this.save<BaseEntity>()
+        structure.destroyStructure()
+    }
+
+//    fun updateLocation(location: Location): ClanCoreEntity {
+//        this.x = location.x.toInt()
+//        this.y = location.y.toInt()
+//        this.z = location.z.toInt()
+//
+//        return this
+//    }
 }

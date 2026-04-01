@@ -18,6 +18,7 @@ import org.quintilis.factions.managers.ErrorManager
 import org.quintilis.factions.results.Result
 import org.quintilis.factions.services.CoreService
 import org.quintilis.factions.services.FactionsServices
+import org.quintilis.factions.services.FactionsServices.coreCache
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -110,6 +111,10 @@ class ClanCommand(
                         "clan.delete.member_response",
                         Argument.string("leader_name", sender.name)
                     )
+                }
+
+                coreCache.findByClanId(clan.id).forEach { c ->
+                    c.deleteCore()
                 }
                 sender.sendTranslatable("clan.delete.response")
             }

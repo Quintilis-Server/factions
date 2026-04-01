@@ -2,6 +2,7 @@ package org.quintilis.factions.listeners
 
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.quintilis.factions.Factions
 import org.quintilis.factions.annotations.AutoRegister
@@ -30,6 +31,13 @@ class PlayerJoinListener(private val plugin: Factions): Listener {
         }
 
         plugin.logger.info("Player ${player.name} joined successfully")
+
+    }
+
+    @EventHandler
+    fun onDeath(event: PlayerDeathEvent) {
+        plugin.logger.info("Player ${event.player.name} death")
+        val killer = event.entity.killer ?: return
 
     }
 }

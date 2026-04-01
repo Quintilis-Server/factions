@@ -4,12 +4,14 @@ import org.quintilis.factions.Factions
 import org.quintilis.factions.cache.AllyInviteCache
 import org.quintilis.factions.cache.ChunkCache
 import org.quintilis.factions.cache.ClanCache
+import org.quintilis.factions.cache.ClanChunkCache
 import org.quintilis.factions.cache.ClanRelationCache
 import org.quintilis.factions.cache.CoreCache
 import org.quintilis.factions.cache.MemberInviteCache
 import org.quintilis.factions.cache.PlayerCache
 import org.quintilis.factions.dao.AllyInviteDao
 import org.quintilis.factions.dao.ChunkDao
+import org.quintilis.factions.dao.ClanChunkDao
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.dao.ClanRelationDao
 import org.quintilis.factions.dao.CoreDao
@@ -55,6 +57,10 @@ object FactionsServices {
         DatabaseManager.getDAO(ChunkDao::class)
     }
 
+    val clanChunkDao: ClanChunkDao by lazy {
+        DatabaseManager.getDAO(ClanChunkDao::class)
+    }
+
     val coreDao: CoreDao by lazy {
         DatabaseManager.getDAO(CoreDao::class)
     }
@@ -84,6 +90,10 @@ object FactionsServices {
 
     val chunkCache: ChunkCache by lazy {
         ChunkCache(chunkDao)
+    }
+
+    val clanChunkCache: ClanChunkCache by lazy {
+        ClanChunkCache(clanChunkDao)
     }
 
     val coreCache: CoreCache by lazy {
