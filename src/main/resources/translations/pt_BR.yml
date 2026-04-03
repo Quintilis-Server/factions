@@ -1,0 +1,183 @@
+# ============================================
+# Erros e Avisos Globais
+# ============================================
+error:
+    invalid_page: "<red>Página invalida. Por favor, use um número entre [1-<total_pages>]."
+    is_not_player: "Esse comando só pode ser usado por um jogador."
+    unknown_subcommand: "<red>Subcomando desconhecido: <command_name>."
+    no_permission: "<red>Você não tem permissão de usar esse comando."
+    no_player: "<red>Jogador não encontrado."
+    no_clan: "<red>Clã não encontrado."
+    no_member_invite: "<red>Convite para clã não encontrado."
+    already_invited: "<red>Já existe um convite para <name>."
+    arguments_missing: "<red>Falta argumentos para completar o comando, use <gold>/<command_name> help</gold> para mais informações"
+    already_in_a_clan: "<red>O jogador <bold><player_name></bold> já está em um clã."
+    not_in_clan: "<red>Você não está em nenhum clã."
+    internal_error: "<dark_red>Erro interno. Contate a administração."
+    missing_arguments: "<red>Faltam argumentos para este comando."
+    not_implemented: "<yellow>Este comando ainda não foi implementado."
+    player_not_found: "<red>Jogador não encontrado."
+    generic: "<red>Ocorreu um erro inesperado."
+    clan_not_found: "<red>Clã <bold><clan_name></bold> não encontrado."
+
+info:
+    admin_action: "<dark_red>Ação admin"
+
+help:
+    header: "<gold>---[ Ajuda Factions (Página <page>/<total_pages>) ]---</gold>"
+    footer: "<gold>---[ Digite <bold>/<command> help <pagina></bold> para ver mais ]---</gold>"
+    command:
+        format: "<gold><command></gold><gray>: <description></gray>"
+
+command:
+    format: "/<alias> <subcommand>"
+
+gui:
+    previous_page: "<yellow>« Página Anterior</yellow>"
+    next_page: "<yellow>Próxima Página »</yellow>"
+    back: "<red>Voltar</red>"
+    close: "<red>Fechar</red>"
+
+# ============================================
+# Comandos e Sistema de Clãs
+# ============================================
+clan:
+    is_not_leader: "<red>Você não é o líder do clã."
+    
+    create:
+        description: "Comando para criar um clã, se nenhum valor for colocado no [tag] ele será vazio."
+        error:
+            already_exists: "<red>Clã <clan_name> já existe."
+        response: "Clã <bold><clan_name></bold> criado com sucesso."
+        dropped_item: "<yellow>Seu inventário estava cheio, o Nexus caiu no chão!"
+    
+    quit:
+        response: "Você saiu do clã"
+        leader_response: "Membro <player_name> saiu do seu clã."
+        error:
+            leader: "<red>Você é o lider do clã, para deletar o clã use <bold><gold>/clan delete"
+    
+    delete:
+        description: "Comando para deletar um clã, somente pode ser executado pelo líder do clã."
+        response: "<dark_gray>Clã desfeito com sucesso."
+        member_response: "<red>Clã desfeito por <leader_name>."
+    
+    list:
+        description: "Comando para listar clãs por páginas. Se nenhum número for colocado no [page] ele será 1"
+        header: "<gold>---[ Clãs (Página <page>/<total_page>) ]---"
+        footer: "<gold>---[ Digite <bold><command> para ver mais ]---"
+        response: "Clã: <bold><clan_name></bold> [<tag>], líder: <bold><leader_name></bold>."
+        item:
+            name: "<gold><clan_name> <dark_gray>[<yellow><clan_tag></yellow>]</dark_gray></gold>"
+            lore: "<gray>Líder: <white><leader_name></white><newline><gray>Honra: <yellow><points></yellow><newline><yellow>Clique para ver detalhes</yellow>"
+    
+    list_menu:
+        title: "<dark_green><bold>Lista de Clãs</bold></dark_green>"
+    
+    invite:
+        invitation_text: "Você foi convidado para o clã <bold><clan_name></bold> para aceitar use o comando <gold>/clan invite accept <clan_name></gold>"
+        response: "Convite para jogador <bold><player_name></bold> enviado com sucesso."
+        accept:
+            clan_response: "Membro <bold><gold><player_name></gold></bold> se juntou ao clã"
+            response: "Você se juntou ao clã <bold><clan_name></bold>"
+        cancel:
+            response: "<yellow>Você cancelou o convite para <bold><player_name></bold>."
+        reject:
+            response: "<yellow>Você recusou o convite do clã <bold><clan_name></bold>."
+            clan_response: "<red>Jogador <bold><player_name></bold> recusou o convite."
+        list:
+            header: "<gold>---[ Convites Pendentes (<count>) ]---</gold>"
+            entry: "<gray>- Clã: <white><clan_name></white></gray>"
+            empty: "<yellow>Você não tem convites pendentes."
+    
+    ally:
+        add:
+            description: "Envia um convite de aliança para outro clã."
+        remove:
+            description: "Remove uma aliança com outro clã."
+            response: "<yellow>Aliança com <bold><clan_name></bold> foi desfeita."
+            target_response: "<red>O clã <bold><clan_name></bold> desfez a aliança."
+        list:
+            description: "Lista os clãs aliados."
+            header: "<gold>---[ Clãs Aliados (<count>) ]---</gold>"
+            entry: "<gray>- <white><clan_name></white></gray>"
+            empty: "<yellow>Seu clã não possui aliados."
+        accept:
+            description: "Aceita um convite de aliança."
+            response: "<green>Aliança com <bold><clan_name></bold> foi aceita!"
+            sender_response: "<green>O clã <bold><clan_name></bold> aceitou sua aliança!"
+        reject:
+            description: "Recusa um convite de aliança."
+            response: "<yellow>Você recusou a aliança do clã <bold><clan_name></bold>."
+            sender_response: "<red>O clã <bold><clan_name></bold> recusou sua aliança."
+        invite:
+            response: "Convite de aliança para clã <clan_name> enviado."
+            invitation_text: "O clã <bold><clan_name></bold> enviou um convite de aliança. Use <gold>/clan ally accept <clan_name></gold> para aceitar."
+        error:
+            is_ally: "<red>Os clãs já são aliados."
+            is_enemy: "<red>Os clãs são inimigos, para se aliar, deve acabar a guerra."
+            no_invite: "<red>Não há convite de aliança deste clã."
+            same_clan: "<red>Você não pode se aliar ao próprio clã."
+    
+    member:
+        list:
+            header: "<gold>---[ Membros do Clã (<count> membros) ]---</gold>"
+            entry: "<gray>- <white><player_name></white> <dark_gray>(<role>)</dark_gray></gray>"
+        kick:
+            response: "<yellow>Jogador <bold><player_name></bold> foi removido do clã."
+            target_response: "<red>Você foi removido do clã por <leader_name>."
+        promote:
+            response: "<green>Você transferiu a liderança do clã para <bold><player_name></bold>."
+            new_leader: "<gold>Você agora é o líder do clã <bold><clan_name></bold>!"
+            error:
+                self: "<red>Você não pode promover a si mesmo."
+    
+    admin:
+        description: "Comandos de administração de clãs."
+        delete:
+            description: "Deleta um clã."
+            response: "<green>Clã <bold><clan_name></bold> deletado com sucesso."
+            target_response: "<red>Seu clã foi deletado pelo admin <admin_name>."
+        setname:
+            description: "Altera o nome de um clã."
+            response: "<green>Nome do clã alterado de <bold><old_name></bold> para <bold><new_name></bold>."
+        settag:
+            description: "Altera a tag de um clã."
+            response: "<green>Tag do clã <bold><clan_name></bold> alterada para <bold><new_tag></bold>."
+            error:
+                exists: "<red>A tag <bold><tag></bold> já está em uso."
+        setleader:
+            description: "Altera o líder de um clã."
+            response: "<green>Líder do clã <bold><clan_name></bold> alterado para <bold><new_leader></bold>."
+            target_response: "<gold>Você agora é o líder do clã <bold><clan_name></bold>! (Alterado pelo admin <admin_name>)"
+            old_leader_response: "<yellow>Você não é mais o líder do clã <clan_name>. O novo líder é <new_leader>."
+    
+    claim:
+        response: "Você comprou um núcleo de clã. Coloque ele no chão para reivindicar uma área de 3x3 Chunks para seu clã. <bold>Somente o chefe do clã pode fazer isso</bold>."
+
+# ============================================
+# Comandos de Membro (Raiz)
+# ============================================
+member:
+    invite:
+        description: "Convida um jogador para o clã."
+    remove:
+        description: "Remove um membro do clã."
+    promote:
+        description: "Promove um membro do clã."
+    list:
+        description: "Lista os membros do clã."
+
+# ============================================
+# Estruturas e Items
+# ============================================
+nexus:
+    name: "Núcleo do clã (<tag>)"
+
+# ============================================
+# Sistema de Guerra e Pontos
+# ============================================
+kill:
+    stolen:
+        killer: "<yellow>Roubou <bold><stolen_points></bold> do jogador <bold><victim></bold>"
+        victim: "<red>Jogador <bold><player></bold> roubou <bold><stolen_points></bold> de você"

@@ -13,6 +13,7 @@ import org.quintilis.factions.util.ClassScanner
 import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.managers.DatabaseManager
 import org.quintilis.factions.managers.RedisManager
+import org.quintilis.factions.managers.TranslationManager
 import org.quintilis.factions.services.CoreService
 import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.util.Keys
@@ -57,7 +58,7 @@ class Factions : JavaPlugin() {
 
         this.registerCommands()
 
-        this.registerTranslations()
+        TranslationManager.registerTranslations(this)
     }
 
     private fun registerCommands(){
@@ -119,8 +120,8 @@ class Factions : JavaPlugin() {
         }
     }
 
-    private fun registerEvents(){
-        val classes:List<Class<Listener>> = ClassScanner.findClasses<Listener, AutoRegister>(
+    private fun registerEvents() {
+        val classes: List<Class<Listener>> = ClassScanner.findClasses<Listener, AutoRegister>(
             this,
             "org.quintilis.factions",
         )
@@ -144,36 +145,6 @@ class Factions : JavaPlugin() {
             server.pluginManager.registerEvents(listener, this)
             logger.info("Listener registrado: ${clazz.simpleName}")
         }
-    }
-
-    private fun registerTranslations() {
-        val translationKey = Key.key("factions", "translations")
-
-        val store = MiniMessageTranslationStore.create(translationKey)
-
-        val english = Locale.US
-        val portuguese = Locale.forLanguageTag("pt-BR")
-
-        val bundlePath = "translations.factions"
-
-        try {
-            val bundleEN = ResourceBundle.getBundle(bundlePath, english)
-            val bundlePT = ResourceBundle.getBundle(bundlePath, portuguese)
-
-            store.registerAll(english, bundleEN, false)
-            store.registerAll(portuguese, bundlePT, false)
-
-        } catch (e: MissingResourceException) {
-            logger.warning("NÃO FOI POSSÍVEL ENCONTRAR OS ARQUIVOS DE TRADUÇÃO NO JAR!")
-            logger.warning("Verifique o caminho: $bundlePath")
-            return
-        }
-
-        GlobalTranslator.translator().addSource(store)
-
-        logger.info("Translation sources (en, pt_BR) registered successfully.")
-
-        logger.info("Plugin ${this.name} successfully initiated")
     }
 
     override fun onDisable() {

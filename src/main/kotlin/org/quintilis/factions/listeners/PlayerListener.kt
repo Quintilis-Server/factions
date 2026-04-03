@@ -97,7 +97,7 @@ class PlayerListener(private val plugin: Factions): Listener {
         killerEntity.save<BaseEntity>()
         victimEntity.save<PlayerEntity>()
 
-        killer.sendTranslatable("kill.stolen")
+        killer.sendTranslatable("kill.stolen.killer")
         victim.sendTranslatable("kill.stolen.victim")
         playerCache.invalidate(killer.uniqueId)
         return
