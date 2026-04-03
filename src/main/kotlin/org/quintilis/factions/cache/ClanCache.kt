@@ -5,6 +5,7 @@ import org.jdbi.v3.core.HandleConsumer
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanMemberEntity
+import org.quintilis.factions.managers.GsonProvider
 import org.quintilis.factions.managers.RedisManager
 import redis.clients.jedis.Jedis
 import java.util.UUID

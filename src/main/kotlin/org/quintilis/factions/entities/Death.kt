@@ -3,6 +3,7 @@ package org.quintilis.factions.entities
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
+import org.bukkit.event.entity.PlayerDeathEvent
 import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
@@ -12,7 +13,7 @@ import org.quintilis.factions.services.FactionsServices.playerCache
 import java.time.Instant
 import java.util.UUID
 
-@TableName("death")
+@TableName("deaths")
 data class Death(
     @PrimaryKey
     val id: Int? = null,
@@ -37,5 +38,15 @@ data class Death(
 
     fun getKillerEntity(): PlayerEntity? {
         return playerCache.getPlayer(killerId)
+    }
+
+    companion object{
+        fun fromEvent(event: PlayerDeathEvent, killer: PlayerEntity): Death {
+            val death = Death(
+                playerId = event.player.uniqueId,
+                killerId = killer.id,
+            )
+            return death.save()
+        }
     }
 }

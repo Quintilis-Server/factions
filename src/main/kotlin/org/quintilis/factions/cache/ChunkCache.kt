@@ -6,6 +6,7 @@ import org.jdbi.v3.core.HandleConsumer
 import org.quintilis.factions.dao.ChunkDao
 import org.quintilis.factions.entities.chunk.ChunkEntity
 import org.quintilis.factions.entities.clan.ClanChunkEntity
+import org.quintilis.factions.managers.GsonProvider
 import org.quintilis.factions.managers.RedisManager
 import redis.clients.jedis.Jedis
 import java.util.UUID

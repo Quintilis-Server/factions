@@ -21,6 +21,11 @@ object ConfigManager {
         return value
     }
 
+    private fun getPercentage(path: String): Double{
+        val value = this.getInt(path).toDouble()
+        return value / 100
+    }
+
     fun getHost(): String{
         return this.getString("database.host")
     }
@@ -71,5 +76,13 @@ object ConfigManager {
 
     fun getWarAllyPoints(): Int{
         return this.getInt("war.ally-points")
+    }
+
+    fun getNeutralKillPercentage(): Double{
+        return this.getPercentage("neutralStealPoints")
+    }
+
+    fun getEnemyKillPercentage(): Double{
+        return this.getPercentage("enemyStealPoints")
     }
 }

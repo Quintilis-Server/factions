@@ -3,6 +3,7 @@ package org.quintilis.factions.cache
 import org.jdbi.v3.core.HandleConsumer
 import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.entities.player.PlayerEntity
+import org.quintilis.factions.managers.GsonProvider
 import redis.clients.jedis.Jedis
 import java.time.Duration
 import java.util.UUID

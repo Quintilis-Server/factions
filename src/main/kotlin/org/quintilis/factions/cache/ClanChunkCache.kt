@@ -5,6 +5,7 @@ import org.bukkit.Chunk
 import org.quintilis.factions.dao.ClanChunkDao
 import org.quintilis.factions.entities.chunk.ChunkEntity
 import org.quintilis.factions.entities.clan.ClanChunkEntity
+import org.quintilis.factions.managers.GsonProvider
 import redis.clients.jedis.Jedis
 import java.util.UUID
 
