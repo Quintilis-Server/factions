@@ -89,7 +89,10 @@ class PlayerListener(private val plugin: Factions): Listener {
             else ->  ConfigManager.getNeutralKillPercentage()
         }
         val stolenPoints = (victimEntity.points * percentage).toInt()
-        val finalStolenPoints = if (stolenPoints > 1) 1 else stolenPoints
+        val finalStolenPoints = if (stolenPoints < 1) ConfigManager.getKillPoints() else stolenPoints
+        if(stolenPoints > 1){
+            victimEntity.points -= finalStolenPoints
+        }
 
         killerEntity.points += finalStolenPoints
         victimEntity.points -= finalStolenPoints
