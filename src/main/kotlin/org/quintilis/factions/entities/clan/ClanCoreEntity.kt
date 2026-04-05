@@ -10,6 +10,7 @@ import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.enums.CoreType
 import org.quintilis.factions.services.FactionsServices.chunkCache
+import org.quintilis.factions.services.FactionsServices.clanCache
 import org.quintilis.factions.services.FactionsServices.clanChunkDao
 import org.quintilis.factions.structure.CoreStructure
 import java.time.Instant
@@ -98,6 +99,10 @@ data class ClanCoreEntity(
         }
         this.save<BaseEntity>()
         structure.destroyStructure()
+    }
+
+    fun getClan(): ClanEntity?{
+        return clanCache.findById(clanId)
     }
 
 //    fun updateLocation(location: Location): ClanCoreEntity {

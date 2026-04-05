@@ -1,6 +1,8 @@
 package org.quintilis.factions.managers
 
 import net.kyori.adventure.key.Key
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslationStore
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.configuration.file.YamlConfiguration
@@ -14,6 +16,8 @@ import java.util.ResourceBundle
 import java.util.jar.JarFile
 
 object TranslationManager {
+
+    private val loadedYamls = mutableMapOf<Locale, YamlConfiguration>()
     /**
      * Inicia o sistema de traduções dinâmico.
      * @param plugin A instância principal do seu plugin (Factions)
@@ -40,6 +44,8 @@ object TranslationManager {
             return
         }
 
+        loadedYamls.clear()
+
         var loadedCount = 0
 
         // 3. Lê cada arquivo dinamicamente
@@ -53,6 +59,8 @@ object TranslationManager {
 
             // Carrega o arquivo YAML usando a API do Bukkit
             val yaml = YamlConfiguration.loadConfiguration(file)
+
+            loadedYamls[locale] = yaml
 
             // Transforma o YAML no Bundle falso que criamos abaixo
             val bundle = YamlResourceBundle(yaml)
@@ -117,5 +125,17 @@ object TranslationManager {
             val keys = yaml.getKeys(true).filter { yaml.isString(it) }
             return Collections.enumeration(keys)
         }
+    }
+
+    /**
+     * Pega uma mensagem do YAML e já transforma em Componente processando MiniMessage
+     */
+    fun render(key: String, locale: Locale = Locale.forLanguageTag("pt-BR"), vararg resolvers: net.kyori.adventure.text.minimessage.tag.resolver.TagResolver): Component {
+        // Aqui você precisaria de uma forma de acessar os Yamls carregados.
+        // Uma forma simples é ter um Map de <Locale, YamlConfiguration> no seu Manager.
+        val yaml = loadedYamls[locale] ?: loadedYamls.values.first() // Pega o do idioma ou o primeiro que achar
+        val rawMessage = yaml.getString(key) ?: key
+
+        return MiniMessage.miniMessage().deserialize(rawMessage, *resolvers)
     }
 }

@@ -14,7 +14,7 @@ class ClaimCommandHandler(private val coreService: CoreService) {
             clanId = clan.id!!,
             type = CoreType.SUB_CORE
         ).save<ClanCoreEntity>()
-        val core = coreService.createExistingNexusItem(coreEntity)
+        val core = coreService.createExistingNexusItem(coreEntity, sender.locale())
         sender.inventory.addItem(core)
         sender.sendTranslatable("clan.claim.response")
     }

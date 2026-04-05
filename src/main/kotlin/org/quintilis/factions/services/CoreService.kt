@@ -2,6 +2,8 @@ package org.quintilis.factions.services
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -12,8 +14,10 @@ import org.quintilis.factions.entities.clan.ClanCoreEntity
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.enums.CoreType
 import org.quintilis.factions.extensions.setGlowing
+import org.quintilis.factions.managers.TranslationManager
 import org.quintilis.factions.util.Keys
 import java.time.Instant
+import java.util.Locale
 
 class CoreService(private val plugin: Factions) {
 
@@ -27,11 +31,27 @@ class CoreService(private val plugin: Factions) {
         core.z = location.z.toInt()
     }
 
-    fun createExistingNexusItem(nexusEntity: ClanCoreEntity): ItemStack {
+    private fun getNexusDisplayName(tag: String, locale: Locale): Component {
+        // Usamos o renderizador do MiniMessage com um Placeholder chamado "tag"
+        return TranslationManager.render(
+            "nexus.name",
+            Locale.forLanguageTag("pt-BR"),
+            Placeholder.unparsed("tag", tag) // Isso substitui o <tag> no seu YAML pelo texto real
+        )
+    }
+
+    fun createExistingNexusItem(nexusEntity: ClanCoreEntity, locale: Locale): ItemStack {
+        val keyType = when(nexusEntity.type) {
+            CoreType.NEXUS -> Keys.NEXUS_ITEM
+            CoreType.SUB_CORE -> Keys.CORE_ITEM
+        }
+        val clan = nexusEntity.getClan()!!
+        val nameComponent = this.getNexusDisplayName(clan.tag ?: clan.name, locale)
+
         val item = ItemBuilder.from(Material.BEACON)
-            .name(Component.translatable("nexus.name"))
+            .name(nameComponent)
             .pdc { pdc ->
-                pdc.set(Keys.NEXUS_ITEM, PersistentDataType.INTEGER, nexusEntity.id!!)
+                pdc.set(keyType, PersistentDataType.INTEGER, nexusEntity.id!!)
             }
             .build()
         item.setGlowing(true)

@@ -70,7 +70,7 @@ class ClanService {
         clanCache.invalidateGlobalCaches()
         clanCache.invalidateMember(leader.uniqueId)
 
-        val nexusItem = coreService.createExistingNexusItem(core)
+        val nexusItem = coreService.createExistingNexusItem(core, leader.locale())
 
         val leftovers = leader.inventory.addItem(nexusItem)
         if(leftovers.isNotEmpty()) {
