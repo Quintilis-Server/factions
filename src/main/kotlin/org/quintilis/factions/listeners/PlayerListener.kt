@@ -1,5 +1,6 @@
 package org.quintilis.factions.listeners
 
+import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -95,14 +96,22 @@ class PlayerListener(private val plugin: Factions): Listener {
         }
 
         killerEntity.points += finalStolenPoints
-        victimEntity.points -= finalStolenPoints
 
         killerEntity.save<BaseEntity>()
         victimEntity.save<PlayerEntity>()
 
-        killer.sendTranslatable("kill.stolen.killer")
-        victim.sendTranslatable("kill.stolen.victim")
-        playerCache.invalidate(killer.uniqueId)
+        killer.sendTranslatable(
+            "kill.stolen.killer",
+            Argument.numeric("stolen_points", finalStolenPoints),
+            Argument.string("victim", victim.name)
+        )
+        if(stolenPoints > 0) {
+            victim.sendTranslatable(
+                "kill.stolen.victim",
+                Argument.numeric("stolen_points", finalStolenPoints),
+                Argument.string("player", killer.name)
+            )
+        }
         return
     }
 }

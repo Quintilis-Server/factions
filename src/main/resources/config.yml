@@ -12,6 +12,7 @@ redis:
   port: 6379
   database: 1
 kill:
+  points: 10
   neutralStealPoints: 10 # 10%
   enemyStealPoints: 20 #20%
 war:

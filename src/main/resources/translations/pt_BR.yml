@@ -179,5 +179,5 @@ nexus:
 # ============================================
 kill:
     stolen:
-        killer: "<yellow>Roubou <bold><stolen_points></bold> do jogador <bold><victim></bold>"
+        killer: "<yellow>Você roubou <bold><stolen_points></bold> do jogador <bold><victim></bold>"
         victim: "<red>Jogador <bold><player></bold> roubou <bold><stolen_points></bold> de você"

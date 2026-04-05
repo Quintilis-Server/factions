@@ -79,10 +79,14 @@ object ConfigManager {
     }
 
     fun getNeutralKillPercentage(): Double{
-        return this.getPercentage("neutralStealPoints")
+        return this.getPercentage("kill.neutralStealPoints")
     }
 
     fun getEnemyKillPercentage(): Double{
-        return this.getPercentage("enemyStealPoints")
+        return this.getPercentage("kill.enemyStealPoints")
+    }
+
+    fun getKillPoints(): Int{
+        return this.getInt("kill.points")
     }
 }
