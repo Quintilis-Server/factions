@@ -55,27 +55,31 @@ class PlayerListener(private val plugin: Factions): Listener {
         val killerClan = killerEntity.getClan()
         val victimClan = victimEntity.getClan()
 
-        if(killerClan == null || victimClan == null) {
-            stealPercentagePoints(killer, killerEntity, event.player, victimEntity)
-            return
+        if(killerClan != null){
+            if(victimClan == null){
+                killerClan.addPoints(ConfigManager.getWarNeutralPoints())
+            } else {
+                val isAlly = clanRelationCache.isRelation(killerClan, victimClan, Relation.ALLY)
+                val isEnemy = clanRelationCache.isRelation(killerClan, victimClan, Relation.ENEMY)
+                when {
+                    isAlly -> {
+                        return
+                    }
+                    isEnemy -> {
+                        killerClan.addPoints(ConfigManager.getWarEnemyPoints())
+                    }
+                    else ->{
+                        killerClan.addPoints(ConfigManager.getWarNeutralPoints())
+                    }
+                }
+            }
         }
+        val relation = if (killerClan != null && victimClan != null &&
+            clanRelationCache.isRelation(killerClan.id!!, victimClan.id!!, Relation.ENEMY))
+            Relation.ENEMY else Relation.ALLY
 
-        //Estado onde os clãs são aliados
-        if(clanRelationCache.isRelation(killerClan.id!!, victimClan.id!!, Relation.ALLY)) {
-            killerClan.addPoints(ConfigManager.getWarAllyPoints())
-            return
-        }
+        stealPercentagePoints(killer, killerEntity, event.player, victimEntity, relation)
 
-        //Estado onde os clãs são inimigos
-        if(clanRelationCache.isRelation(killerClan.id, victimClan.id, Relation.ENEMY)) {
-            killerClan.addPoints(ConfigManager.getWarEnemyPoints())
-            stealPercentagePoints(killer, killerEntity, event.player, victimEntity, Relation.ENEMY)
-            return
-        }
-
-        //Estado onde os clãs não tem relação clara
-        stealPercentagePoints(killer, killerEntity, event.player, victimEntity)
-        killerClan.addPoints(ConfigManager.getWarNeutralPoints())
     }
 
     private fun stealPercentagePoints(
