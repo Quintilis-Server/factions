@@ -6,6 +6,8 @@ import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.annotations.Transient
 import org.quintilis.factions.entities.BaseEntity
+import org.quintilis.factions.entities.player.PlayerEntity
+import org.quintilis.factions.services.FactionsServices.clanCache
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -35,8 +37,16 @@ data class ClanEntity(
         this.save<BaseEntity>()
     }
 
+    fun havePoints(x: Int): Boolean {
+        return this.points >= x
+    }
+
     fun removePoints(points: Int) {
         this.points -= points
         this.save<BaseEntity>()
+    }
+
+    fun getMembers(): List<ClanMemberEntity>{
+        return clanCache.getMembers(this.id!!)
     }
 }

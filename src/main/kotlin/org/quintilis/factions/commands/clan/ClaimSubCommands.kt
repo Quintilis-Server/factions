@@ -12,6 +12,25 @@ enum class ClaimSubCommands(
     BUY(
         "buy",
         "/clan claim buy",
-        HelpEntry("clan.claim.buy.description", "factions.usage")
-    )
+        HelpEntry("clan.claim.buy.description", "factions.usage"),
+        subCommands = ClaimBuySubCommands.entries.toTypedArray()
+    );
+
+    enum class ClaimBuySubCommands(
+        override val command: String,
+        override val usage: String,
+        override val helpEntry: HelpEntry,
+        override val subCommands: Array<out Commands>? = null
+    ): Commands {
+        SUB_CORE(
+            command = "core",
+            "/clan claim buy core",
+            HelpEntry("clan.claim.sub.description", "factions.usage"),
+        ),
+        ANTI_CORE(
+            command = "anti-core",
+            "/clan claim buy anticore",
+            HelpEntry("clan.claim.anti-core.description", "factions.usage"),
+        )
+    }
 }

@@ -1,4 +1,6 @@
 package org.quintilis.factions.dao
 
-interface AntiCoreDao {
+import org.quintilis.factions.entities.clan.AntiCoreEntity
+
+interface AntiCoreDao: BaseDao<AntiCoreEntity, Int> {
 }

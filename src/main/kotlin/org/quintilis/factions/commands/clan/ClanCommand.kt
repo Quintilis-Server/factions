@@ -257,8 +257,7 @@ class ClanCommand(
         val clan = sender.getClanAsLeader() ?: return this.noClanLeader(sender);
         val subCommand = findSubCommand(sender, args, ClaimSubCommands.entries) ?: return
         when (subCommand) {
-            ClaimSubCommands.BUY -> claimHandler.buy(sender, clan);
-
+            ClaimSubCommands.BUY -> claimHandler.buy(sender, clan, args.drop(1));
         }
     }
 

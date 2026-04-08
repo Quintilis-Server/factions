@@ -1,7 +1,10 @@
 package org.quintilis.factions.services
 
+import fr.skytasul.glowingentities.GlowingBlocks
+import fr.skytasul.glowingentities.GlowingEntities
 import org.quintilis.factions.Factions
 import org.quintilis.factions.cache.AllyInviteCache
+import org.quintilis.factions.cache.AntiCoreCache
 import org.quintilis.factions.cache.ChunkCache
 import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.cache.ClanChunkCache
@@ -10,6 +13,7 @@ import org.quintilis.factions.cache.CoreCache
 import org.quintilis.factions.cache.MemberInviteCache
 import org.quintilis.factions.cache.PlayerCache
 import org.quintilis.factions.dao.AllyInviteDao
+import org.quintilis.factions.dao.AntiCoreDao
 import org.quintilis.factions.dao.ChunkDao
 import org.quintilis.factions.dao.ClanChunkDao
 import org.quintilis.factions.dao.ClanDao
@@ -26,9 +30,13 @@ import org.quintilis.factions.managers.DatabaseManager
 object FactionsServices {
 
     private lateinit var plugin: Factions
+    lateinit var glowingBlocks: GlowingBlocks
+    lateinit var glowingEntities: GlowingEntities
 
     fun init(plugin: Factions) {
         this.plugin = plugin
+        this.glowingBlocks = GlowingBlocks(plugin)
+        this.glowingEntities = GlowingEntities(plugin)
     }
     // ============================================
     // DAOs
@@ -65,6 +73,10 @@ object FactionsServices {
         DatabaseManager.getDAO(CoreDao::class)
     }
 
+    val antiCoreDao: AntiCoreDao by lazy {
+        DatabaseManager.getDAO(AntiCoreDao::class)
+    }
+
     // ============================================
     // Caches
     // ============================================
@@ -98,6 +110,10 @@ object FactionsServices {
 
     val coreCache: CoreCache by lazy {
         CoreCache(coreDao)
+    }
+
+    val antiCoreCache: AntiCoreCache by lazy {
+        AntiCoreCache(antiCoreDao)
     }
     // ============================================
     // Services

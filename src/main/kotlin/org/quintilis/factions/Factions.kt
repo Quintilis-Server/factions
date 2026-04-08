@@ -1,8 +1,5 @@
 package org.quintilis.factions
 
-import net.kyori.adventure.key.Key
-import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslationStore
-import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.annotations.AutoRegister
@@ -17,16 +14,14 @@ import org.quintilis.factions.managers.TranslationManager
 import org.quintilis.factions.services.CoreService
 import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.util.Keys
-import java.util.Locale
-import java.util.MissingResourceException
-import java.util.ResourceBundle
+import fr.skytasul.glowingentities.GlowingEntities
 
 class Factions : JavaPlugin() {
 
     override fun onEnable() {
         this.saveDefaultConfig()
 
-        ConfigManager.initialize(this.config)
+        ConfigManager.initialize(this.config, this)
 
         try {
             logger.info("Conectando ao banco de dados PostgreSQL...")
@@ -57,6 +52,8 @@ class Factions : JavaPlugin() {
         this.registerTasks()
 
         this.registerCommands()
+
+        GlowingEntities(this)
 
         TranslationManager.registerTranslations(this)
     }

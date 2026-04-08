@@ -29,8 +29,6 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
     private val coreService = FactionsServices.coreService
     private val chunkService = FactionsServices.chunkService
 
-    private val BASE_MATERIAL = Material.IRON_BLOCK
-
 
     /**
      * Listener de evento de quebra de bloco para checagem de quebra de nexus
@@ -65,8 +63,6 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
                     )
 
                     if(coreCache.findByLocation(checkLocation) != null) {
-//                        if(player.hasPermission("factions.admin")) return
-
                         event.isCancelled = true
                         player.sendTranslatable("nexus.protect.indestructible")
                         return

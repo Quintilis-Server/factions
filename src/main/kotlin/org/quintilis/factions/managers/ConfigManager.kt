@@ -1,12 +1,16 @@
 package org.quintilis.factions.managers
 
+import fr.skytasul.glowingentities.GlowingBlocks
+import fr.skytasul.glowingentities.GlowingEntities
 import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.exceptions.ConfigFileNullValueException
 
 object ConfigManager {
     private lateinit var config: FileConfiguration
 
-    fun initialize(config: FileConfiguration) {
+
+    fun initialize(config: FileConfiguration, plugin: JavaPlugin) {
         this.config = config
     }
     private fun getString(path: String): String{
@@ -88,5 +92,13 @@ object ConfigManager {
 
     fun getKillPoints(): Int{
         return this.getInt("kill.points")
+    }
+
+    fun getClanCorePrice(): Int{
+        return this.getInt("clan.core-price")
+    }
+
+    fun getClanAntiCorePrice(): Int{
+        return this.getInt("clan.anti-core-price")
     }
 }

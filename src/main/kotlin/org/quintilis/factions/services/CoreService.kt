@@ -7,9 +7,11 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
+import org.bukkit.block.data.type.RespawnAnchor
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.quintilis.factions.Factions
+import org.quintilis.factions.entities.clan.AntiCoreEntity
 import org.quintilis.factions.entities.clan.ClanCoreEntity
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.enums.CoreType
@@ -35,8 +37,16 @@ class CoreService(private val plugin: Factions) {
         // Usamos o renderizador do MiniMessage com um Placeholder chamado "tag"
         return TranslationManager.render(
             "nexus.name",
-            Locale.forLanguageTag("pt-BR"),
+            locale,
             Placeholder.unparsed("tag", tag) // Isso substitui o <tag> no seu YAML pelo texto real
+        )
+    }
+
+    private fun getAnticoreDisplayName(tag: String, locale: Locale): Component {
+        return TranslationManager.render(
+            "anticore.name",
+            locale,
+            Placeholder.unparsed("tag", tag)
         )
     }
 
@@ -54,7 +64,20 @@ class CoreService(private val plugin: Factions) {
                 pdc.set(keyType, PersistentDataType.INTEGER, nexusEntity.id!!)
             }
             .build()
-        item.setGlowing(true)
+        item.setGlowing(nexusEntity.type == CoreType.NEXUS)
+        return item
+    }
+
+    fun createAntiCoreItem(antiCore: AntiCoreEntity, locale: Locale): ItemStack{
+        val clan = antiCore.getClan()!!
+        val nameComponent = this.getAnticoreDisplayName(clan.tag ?: clan.name, locale)
+
+        val item = ItemBuilder.from(Material.RESPAWN_ANCHOR)
+            .name(nameComponent)
+            .pdc {
+                it.set(Keys.ANTI_CORE_ITEM, PersistentDataType.INTEGER, antiCore.id!!)
+            }
+            .build()
         return item
     }
 

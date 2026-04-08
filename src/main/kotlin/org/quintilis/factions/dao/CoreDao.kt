@@ -68,4 +68,23 @@ interface CoreDao: BaseDao<ClanCoreEntity, Int> {
         @Bind("chunkX") chunkX: Int,
         @Bind("chunkZ") chunkZ: Int
     ): ClanCoreEntity?
+
+    @SqlQuery(
+        """
+        SELECT core.* FROM clan_cores core
+        WHERE ABS(x - :x) < 50  -- Limite rápido de 50 blocos no eixo X
+          AND ABS(z - :z) < 50
+        ORDER BY (
+            (x - :x) * (x - :x) +
+            (y - :y) * (y - :y) +
+            (z - :z) * (z - :z)
+        )
+        LIMIT 1
+    """
+    )
+    fun findClosestCore(
+        @Bind("x") x: Int,
+        @Bind("y") y: Int,
+        @Bind("z") z: Int
+    ): ClanCoreEntity?
 }

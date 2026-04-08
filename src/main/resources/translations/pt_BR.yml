@@ -173,6 +173,7 @@ member:
 # ============================================
 nexus:
     name: "Núcleo do clã (<tag>)"
+    protect.indestructible: "<red>Nucleo de clã, entre em <bold>guerra</bold> pra quebrar."
 
 # ============================================
 # Sistema de Guerra e Pontos
