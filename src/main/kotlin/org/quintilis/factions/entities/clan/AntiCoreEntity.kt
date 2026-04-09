@@ -17,25 +17,25 @@ data class AntiCoreEntity(
     val id: Int? = null,
 
     @Column("clan_id")
-    val clanId: Int? = null,
+    var clanId: Int? = null,
 
     @Column
-    val x: Int? = null,
+    var x: Int? = null,
 
     @Column
-    val y: Int? = null,
+    var y: Int? = null,
 
     @Column
-    val z: Int? = null,
+    var z: Int? = null,
 
     @Column
-    val placed: Boolean = false,
+    var placed: Boolean = false,
 
     @Column("target_core_id")
-    val targetCoreId: Int? = null,
+    var targetCoreId: Int? = null,
 
     @Column("placed_at")
-    val placedAt: Instant? = null,
+    var placedAt: Instant? = null,
 
     @Column("created_at")
     val createdAt: Instant = Instant.now(),
@@ -53,7 +53,18 @@ data class AntiCoreEntity(
         return Location(world,this.x!!.toDouble(), this.y!!.toDouble(), this.z!!.toDouble())
     }
 
-    fun getStructure(): AntiCoreStructure{
-        return AntiCoreStructure.fromEntity(this)
+//    fun getStructure(): AntiCoreStructure{
+//        return AntiCoreStructure.fromEntity(this)
+//    }
+
+    fun place(attackerClan: ClanEntity, targetCore: ClanCoreEntity, location: Location){
+        this.x = location.blockX;
+        this.y = location.blockY;
+        this.z = location.blockZ;
+        this.placed = true
+        this.placedAt = Instant.now()
+        this.clanId = attackerClan.id!!
+        this.targetCoreId = targetCore.id
+        this.save<BaseEntity>()
     }
 }

@@ -8,13 +8,14 @@ import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
+import org.quintilis.factions.entities.chunk.ChunkEntity
 import org.quintilis.factions.enums.CoreType
 import org.quintilis.factions.services.FactionsServices.chunkCache
 import org.quintilis.factions.services.FactionsServices.clanCache
+import org.quintilis.factions.services.FactionsServices.clanChunkCache
 import org.quintilis.factions.services.FactionsServices.clanChunkDao
 import org.quintilis.factions.structure.CoreStructure
 import java.time.Instant
-import java.util.UUID
 
 @TableName("clan_cores")
 data class ClanCoreEntity(
@@ -66,10 +67,14 @@ data class ClanCoreEntity(
         return null
     }
 
-    fun getChunk(): Chunk{
+    fun getOwnChunk(): Chunk{
         val world = getWorld()
         val location = this.getLocation(world)!!
         return world.getChunkAt(location)
+    }
+
+    fun getOwnedChunks(): List<ChunkEntity> {
+        return clanChunkCache.findChunksByCoreId(this.id!!)
     }
 
     fun getWorld(): World {

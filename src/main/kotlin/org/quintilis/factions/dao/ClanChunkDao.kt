@@ -43,6 +43,14 @@ interface ClanChunkDao: BaseDao<ClanChunkEntity, Int> {
     """)
     fun findChunksByClanId(@Bind("clanId") clanId: Int): List<ChunkEntity>
 
+    @SqlQuery("""
+        SELECT c.* FROM chunk c
+        JOIN clan_chunk cchunk ON c.id = cchunk.chunk_id
+        JOIN clan_cores cc on cc.id = cchunk.owner_core
+        WHERE cc.id = :coreId
+    """)
+    fun findChunksByCoreId(@Bind("coreId") coreId: Int): List<ChunkEntity>
+
     // Conta quantos chunks o clã tem
     @SqlQuery("SELECT COUNT(*) FROM clan_chunk WHERE clan_id = :clanId AND active = true")
     fun countByClanId(@Bind("clanId") clanId: Int): Int

@@ -10,6 +10,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import org.quintilis.factions.managers.TranslationManager
 import java.text.MessageFormat
 
 abstract class BaseGUI(
@@ -33,18 +34,14 @@ abstract class BaseGUI(
     }
 
     protected fun trans(key: String, vararg resolvers: TagResolver): Component {
-        // Get the translation string from the resource bundle
-        val bundle = java.util.ResourceBundle.getBundle("translations.factions", player.locale())
-        val template = bundle.getString(key)
+        val template = TranslationManager.getRawMessage(key, player.locale())
         
         // Use MiniMessage to deserialize with tag resolvers
         return mm.deserialize(template, *resolvers)
     }
 
     protected fun transLore(key: String, vararg resolvers: TagResolver): List<Component> {
-        // Get the translation string from the resource bundle
-        val bundle = java.util.ResourceBundle.getBundle("translations.factions", player.locale())
-        val template = bundle.getString(key)
+        val template = TranslationManager.getRawMessage(key, player.locale())
         
         // Split by <newline> tag first
         val lines = template.split("<newline>")
@@ -54,6 +51,19 @@ abstract class BaseGUI(
             val trimmed = line.trim()
             mm.deserialize(trimmed, *resolvers)
         }
+    }
+
+    protected fun createItem(
+        material: Material,
+        nameKey: String,
+        loreKey: String? = null,
+        vararg resolvers: TagResolver
+    ): ItemBuilder {
+        val builder = ItemBuilder.from(material).name(trans(nameKey, *resolvers))
+        if (loreKey != null) {
+            builder.lore(transLore(loreKey, *resolvers))
+        }
+        return builder
     }
 
     private fun setupLayout() {

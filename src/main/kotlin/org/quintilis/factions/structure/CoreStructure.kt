@@ -4,12 +4,10 @@ import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.Location
 import org.bukkit.Material
-import org.bukkit.Sound
 import org.bukkit.World
 import org.bukkit.block.Block
 import org.quintilis.factions.entities.clan.ClanCoreEntity
 import org.quintilis.factions.enums.CoreType
-import org.quintilis.factions.extensions.sendTranslatable
 import java.util.UUID
 
 class CoreStructure(
@@ -65,7 +63,7 @@ class CoreStructure(
 
         fun fromCore(core: ClanCoreEntity): CoreStructure {
             val world = core.getWorld()
-            val chunk = core.getChunk()
+            val chunk = core.getOwnChunk()
             val location = core.getLocation(world)
             val structure = CoreStructure(
                 worldUUID = world.uid,

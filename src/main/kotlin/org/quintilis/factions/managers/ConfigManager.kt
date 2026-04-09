@@ -101,4 +101,8 @@ object ConfigManager {
     fun getClanAntiCorePrice(): Int{
         return this.getInt("clan.anti-core-price")
     }
+
+    fun getGlowstonePrice(): Int{
+        return this.getInt("clan.glowstone-price")
+    }
 }

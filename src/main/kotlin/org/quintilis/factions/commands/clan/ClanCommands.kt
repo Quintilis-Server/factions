@@ -73,5 +73,10 @@ enum class ClanCommands(
         "/clan claim",
         HelpEntry("clan.claim.description", "factions.usage"),
         ClaimSubCommands.entries.toTypedArray()
+    ),
+    BETRAY(
+        "betray",
+        "/clan betray <clan>",
+        HelpEntry("clan.betray.description", "factions.usage")
     )
 }

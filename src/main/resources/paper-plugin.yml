@@ -8,3 +8,10 @@ commands:
         description: Main clan command
         aliases: [c]
         usage: /clan [subcommand]
+
+dependencies:
+    server:
+        Citizens:
+            load: BEFORE
+            required: false
+            join-classpath: true

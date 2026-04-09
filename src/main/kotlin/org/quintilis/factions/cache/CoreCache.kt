@@ -109,29 +109,29 @@ class CoreCache(private val coreDao: CoreDao): AbstractDaoCache<CoreDao, ClanCor
         return findById(cachedId)
     }
 
-    override fun findByChunk(chunk: Chunk): ClanCoreEntity? {
-        val key = "${chunk.world.uid}:${chunk.x}:${chunk.z}"
-        val now = System.currentTimeMillis()
-
-        // 1. Tenta achar na memória RAM local (super rápido)
-        val localEntry = localChunkCache[key]
-        if(localEntry != null && localEntry.second > now) {
-            val cachedId = localEntry.first
-            return if (cachedId != null) findById(cachedId) else null
-        }
-
-        // 2. Tenta achar no Redis (ou faz a Query com JOIN no Banco)
-        val cachedId = chunkPosCache.getOrFetch(key) { _ ->
-            // ATENÇÃO: Certifique-se de adicionar essa query no seu CoreDao!
-            val core = coreDao.findByChunkCoords(chunk.world.uid, chunk.x, chunk.z)
-            core?.id
-        }
-
-        // 3. Salva no cache local para as próximas batidas
-        localChunkCache[key] = Pair(cachedId, now + LOCAL_TTL_MS)
-        if(localChunkCache.size > 1000) localChunkCache.clear()
-
-        if(cachedId == null) return null
-        return findById(cachedId)
-    }
+//    override fun findByChunk(chunk: Chunk): ClanCoreEntity? {
+//        val key = "${chunk.world.uid}:${chunk.x}:${chunk.z}"
+//        val now = System.currentTimeMillis()
+//
+//        // 1. Tenta achar na memória RAM local (super rápido)
+//        val localEntry = localChunkCache[key]
+//        if(localEntry != null && localEntry.second > now) {
+//            val cachedId = localEntry.first
+//            return if (cachedId != null) findById(cachedId) else null
+//        }
+//
+//        // 2. Tenta achar no Redis (ou faz a Query com JOIN no Banco)
+//        val cachedId = chunkPosCache.getOrFetch(key) { _ ->
+//            // ATENÇÃO: Certifique-se de adicionar essa query no seu CoreDao!
+//            val core = coreDao.findByChunkCoords(chunk.world.uid, chunk.x, chunk.z)
+//            core?.id
+//        }
+//
+//        // 3. Salva no cache local para as próximas batidas
+//        localChunkCache[key] = Pair(cachedId, now + LOCAL_TTL_MS)
+//        if(localChunkCache.size > 1000) localChunkCache.clear()
+//
+//        if(cachedId == null) return null
+//        return findById(cachedId)
+//    }
 }

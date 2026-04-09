@@ -67,4 +67,15 @@ interface ClanRelationDao: BaseDao<ClanRelationEntity, Int> {
     fun findAllActiveByClanId(
         @Bind("clanId") clanId: Int
     ): List<ClanRelationEntity>
+
+    @SqlQuery("""
+        SELECT * FROM clan_relation
+        WHERE (clan1_id = :clanId OR clan2_id = :clanId)
+        AND (clan1_id = :targetId OR clan2_id = :targetId)
+        AND active = true
+    """)
+    fun findRelation(
+        @Bind("clanId") clanId: Int,
+        @Bind("targetId") targetId: Int
+    ): ClanRelationEntity?
 }

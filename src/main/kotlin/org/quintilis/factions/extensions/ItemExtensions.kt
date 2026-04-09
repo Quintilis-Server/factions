@@ -29,6 +29,15 @@ fun ItemStack.isCoreItem(): Boolean{
     return pdc.has(Keys.CORE_ITEM, PersistentDataType.STRING)
 }
 
+fun ItemStack.isAntiCore(): Boolean{
+    val meta = this.itemMeta ?: return false
+    val pdc = meta.persistentDataContainer
+    if (pdc.has(Keys.ANTI_CORE_ITEM, PersistentDataType.INTEGER)) {
+        return true
+    }
+    return pdc.has(Keys.ANTI_CORE_ITEM, PersistentDataType.STRING)
+}
+
 fun ItemStack.setGlowing(glowing: Boolean): ItemStack {
     val meta = this.itemMeta ?: return this
 

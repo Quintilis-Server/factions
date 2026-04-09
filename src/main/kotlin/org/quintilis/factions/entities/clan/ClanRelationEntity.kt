@@ -18,12 +18,16 @@ data class ClanRelationEntity(
     val clan2Id: Int,
 
     @Column("relation")
-    val relation: Relation,
+    var relation: Relation,
 
     @Column("active")
-    val active: Boolean = true,
+    var active: Boolean = true,
 
     @Column("created_at")
     val createdAt: Instant = Instant.now()
 ): BaseEntity() {
+    fun deactivate() {
+        this.active = false
+        this.save<BaseEntity>()
+    }
 }

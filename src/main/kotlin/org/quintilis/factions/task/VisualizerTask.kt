@@ -8,6 +8,7 @@ import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import org.quintilis.factions.annotations.AutoTask
 import org.quintilis.factions.extensions.getClan
+import org.quintilis.factions.extensions.isAntiCore
 import org.quintilis.factions.extensions.isCoreItem
 import org.quintilis.factions.extensions.isNexusItem
 import org.quintilis.factions.services.FactionsServices
@@ -24,11 +25,13 @@ class VisualizerTask: BukkitRunnable() {
 
             if(!item.hasItemMeta()) continue
 
-            if(!item.isNexusItem() && !item.isCoreItem()) continue
+            val isAntiCore = item.isAntiCore()
+
+            if(!item.isNexusItem() && !item.isCoreItem() && !isAntiCore) continue
 
             val clanId = player.getClan()?.id
 
-            showNewTerritoryBorder(player)
+            if(!isAntiCore) showNewTerritoryBorder(player)
             showCurrentTerritory(player, clanId)
         }
     }

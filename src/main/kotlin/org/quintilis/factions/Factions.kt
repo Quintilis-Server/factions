@@ -56,6 +56,15 @@ class Factions : JavaPlugin() {
         GlowingEntities(this)
 
         TranslationManager.registerTranslations(this)
+
+        if (server.pluginManager.getPlugin("Citizens") != null && server.pluginManager.isPluginEnabled("Citizens")) {
+            net.citizensnpcs.api.CitizensAPI.getTraitFactory().registerTrait(
+                net.citizensnpcs.api.trait.TraitInfo.create(org.quintilis.factions.traits.AntiCoreTrait::class.java).withName("anticore")
+            )
+            logger.info("Citizens detectado. AntiCoreTrait registrado com sucesso.")
+        } else {
+            logger.warning("Citizens não foi encontrado ou não está ativado. NPCs como o de AntiCore não funcionarão.")
+        }
     }
 
     private fun registerCommands(){

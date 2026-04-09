@@ -14,6 +14,7 @@ import java.util.Enumeration
 import java.util.Locale
 import java.util.ResourceBundle
 import java.util.jar.JarFile
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
 object TranslationManager {
 
@@ -127,15 +128,26 @@ object TranslationManager {
         }
     }
 
+    fun getRawMessage(key: String, locale: Locale): String {
+        val yaml = loadedYamls[locale] ?: loadedYamls.values.firstOrNull() ?: return key
+        
+        if (yaml.isList(key)) {
+            return yaml.getStringList(key).joinToString("<newline>")
+        }
+        
+        val str = yaml.getString(key)
+        if (str != null) {
+            return str.replace("\n", "<newline>")
+        }
+        
+        return key
+    }
+
     /**
      * Pega uma mensagem do YAML e já transforma em Componente processando MiniMessage
      */
-    fun render(key: String, locale: Locale = Locale.forLanguageTag("pt-BR"), vararg resolvers: net.kyori.adventure.text.minimessage.tag.resolver.TagResolver): Component {
-        // Aqui você precisaria de uma forma de acessar os Yamls carregados.
-        // Uma forma simples é ter um Map de <Locale, YamlConfiguration> no seu Manager.
-        val yaml = loadedYamls[locale] ?: loadedYamls.values.first() // Pega o do idioma ou o primeiro que achar
-        val rawMessage = yaml.getString(key) ?: key
-
+    fun render(key: String, locale: Locale = Locale.forLanguageTag("pt-BR"), vararg resolvers: TagResolver): Component {
+        val rawMessage = getRawMessage(key, locale)
         return MiniMessage.miniMessage().deserialize(rawMessage, *resolvers)
     }
 }

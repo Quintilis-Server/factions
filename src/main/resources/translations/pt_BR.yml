@@ -37,6 +37,14 @@ gui:
     next_page: "<yellow>Próxima Página »</yellow>"
     back: "<red>Voltar</red>"
     close: "<red>Fechar</red>"
+    anticore:
+        title: "<red>Compras para guerra!"
+        buy_item:
+            name: "Anticore"
+            lore: "Ataca um núcleo de um clã. Preço: <price>"
+        glowstone:
+            name: "Glowstone"
+            lore: "Usado para explodir um Anticore. \n O dano causado ao player <bold>não é negado</bold>, somente o dano estrutural."
 
 # ============================================
 # Comandos e Sistema de Clãs
@@ -154,6 +162,8 @@ clan:
     
     claim:
         response: "Você comprou um núcleo de clã. Coloque ele no chão para reivindicar uma área de 3x3 Chunks para seu clã. <bold>Somente o chefe do clã pode fazer isso</bold>."
+        anti_core:
+            purchased: "Você comprou um anticore, com ele você faz <bold>guerra</bold>. Coloque ele proximo a um núcleo de outro clã para começar uma guerra. <red>Defenda ele ate o final."
 
 # ============================================
 # Comandos de Membro (Raiz)
@@ -174,7 +184,11 @@ member:
 nexus:
     name: "Núcleo do clã (<tag>)"
     protect.indestructible: "<red>Nucleo de clã, entre em <bold>guerra</bold> pra quebrar."
-
+anticore:
+    name: "Anticore"
+    error:
+        attacking-same-clan: "<yellow>Você esta atacando o seu próprio clã, coloque o anti core mais proximo de um núcleo de outro clã"
+        no-influence-zone: "<red>Você esta tentando colocar o anticore em uma zona onde não tem núcleos ativos, coloque o anticore em um chunk inimigo"
 # ============================================
 # Sistema de Guerra e Pontos
 # ============================================
@@ -182,3 +196,15 @@ kill:
     stolen:
         killer: "<yellow>Você roubou <bold><stolen_points></bold> do jogador <bold><victim></bold>"
         victim: "<red>Jogador <bold><player></bold> roubou <bold><stolen_points></bold> de você"
+        
+war:
+    started:
+        broadcast: "<dark_red><bold>GUERRA!</bold></dark_red> <white><attacker></white> está drenando a energia do núcleo de <white><defender></white>!"
+        
+        attacker:
+            title: "<gradient:gold:yellow><bold>CERCO INICIADO</bold></gradient>"
+            subtitle: "<gray>Mantenha os Anti-Cores ativos para drenar o Nexus inimigo!</gray>"
+        
+        defender:
+            title: "<dark_red><bold>NÚCLEO SOB ATAQUE!</bold></dark_red>"
+            subtitle: "<yellow>A integridade do Nexus está caindo! Destrua as âncoras inimigas!</yellow>"

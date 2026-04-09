@@ -27,9 +27,9 @@ interface CoreDao: BaseDao<ClanCoreEntity, Int> {
         @Bind("chunk_z") chunkZ: Int
     ): ClanCoreEntity?
 
-    fun findByChunk(chunk: Chunk): ClanCoreEntity?{
-        return this.findByChunk(chunk.x, chunk.z)
-    }
+//    fun findByChunk(chunk: Chunk): ClanCoreEntity?{
+//        return this.findByChunk(chunk.x, chunk.z)
+//    }
 
     fun findByLocation(location: Location): ClanCoreEntity?{
         return this.findByLocation(location.blockX, location.blockY, location.blockZ)
@@ -54,6 +54,13 @@ interface CoreDao: BaseDao<ClanCoreEntity, Int> {
     fun findByClanId(@Bind("clanId") clanId: Int): List<ClanCoreEntity>
 
     @SqlQuery("""
+        SELECT * FROM clan_cores as cc
+        JOIN clans c on cc.id = cc.clan_id
+        WHERE c.id = :clanId AND c.active = true AND cc.type = 'NEXUS'
+    """)
+    fun findNexusByClanId(clanId: Int): ClanCoreEntity?
+
+    @SqlQuery("""
         SELECT core.* FROM clan_cores core
         JOIN clan_chunk cc ON cc.owner_core = core.id
         JOIN chunk c ON c.id = cc.chunk_id
@@ -69,11 +76,15 @@ interface CoreDao: BaseDao<ClanCoreEntity, Int> {
         @Bind("chunkZ") chunkZ: Int
     ): ClanCoreEntity?
 
+    fun findByChunk(chunk: Chunk): ClanCoreEntity? {
+        return this.findByChunkCoords(chunk.world.uid, chunk.x, chunk.z)
+    }
+
     @SqlQuery(
         """
         SELECT core.* FROM clan_cores core
-        WHERE ABS(x - :x) < 50  -- Limite rápido de 50 blocos no eixo X
-          AND ABS(z - :z) < 50
+        WHERE ABS(x - :x) < :radius  -- Limite rápido de 50 blocos no eixo X
+          AND ABS(z - :z) < :radius
         ORDER BY (
             (x - :x) * (x - :x) +
             (y - :y) * (y - :y) +
@@ -83,8 +94,14 @@ interface CoreDao: BaseDao<ClanCoreEntity, Int> {
     """
     )
     fun findClosestCore(
+        @Bind("radius") radius: Int,
         @Bind("x") x: Int,
         @Bind("y") y: Int,
         @Bind("z") z: Int
     ): ClanCoreEntity?
+
+    fun findClosestCore(location: Location, radius: Int): ClanCoreEntity?{
+        return this.findClosestCore(radius,location.blockX, location.blockY, location.blockZ)
+    }
+
 }

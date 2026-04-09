@@ -40,5 +40,13 @@ enum class AdminSubCommands(
             "clan.admin.setleader.description",
             "factions.admin"
         )
+    ),
+    SPAWNNPC(
+        "spawnnpc",
+        "/clan admin spawnnpc <tipo>",
+        HelpEntry(
+            "clan.admin.spawnnpc.description",
+            "factions.admin"
+        )
     )
 }

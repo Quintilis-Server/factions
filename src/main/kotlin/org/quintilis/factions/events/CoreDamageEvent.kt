@@ -8,7 +8,7 @@ import org.bukkit.event.HandlerList
  * Evento disparado quando um dano é feito em cima de um nexus ou core
  * é associado ao clã de quem atacou, clã de quem recebeu, dano, e coordenada
  */
-class NexusDamageEvent(
+class CoreDamageEvent(
 
 ): Event(), Cancellable {
 
