@@ -42,7 +42,6 @@ class AntiCoreListener : Listener {
     fun onAntiCorePlace(event: BlockPlaceEvent) {
         val player = event.player
         try{
-            val placerClan = player.getClan() ?: throw ClanNotFoundError()
             val itemInHand = event.itemInHand;
 
             // Verifica se o item possui MetaData
@@ -60,6 +59,7 @@ class AntiCoreListener : Listener {
             // Pega a exata localização em que o jogador colocou o bloco
             val location = event.block.location
 
+            val placerClan = player.getClan() ?: throw ClanNotFoundError()
 
             //SE ele não achar um core por perto o evento é cancelado
             val targetCore = coreCache.findByChunk(location.chunk)
