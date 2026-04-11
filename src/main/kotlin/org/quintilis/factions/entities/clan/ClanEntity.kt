@@ -6,13 +6,16 @@ import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.annotations.Transient
 import org.quintilis.factions.entities.BaseEntity
+import org.quintilis.factions.entities.player.PlayerEntity
+import org.quintilis.factions.services.FactionsServices.clanCache
+import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.UUID
 
 @TableName("clans")
 data class ClanEntity(
     @PrimaryKey
-    @Transient
+//    @Transient
     val id: Int? = null,
     @Column("name")
     val name: String,
@@ -23,9 +26,27 @@ data class ClanEntity(
     @Column("active")
     val active: Boolean = true,
     @Column("created_at")
-    val createdAt: OffsetDateTime = OffsetDateTime.now(),
+    val createdAt: Instant = Instant.now(),
     @Column("points")
-    val points: Int = 0,
+    var points: Int = 0,
 ): BaseEntity(){
     fun getLeader() = Bukkit.getPlayer(leaderUuid)
+
+    fun addPoints(points: Int) {
+        this.points += points
+        this.save<BaseEntity>()
+    }
+
+    fun havePoints(x: Int): Boolean {
+        return this.points >= x
+    }
+
+    fun removePoints(points: Int) {
+        this.points -= points
+        this.save<BaseEntity>()
+    }
+
+    fun getMembers(): List<ClanMemberEntity>{
+        return clanCache.getMembers(this.id!!)
+    }
 }

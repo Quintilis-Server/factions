@@ -11,3 +11,19 @@ redis:
   host: localhost
   port: 6379
   database: 1
+kill:
+  points: 10
+  neutralStealPoints: 10 # 10%
+  enemyStealPoints: 20 #20%
+war:
+  enemy-points: 10
+  neutral-points: 5
+  ally-points: 0
+clan:
+  core-price: 150
+  anti-core-price: 100
+  glowstone-price: 100
+anticore:
+  damage: 5
+  time: 400              #TICKS
+  shots: 10

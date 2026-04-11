@@ -19,6 +19,8 @@ import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.extensions.isNexusItem
 import org.quintilis.factions.results.Result
 import org.quintilis.factions.services.FactionsServices
+import org.quintilis.factions.structure.CoreStructure
+import org.quintilis.factions.structure.CoreStructure.Companion.REPLACEABLE_MATERIALS
 import org.quintilis.factions.util.Keys
 
 @AutoRegister
@@ -27,49 +29,7 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
     private val coreService = FactionsServices.coreService
     private val chunkService = FactionsServices.chunkService
 
-    private val BASE_MATERIAL = Material.IRON_BLOCK
 
-    private val REPLACEABLE_MATERIALS = setOf(
-        Material.AIR,
-        Material.CAVE_AIR,
-        Material.VOID_AIR,
-        Material.WATER,
-        Material.LAVA,
-        Material.GRASS_BLOCK,
-        Material.DIRT,
-        Material.COARSE_DIRT,
-        Material.PODZOL,
-        Material.STONE,
-        Material.COBBLESTONE, // Opcional (gera em dungeons, mas players usam muito)
-        Material.GRANITE,
-        Material.DIORITE,
-        Material.ANDESITE,
-        Material.DEEPSLATE,
-        Material.TUFF,
-        Material.SAND,
-        Material.RED_SAND,
-        Material.GRAVEL,
-        Material.CLAY,
-        Material.SNOW,
-        Material.SNOW_BLOCK,
-        Material.ICE,
-        Material.PACKED_ICE,
-        Material.BLUE_ICE,
-        Material.NETHERRACK,
-        Material.SOUL_SAND,
-        Material.SOUL_SOIL,
-        Material.BASALT,
-        Material.BLACKSTONE,
-        Material.END_STONE,
-        // Vegetação
-        Material.TALL_GRASS,
-        Material.SEAGRASS,
-        Material.KELP,
-        Material.FERN,
-        Material.LARGE_FERN,
-        Material.VINE,
-        Material.SHORT_GRASS
-    )
     /**
      * Listener de evento de quebra de bloco para checagem de quebra de nexus
      */
@@ -103,8 +63,6 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
                     )
 
                     if(coreCache.findByLocation(checkLocation) != null) {
-//                        if(player.hasPermission("factions.admin")) return
-
                         event.isCancelled = true
                         player.sendTranslatable("nexus.protect.indestructible")
                         return
@@ -127,64 +85,76 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
 
     @EventHandler
     fun onPlace(event: BlockPlaceEvent) {
-        val item = event.itemInHand
-
-        if (!item.isNexusItem()) return
-
-        val nexusId = event.itemInHand.itemMeta.persistentDataContainer
-            .get(Keys.NEXUS_ITEM, PersistentDataType.STRING)?.toIntOrNull()
-        if(nexusId == null) {
-            //TODO: Mandar a mensagem ao usuario
-            event.isCancelled = true
-            return
-        }
-        val clan = event.player.getClanAsLeader()
-
-        if(!event.player.isClanLeader() || clan == null) {
-            return cancelEventWithError(event, event.player)
-        }
-
-        val core = coreCache.findById(nexusId) ?: return cancelEventWithError(event, event.player)
-
-        coreService.placeCore(event.block.location, core)
-        val chunkResult = chunkService.claimChunk(
-            player = event.player,
-            clan = clan,
-            chunk = event.block.chunk,
-            core
-        )
-        if(chunkResult is Result.Error){
-            cancelEventWithError(event, event.player, chunkResult)
-        }
-        core.save<ClanCoreEntity>()
-
         val player = event.player
-        val center = event.block.location.clone().subtract(0.0, 1.0, 0.0)
-        val world = center.world
+        try {
+            val item = event.itemInHand
 
-        for (x in -1..1){
-            for (z in -1..1){
-                val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
-                if(!block.isReplaceable && !REPLACEABLE_MATERIALS.contains(block.type)){
-                    event.isCancelled = true
-                    //TODO: fazer funcionar a tradução do bloco usando o minimessages
-                    player.sendTranslatable("nexus.place.error")
-                    player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
+            if (!item.isNexusItem()) return
 
-                    return
+            val nexusId = event.itemInHand.itemMeta.persistentDataContainer
+                .get(Keys.NEXUS_ITEM, PersistentDataType.INTEGER)
+            if (nexusId == null) {
+                //TODO: Mandar a mensagem ao usuario
+                event.isCancelled = true
+                return
+            }
+            val clan = event.player.getClanAsLeader()
+
+            if (!event.player.isClanLeader() || clan == null) {
+                return cancelEventWithError(event, event.player)
+            }
+
+            val core = coreCache.findById(nexusId) ?: return cancelEventWithError(event, event.player)
+
+            coreService.placeCore(event.block.location, core)
+            val chunkResult = chunkService.claimChunk(
+                player = event.player,
+                clan = clan,
+                chunk = event.block.chunk,
+                core
+            )
+            if (chunkResult is Result.Error) {
+                cancelEventWithError(event, event.player, chunkResult)
+            }
+            core.save<ClanCoreEntity>()
+
+            val center = event.block.location.clone().subtract(0.0, 1.0, 0.0)
+            val centerChunk = center.chunk
+            val world = center.world
+
+            for (x in -1..1) {
+                for (z in -1..1) {
+
+                    val targetLoc = Location(world, center.blockX + x.toDouble(), center.blockY.toDouble(), center.blockZ + z.toDouble())
+
+                    // 1. ANTI-LEAK: Se o bloco for cair fora do chunk central, bloqueia!
+                    if (targetLoc.chunk != centerChunk) {
+                        event.isCancelled = true
+                        player.sendTranslatable("nexus.place.error_border") // Crie essa tradução: "Você não pode colocar o Core tão perto da borda do Chunk!"
+                        player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
+                        return
+                    }
+
+                    val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
+                    if (!block.isReplaceable && !REPLACEABLE_MATERIALS.contains(block.type)) {
+                        event.isCancelled = true
+                        player.sendTranslatable("nexus.place.error")
+                        player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
+                        return
+                    }
+
                 }
-
             }
-        }
 
-        for(x in -1..1){
-            for (z in -1..1){
-                val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
-                block.type = BASE_MATERIAL
-            }
-        }
+            val structure: CoreStructure = CoreStructure.fromCore(core)
+            structure.placeStructure()
 
-        player.sendTranslatable("nexus.place.success")
-        player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
+            player.sendTranslatable("nexus.place.success")
+            player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
+        } catch (e: Exception) {
+            event.isCancelled = true
+            player.sendTranslatable("nexus.error")
+            e.printStackTrace()
+        }
     }
 }

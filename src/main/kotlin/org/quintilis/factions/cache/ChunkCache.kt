@@ -6,6 +6,7 @@ import org.jdbi.v3.core.HandleConsumer
 import org.quintilis.factions.dao.ChunkDao
 import org.quintilis.factions.entities.chunk.ChunkEntity
 import org.quintilis.factions.entities.clan.ClanChunkEntity
+import org.quintilis.factions.managers.GsonProvider
 import org.quintilis.factions.managers.RedisManager
 import redis.clients.jedis.Jedis
 import java.util.UUID
@@ -28,26 +29,6 @@ class ChunkCache(
     
     private val CHUNK_TTL = 300L
     private val CLAN_CHUNKS_TTL = 120L
-    
-    // ============================================
-    // Cache do dono do chunk por coordenadas
-    // ============================================
-    private val ownerCache = object : BaseRedisCache<String, Int?>(
-        keyPrefix = "factions:chunk:owner:",
-        ttlSeconds = CHUNK_TTL
-    ) {
-        override fun readFromRedis(jedis: Jedis, key: String): Int? {
-            val value = jedis.get(key) ?: return null
-            if (value == "null") return null
-            return value.toIntOrNull()
-        }
-
-        override fun writeToRedis(jedis: Jedis, key: String, value: Int?) {
-            jedis.set(key, value?.toString() ?: "null")
-        }
-
-        override fun shouldCache(value: Int?): Boolean = true
-    }
     
     // ============================================
     // Cache de ChunkEntity por coordenadas
@@ -134,35 +115,7 @@ class ChunkCache(
     private fun coordKey(worldUuid: UUID, x: Int, z: Int): String {
         return "$worldUuid:$x:$z"
     }
-    
-    /**
-     * Busca o ID do clã dono de um chunk pelas coordenadas.
-     * Retorna null se o chunk não pertence a nenhum clã.
-     */
-    fun getChunkOwner(worldUuid: UUID, x: Int, z: Int): Int? {
-        val key = coordKey(worldUuid, x, z)
-        return ownerCache.getOrFetch(key) { _ ->
-            chunkDao.findClanIdByChunkCoordinates(worldUuid, x, z)
-        }
-    }
-    
-    /**
-     * Verifica se um chunk está reivindicado.
-     */
-    fun isClaimed(worldUuid: UUID, x: Int, z: Int): Boolean {
-        return getChunkOwner(worldUuid, x, z) != null
-    }
 
-    fun isClaimed(chunk: Chunk): Boolean {
-        return this.isClaimed(chunk.world.uid,chunk.x, chunk.z)
-    }
-    
-    /**
-     * Verifica se um chunk pertence a um clã específico.
-     */
-    fun isOwnedBy(worldUuid: UUID, x: Int, z: Int, clanId: Int): Boolean {
-        return getChunkOwner(worldUuid, x, z) == clanId
-    }
     
     /**
      * Busca a entidade de chunk pelas coordenadas.
@@ -201,7 +154,6 @@ class ChunkCache(
      */
     fun invalidateChunk(worldUuid: UUID, x: Int, z: Int) {
         val key = coordKey(worldUuid, x, z)
-        ownerCache.invalidate(key)
         chunkEntityCache.invalidate(key)
     }
     

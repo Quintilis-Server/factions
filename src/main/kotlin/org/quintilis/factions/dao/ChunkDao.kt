@@ -5,6 +5,7 @@ import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import org.quintilis.factions.entities.chunk.ChunkEntity
+import org.quintilis.factions.entities.clan.ClanCoreEntity
 import java.util.UUID
 
 interface ChunkDao: BaseDao<ChunkEntity, Int> {
@@ -69,16 +70,16 @@ interface ChunkDao: BaseDao<ChunkEntity, Int> {
         @Bind("z") z: Int
     ): Int?
 
-    @SqlUpdate("""
-        INSERT INTO clan_chunk (chunk_id, clan_id, transaction_id, active) 
-        VALUES (:chunkId, :clanId, :transactionId, true)
-    """)
-    @GetGeneratedKeys("id")
-    fun claimChunk(
-        @Bind("chunkId") chunkId: Int,
-        @Bind("clanId") clanId: Int,
-        @Bind("transactionId") transactionId: Int
-    ): Int
+//    @SqlUpdate("""
+//        INSERT INTO clan_chunk (chunk_id, clan_id, transaction_id, active)
+//        VALUES (:chunkId, :clanId, :transactionId, true)
+//    """)
+//    @GetGeneratedKeys("id")
+//    fun claimChunk(
+//        @Bind("chunkId") chunkId: Int,
+//        @Bind("clanId") clanId: Int,
+//        @Bind("transactionId") transactionId: Int
+//    ): Int
 
     @SqlUpdate("UPDATE clan_chunk SET active = false WHERE chunk_id = :chunkId AND active = true")
     fun unclaimChunk(@Bind("chunkId") chunkId: Int): Int

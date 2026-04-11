@@ -7,6 +7,8 @@ import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.entities.BaseEntity
+import org.quintilis.factions.entities.clan.ClanEntity
+import org.quintilis.factions.services.FactionsServices.clanCache
 import java.util.UUID
 
 @TableName("players")
@@ -21,4 +23,6 @@ data class PlayerEntity(
     fun getPlayer(): OfflinePlayer = Bukkit.getOfflinePlayer(id)
 
     fun getOnlinePlayer(): Player? = Bukkit.getPlayer(id)
+
+    fun getClan(): ClanEntity? = clanCache.getClanByMember(id)
 }

@@ -5,6 +5,7 @@ import org.jdbi.v3.core.HandleConsumer
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanMemberEntity
+import org.quintilis.factions.managers.GsonProvider
 import org.quintilis.factions.managers.RedisManager
 import redis.clients.jedis.Jedis
 import java.util.UUID
@@ -14,7 +15,7 @@ class ClanCache(
 ) : AbstractDaoCache<ClanDao, ClanEntity, Int>(
     daoImpl,
     "factions:clan:id:",
-    ttl = 300L,
+    ttl = 3600L,
     classType = ClanEntity::class.java
 ), ClanDao by daoImpl {
     private val gson = GsonProvider.gson

@@ -272,11 +272,39 @@ class AdminCommandHandler {
     }
     
     /**
+     * Spawna um NPC.
+     * /clan admin spawnnpc <tipo>
+     */
+    fun spawnNpc(sender: Player, args: List<String>) {
+        if (args.isEmpty()) {
+            sender.sendTranslatable("error.missing_arguments")
+            return
+        }
+
+        val type = args[0].lowercase()
+
+        if (type == "anticore") {
+            try {
+                val npc = net.citizensnpcs.api.CitizensAPI.getNPCRegistry().createNPC(org.bukkit.entity.EntityType.VILLAGER, "Vendedor de AntiCore")
+                npc.addTrait(org.quintilis.factions.traits.AntiCoreTrait::class.java)
+                npc.spawn(sender.location)
+                sender.sendMessage(net.kyori.adventure.text.Component.text("NPC Vendedor de AntiCore spawnado!", net.kyori.adventure.text.format.NamedTextColor.GREEN))
+            } catch (e: Exception) {
+                e.printStackTrace()
+                sender.sendTranslatable("error.generic")
+            }
+        } else {
+            sender.sendTranslatable("error.invalid_arguments")
+        }
+    }
+
+    /**
      * Retorna sugestões de autocomplete para o subcomando.
      */
     fun getSuggestions(subCommand: String): List<String> {
         return when (subCommand.lowercase()) {
             "delete", "setname", "settag", "setleader" -> clanDao.findNames()
+            "spawnnpc" -> listOf("anticore")
             else -> emptyList()
         }
     }

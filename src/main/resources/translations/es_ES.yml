@@ -1,0 +1,182 @@
+# ============================================
+# Errores y Avisos Globales
+# ============================================
+error:
+    invalid_page: "<red>Página inválida. Por favor, usa un número entre [1-<total_pages>]."
+    is_not_player: "Este comando solo puede ser usado por un jugador."
+    unknown_subcommand: "<red>Subcomando desconocido: <command_name>."
+    no_permission: "<red>No tienes permiso para usar este comando."
+    no_player: "<red>Jugador no encontrado."
+    no_clan: "<red>Clan no encontrado."
+    no_member_invite: "<red>Invitación de clan no encontrada."
+    already_invited: "<red>Ya existe una invitación para <name>."
+    arguments_missing: "<red>Faltan argumentos para completar el comando, usa <gold>/<command_name> help</gold> para más información."
+    already_in_a_clan: "<red>El jugador <bold><player_name></bold> ya está en un clan."
+    not_in_clan: "<red>No estás en ningún clan."
+    internal_error: "<dark_red>Error interno. Contacta a la administración."
+    missing_arguments: "<red>Faltan argumentos para este comando."
+    not_implemented: "<yellow>Este comando aún no ha sido implementado."
+    player_not_found: "<red>Jugador no encontrado."
+    generic: "<red>Ocurrió un error inesperado."
+    clan_not_found: "<red>Clan <bold><clan_name></bold> no encontrado."
+
+info:
+    admin_action: "<dark_red>Acción de administrador"
+
+help:
+    header: "<gold>---[ Ayuda Factions (Página <page>/<total_pages>) ]---</gold>"
+    footer: "<gold>---[ Escribe <bold>/<command> help <pagina></bold> para ver más ]---</gold>"
+    command:
+        format: "<gold><command></gold><gray>: <description></gray>"
+
+command:
+    format: "/<alias> <subcommand>"
+
+gui:
+    previous_page: "<yellow>« Página Anterior</yellow>"
+    next_page: "<yellow>Próxima Página »</yellow>"
+    back: "<red>Volver</red>"
+    close: "<red>Cerrar</red>"
+
+# ============================================
+# Comandos y Sistema de Clanes
+# ============================================
+clan:
+    is_not_leader: "<red>No eres el líder del clan."
+    
+    create:
+        description: "Comando para crear un clan. Si no se provee ningún valor en [tag], estará vacío."
+        error:
+            already_exists: "<red>El clan <clan_name> ya existe."
+        response: "Clan <bold><clan_name></bold> creado con éxito."
+        dropped_item: "<yellow>¡Tu inventario estaba lleno, el Nexo cayó al suelo!"
+    
+    quit:
+        response: "Saliste del clan."
+        leader_response: "El miembro <player_name> salió de tu clan."
+        error:
+            leader: "<red>Eres el líder del clan, para disolver el clan usa <bold><gold>/clan delete"
+    
+    delete:
+        description: "Comando para eliminar un clan, solo puede ser ejecutado por el líder del clan."
+        response: "<dark_gray>Clan disuelto con éxito."
+        member_response: "<red>Clan disuelto por <leader_name>."
+    
+    list:
+        description: "Comando para listar clanes por páginas. Si no se provee un número en [page], será 1."
+        header: "<gold>---[ Clanes (Página <page>/<total_page>) ]---"
+        footer: "<gold>---[ Escribe <bold><command> para ver más ]---"
+        response: "Clan: <bold><clan_name></bold> [<tag>], líder: <bold><leader_name></bold>."
+        item:
+            name: "<gold><clan_name> <dark_gray>[<yellow><clan_tag></yellow>]</dark_gray></gold>"
+            lore: "<gray>Líder: <white><leader_name></white><newline><gray>Honor: <yellow><points></yellow><newline><yellow>Haz clic para ver detalles</yellow>"
+    
+    list_menu:
+        title: "<dark_green><bold>Lista de Clanes</bold></dark_green>"
+    
+    invite:
+        invitation_text: "Has sido invitado al clan <bold><clan_name></bold>. Para aceptar usa el comando <gold>/clan invite accept <clan_name></gold>"
+        response: "Invitación al jugador <bold><player_name></bold> enviada con éxito."
+        accept:
+            clan_response: "El miembro <bold><gold><player_name></gold></bold> se unió al clan."
+            response: "Te uniste al clan <bold><clan_name></bold>."
+        cancel:
+            response: "<yellow>Cancelaste la invitación para <bold><player_name></bold>."
+        reject:
+            response: "<yellow>Rechazaste la invitación del clan <bold><clan_name></bold>."
+            clan_response: "<red>El jugador <bold><player_name></bold> rechazó la invitación."
+        list:
+            header: "<gold>---[ Invitaciones Pendientes (<count>) ]---</gold>"
+            entry: "<gray>- Clan: <white><clan_name></white></gray>"
+            empty: "<yellow>No tienes invitaciones pendientes."
+    
+    ally:
+        add:
+            description: "Envía una invitación de alianza a otro clan."
+        remove:
+            description: "Elimina una alianza con otro clan."
+            response: "<yellow>La alianza con <bold><clan_name></bold> fue disuelta."
+            target_response: "<red>El clan <bold><clan_name></bold> disolvió la alianza."
+        list:
+            description: "Lista los clanes aliados."
+            header: "<gold>---[ Clanes Aliados (<count>) ]---</gold>"
+            entry: "<gray>- <white><clan_name></white></gray>"
+            empty: "<yellow>Tu clan no tiene aliados."
+        accept:
+            description: "Acepta una invitación de alianza."
+            response: "<green>¡Alianza con <bold><clan_name></bold> fue aceptada!"
+            sender_response: "<green>¡El clan <bold><clan_name></bold> aceptó tu alianza!"
+        reject:
+            description: "Rechaza una invitación de alianza."
+            response: "<yellow>Rechazaste la alianza del clan <bold><clan_name></bold>."
+            sender_response: "<red>El clan <bold><clan_name></bold> rechazó tu alianza."
+        invite:
+            response: "Invitación de alianza para el clan <clan_name> enviada."
+            invitation_text: "El clan <bold><clan_name></bold> envió una invitación de alianza. Usa <gold>/clan ally accept <clan_name></gold> para aceptar."
+        error:
+            is_ally: "<red>Los clanes ya son aliados."
+            is_enemy: "<red>Los clanes son enemigos, para aliarse, la guerra debe terminar."
+            no_invite: "<red>No hay invitación de alianza de este clan."
+            same_clan: "<red>No puedes aliarte con tu propio clan."
+    
+    member:
+        list:
+            header: "<gold>---[ Miembros del Clan (<count> miembros) ]---</gold>"
+            entry: "<gray>- <white><player_name></white> <dark_gray>(<role>)</dark_gray></gray>"
+        kick:
+            response: "<yellow>El jugador <bold><player_name></bold> fue eliminado del clan."
+            target_response: "<red>Fuiste eliminado del clan por <leader_name>."
+        promote:
+            response: "<green>Transferiste el liderazgo del clan a <bold><player_name></bold>."
+            new_leader: "<gold>¡Ahora eres el líder del clan <bold><clan_name></bold>!"
+            error:
+                self: "<red>No puedes promoverte a ti mismo."
+    
+    admin:
+        description: "Comandos de administración de clanes."
+        delete:
+            description: "Elimina un clan."
+            response: "<green>Clan <bold><clan_name></bold> eliminado con éxito."
+            target_response: "<red>Tu clan fue eliminado por el admin <admin_name>."
+        setname:
+            description: "Cambia el nombre de un clan."
+            response: "<green>Nombre del clan cambiado de <bold><old_name></bold> a <bold><new_name></bold>."
+        settag:
+            description: "Cambia la etiqueta (tag) de un clan."
+            response: "<green>Etiqueta del clan <bold><clan_name></bold> cambiada a <bold><new_tag></bold>."
+            error:
+                exists: "<red>La etiqueta <bold><tag></bold> ya está en uso."
+        setleader:
+            description: "Cambia el líder de un clan."
+            response: "<green>Líder del clan <bold><clan_name></bold> cambiado a <bold><new_leader></bold>."
+            target_response: "<gold>¡Ahora eres el líder del clan <bold><clan_name></bold>! (Cambiado por el admin <admin_name>)"
+            old_leader_response: "<yellow>Ya no eres el líder del clan <clan_name>. El nuevo líder es <new_leader>."
+    
+    claim:
+        response: "Compraste un núcleo de clan. Colócalo en el suelo para reclamar un área de 3x3 Chunks para tu clan. <bold>Solo el líder del clan puede hacer esto</bold>."
+
+# ============================================
+# Comandos de Miembro (Raíz)
+# ============================================
+member:
+    invite:
+        description: "Invita a un jugador al clan."
+    remove:
+        description: "Elimina a un miembro del clan."
+    promote:
+        description: "Promueve a un miembro del clan."
+    list:
+        description: "Lista los miembros del clan."
+
+# ============================================
+# Estructuras y Objetos
+# ============================================
+nexus:
+    name: "Núcleo del Clan (<tag>)"
+
+# ============================================
+# Sistema de Guerra y Puntos
+# ============================================
+kill:
+    stolen:
+        victim: ""

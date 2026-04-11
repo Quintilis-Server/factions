@@ -13,5 +13,12 @@ enum class ClaimSubCommands(
         "buy",
         "/clan claim buy",
         HelpEntry("clan.claim.buy.description", "factions.usage")
-    )
+    ),
+    
+    NEXUS(
+        "nexus",
+        "/clan claim nexus",
+        HelpEntry("clan.claim.nexus.description", "factions.usage")
+    );
+
 }

@@ -1,0 +1,182 @@
+# ============================================
+# Global Errors and Warnings
+# ============================================
+error:
+    invalid_page: "<red>Invalid page. Please use a number between [1-<total_pages>]."
+    is_not_player: "This command can only be used by a player."
+    unknown_subcommand: "<red>Unknown subcommand: <command_name>."
+    no_permission: "<red>You do not have permission to use this command."
+    no_player: "<red>Player not found."
+    no_clan: "<red>Clan not found."
+    no_member_invite: "<red>Clan invite not found."
+    already_invited: "<red>There is already an invite for <name>."
+    arguments_missing: "<red>Missing arguments to complete the command, use <gold>/<command_name> help</gold> for more information."
+    already_in_a_clan: "<red>The player <bold><player_name></bold> is already in a clan."
+    not_in_clan: "<red>You are not in any clan."
+    internal_error: "<dark_red>Internal error. Contact administration."
+    missing_arguments: "<red>Missing arguments for this command."
+    not_implemented: "<yellow>This command has not been implemented yet."
+    player_not_found: "<red>Player not found."
+    generic: "<red>An unexpected error occurred."
+    clan_not_found: "<red>Clan <bold><clan_name></bold> not found."
+
+info:
+    admin_action: "<dark_red>Admin action"
+
+help:
+    header: "<gold>---[ Factions Help (Page <page>/<total_pages>) ]---</gold>"
+    footer: "<gold>---[ Type <bold>/<command> help <pagina></bold> to see more ]---</gold>"
+    command:
+        format: "<gold><command></gold><gray>: <description></gray>"
+
+command:
+    format: "/<alias> <subcommand>"
+
+gui:
+    previous_page: "<yellow>« Previous Page</yellow>"
+    next_page: "<yellow>Next Page »</yellow>"
+    back: "<red>Back</red>"
+    close: "<red>Close</red>"
+
+# ============================================
+# Commands and Clan System
+# ============================================
+clan:
+    is_not_leader: "<red>You are not the clan leader."
+    
+    create:
+        description: "Command to create a clan. If no value is provided for [tag], it will be empty."
+        error:
+            already_exists: "<red>Clan <clan_name> already exists."
+        response: "Clan <bold><clan_name></bold> successfully created."
+        dropped_item: "<yellow>Your inventory was full, the Nexus dropped on the ground!"
+    
+    quit:
+        response: "You left the clan."
+        leader_response: "Member <player_name> left your clan."
+        error:
+            leader: "<red>You are the clan leader, to disband the clan use <bold><gold>/clan delete"
+    
+    delete:
+        description: "Command to delete a clan, can only be executed by the clan leader."
+        response: "<dark_gray>Clan successfully disbanded."
+        member_response: "<red>Clan disbanded by <leader_name>."
+    
+    list:
+        description: "Command to list clans by pages. If no number is provided for [page], it will be 1."
+        header: "<gold>---[ Clans (Page <page>/<total_page>) ]---"
+        footer: "<gold>---[ Type <bold><command> to see more ]---"
+        response: "Clan: <bold><clan_name></bold> [<tag>], leader: <bold><leader_name></bold>."
+        item:
+            name: "<gold><clan_name> <dark_gray>[<yellow><clan_tag></yellow>]</dark_gray></gold>"
+            lore: "<gray>Leader: <white><leader_name></white><newline><gray>Honor: <yellow><points></yellow><newline><yellow>Click for details</yellow>"
+    
+    list_menu:
+        title: "<dark_green><bold>Clan List</bold></dark_green>"
+    
+    invite:
+        invitation_text: "You have been invited to clan <bold><clan_name></bold>. To accept, use the command <gold>/clan invite accept <clan_name></gold>"
+        response: "Invite to player <bold><player_name></bold> successfully sent."
+        accept:
+            clan_response: "Member <bold><gold><player_name></gold></bold> joined the clan."
+            response: "You joined clan <bold><clan_name></bold>."
+        cancel:
+            response: "<yellow>You canceled the invite to <bold><player_name></bold>."
+        reject:
+            response: "<yellow>You rejected the invite from clan <bold><clan_name></bold>."
+            clan_response: "<red>Player <bold><player_name></bold> rejected the invite."
+        list:
+            header: "<gold>---[ Pending Invites (<count>) ]---</gold>"
+            entry: "<gray>- Clan: <white><clan_name></white></gray>"
+            empty: "<yellow>You have no pending invites."
+    
+    ally:
+        add:
+            description: "Sends an alliance invite to another clan."
+        remove:
+            description: "Removes an alliance with another clan."
+            response: "<yellow>Alliance with <bold><clan_name></bold> has been disbanded."
+            target_response: "<red>Clan <bold><clan_name></bold> disbanded the alliance."
+        list:
+            description: "Lists allied clans."
+            header: "<gold>---[ Allied Clans (<count>) ]---</gold>"
+            entry: "<gray>- <white><clan_name></white></gray>"
+            empty: "<yellow>Your clan has no allies."
+        accept:
+            description: "Accepts an alliance invite."
+            response: "<green>Alliance with <bold><clan_name></bold> has been accepted!"
+            sender_response: "<green>Clan <bold><clan_name></bold> accepted your alliance!"
+        reject:
+            description: "Rejects an alliance invite."
+            response: "<yellow>You rejected the alliance from clan <bold><clan_name></bold>."
+            sender_response: "<red>Clan <bold><clan_name></bold> rejected your alliance."
+        invite:
+            response: "Alliance invite sent to clan <clan_name>."
+            invitation_text: "Clan <bold><clan_name></bold> sent an alliance invite. Use <gold>/clan ally accept <clan_name></gold> to accept."
+        error:
+            is_ally: "<red>The clans are already allies."
+            is_enemy: "<red>The clans are enemies, to ally, the war must end."
+            no_invite: "<red>There is no alliance invite from this clan."
+            same_clan: "<red>You cannot ally with your own clan."
+    
+    member:
+        list:
+            header: "<gold>---[ Clan Members (<count> members) ]---</gold>"
+            entry: "<gray>- <white><player_name></white> <dark_gray>(<role>)</dark_gray></gray>"
+        kick:
+            response: "<yellow>Player <bold><player_name></bold> was removed from the clan."
+            target_response: "<red>You were removed from the clan by <leader_name>."
+        promote:
+            response: "<green>You transferred the clan leadership to <bold><player_name></bold>."
+            new_leader: "<gold>You are now the leader of clan <bold><clan_name></bold>!"
+            error:
+                self: "<red>You cannot promote yourself."
+    
+    admin:
+        description: "Clan administration commands."
+        delete:
+            description: "Deletes a clan."
+            response: "<green>Clan <bold><clan_name></bold> successfully deleted."
+            target_response: "<red>Your clan was deleted by admin <admin_name>."
+        setname:
+            description: "Changes a clan's name."
+            response: "<green>Clan name changed from <bold><old_name></bold> to <bold><new_name></bold>."
+        settag:
+            description: "Changes a clan's tag."
+            response: "<green>Clan <bold><clan_name></bold>'s tag changed to <bold><new_tag></bold>."
+            error:
+                exists: "<red>Tag <bold><tag></bold> is already in use."
+        setleader:
+            description: "Changes a clan's leader."
+            response: "<green>Clan <bold><clan_name></bold>'s leader changed to <bold><new_leader></bold>."
+            target_response: "<gold>You are now the leader of clan <bold><clan_name></bold>! (Changed by admin <admin_name>)"
+            old_leader_response: "<yellow>You are no longer the leader of clan <clan_name>. The new leader is <new_leader>."
+    
+    claim:
+        response: "You bought a clan core. Place it on the ground to claim a 3x3 Chunk area for your clan. <bold>Only the clan leader can do this</bold>."
+
+# ============================================
+# Member Commands (Root)
+# ============================================
+member:
+    invite:
+        description: "Invites a player to the clan."
+    remove:
+        description: "Removes a member from the clan."
+    promote:
+        description: "Promotes a member of the clan."
+    list:
+        description: "Lists clan members."
+
+# ============================================
+# Structures and Items
+# ============================================
+nexus:
+    name: "Clan Core (<tag>)"
+
+# ============================================
+# War System and Points
+# ============================================
+kill:
+    stolen:
+        victim: ""

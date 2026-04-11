@@ -11,6 +11,7 @@ import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.commands.clan.AllySubCommands
 import org.quintilis.factions.services.AllyInviteService
 import org.quintilis.factions.services.FactionsServices
+import org.quintilis.factions.services.FactionsServices.clanRelationCache
 
 /**
  * Handler para comandos de aliança (/clan ally).
@@ -149,13 +150,15 @@ class AllyCommandHandler {
             senderClan.id to clan.id
         }
         
-        ClanRelationEntity(
+        val relation = ClanRelationEntity(
             id = null,
             clan1Id = smallerId,
             clan2Id = largerId,
             relation = Relation.ALLY,
             active = true
-        ).save<ClanRelationEntity>()
+        )
+
+        clanRelationCache.createRelation(smallerId, largerId, Relation.ALLY)
         
         // Log da ação
         ActionLogEntity.log(

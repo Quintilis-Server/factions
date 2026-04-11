@@ -12,12 +12,14 @@ import org.quintilis.factions.gui.ClanListMenu
 import org.quintilis.factions.handlers.AdminCommandHandler
 import org.quintilis.factions.handlers.AllyCommandHandler
 import org.quintilis.factions.handlers.ClaimCommandHandler
+import org.quintilis.factions.handlers.BetrayCommandHandler
 import org.quintilis.factions.handlers.InviteCommandHandler
 import org.quintilis.factions.handlers.MemberCommandHandler
 import org.quintilis.factions.managers.ErrorManager
 import org.quintilis.factions.results.Result
 import org.quintilis.factions.services.CoreService
 import org.quintilis.factions.services.FactionsServices
+import org.quintilis.factions.services.FactionsServices.coreCache
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -40,6 +42,7 @@ class ClanCommand(
     private val inviteHandler = InviteCommandHandler()
     private val adminHandler = AdminCommandHandler()
     private val claimHandler = ClaimCommandHandler(coreService)
+    private val betrayHandler = BetrayCommandHandler()
 
     // Services e Caches (via singleton)
     private val clanService get() = FactionsServices.clanService
@@ -110,6 +113,10 @@ class ClanCommand(
                         "clan.delete.member_response",
                         Argument.string("leader_name", sender.name)
                     )
+                }
+
+                coreCache.findByClanId(clan.id).forEach { c ->
+                    c.deleteCore()
                 }
                 sender.sendTranslatable("clan.delete.response")
             }
@@ -245,6 +252,7 @@ class ClanCommand(
             AdminSubCommands.SETNAME -> adminHandler.setName(sender, args.drop(1))
             AdminSubCommands.SETTAG -> adminHandler.setTag(sender, args.drop(1))
             AdminSubCommands.SETLEADER -> adminHandler.setLeader(sender, args.drop(1))
+            AdminSubCommands.SPAWNNPC -> adminHandler.spawnNpc(sender, args.drop(1))
         }
     }
 
@@ -252,9 +260,14 @@ class ClanCommand(
         val clan = sender.getClanAsLeader() ?: return this.noClanLeader(sender);
         val subCommand = findSubCommand(sender, args, ClaimSubCommands.entries) ?: return
         when (subCommand) {
-            ClaimSubCommands.BUY -> claimHandler.buy(sender, clan);
-
+            ClaimSubCommands.BUY -> claimHandler.buy(sender, clan)
+            ClaimSubCommands.NEXUS -> claimHandler.nexus(sender, clan)
         }
+    }
+
+    private fun handleBetrayCommand(sender: Player, args: List<String>) {
+        val clan = sender.getClanAsLeader() ?: return this.noClanLeader(sender)
+        betrayHandler.betray(sender, clan, args)
     }
 
     // ============================================
@@ -290,6 +303,7 @@ class ClanCommand(
                 ClanCommands.QUIT -> handleQuit(sender)
                 ClanCommands.ADMIN -> handleAdminCommand(sender, subArgs)
                 ClanCommands.CLAIM -> handleClaimCommand(sender, subArgs)
+                ClanCommands.BETRAY -> handleBetrayCommand(sender, subArgs)
             }
         }
         return true
@@ -316,6 +330,7 @@ class ClanCommand(
                 )
             }
             2 -> {
+                val clan = sender.getClanAsLeader()
                 val mainCommand = commands.find {
                     it.command.equals(args[0], ignoreCase = true)
                 }
@@ -326,6 +341,10 @@ class ClanCommand(
                             .filter { sender.hasPermission(it.helpEntry.permission) }
                             .map { it.command }
                     )
+                } else if (mainCommand?.command.equals("betray", ignoreCase = true)) {
+                    if (clan != null) {
+                        suggestions.addAll(betrayHandler.getSuggestions(clan))
+                    }
                 }
             }
             3 -> {
