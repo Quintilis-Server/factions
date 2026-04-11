@@ -4,9 +4,14 @@ import net.citizensnpcs.api.event.NPCRightClickEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
+import org.bukkit.Material
+import org.bukkit.Sound
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.block.Action
+import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.persistence.PersistentDataType
 import org.quintilis.factions.annotations.AutoRegister
 import org.quintilis.factions.entities.BaseEntity
@@ -21,6 +26,7 @@ import org.quintilis.factions.services.FactionsServices.coreCache
 import org.quintilis.factions.traits.AntiCoreTrait
 import org.quintilis.factions.util.Keys
 import org.quintilis.factions.entities.clan.Relation
+import org.quintilis.factions.extensions.broadcastInRadius
 import org.quintilis.factions.extensions.broadcastTitleTranslatable
 import org.quintilis.factions.managers.RedisManager
 import org.quintilis.factions.services.FactionsServices.clanRelationCache
@@ -119,5 +125,37 @@ class AntiCoreListener : Listener {
         }
     }
 
+    @EventHandler
+    fun onAnchorInteract(event: PlayerInteractEvent) {
+        val block = event.clickedBlock ?: return
+        if (block.type != Material.RESPAWN_ANCHOR) return
+        if (event.action != Action.RIGHT_CLICK_BLOCK) return
+
+        val antiCore = antiCoreCache.findByLocation(block.location) ?: return
+        val item = event.item
+
+        // Se o jogador estiver usando Glowstone, o Minecraft vai aumentar o nível (0-4)
+        if (item?.type == Material.GLOWSTONE) {
+            // Opcional: Você pode atualizar o shots_left no banco aqui se o nível subir!
+            return
+        }
+    }
+
+    @EventHandler
+    fun onAntiCoreExplosion(event: BlockExplodeEvent){
+        val block = event.block
+        if(block.type != Material.RESPAWN_ANCHOR) return
+
+        val anticore = antiCoreCache.findByLocation(block.location) ?: return
+
+        event.blockList().clear()
+
+        anticore.active = false
+        anticore.save<BaseEntity>()
+        antiCoreCache.invalidateSpatialCaches(block.location)
+
+        block.world.playSound(block.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.8f)
+        block.location.broadcastInRadius(50.0, Component.translatable(""))
+    }
     //TODO fazer o evento de quebra de anticore soft delete na database
 }
