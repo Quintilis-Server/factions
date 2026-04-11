@@ -102,8 +102,6 @@ class CoreCache(private val coreDao: CoreDao): AbstractDaoCache<CoreDao, ClanCor
 
         localLocationCache[key] = Pair(cachedId, now + LOCAL_TTL_MS)
 
-        if(localLocationCache.size > 1000) localLocationCache.clear()
-
         if(cachedId == null) return null
 
         return findById(cachedId)

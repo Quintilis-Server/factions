@@ -3,12 +3,15 @@ package org.quintilis.factions.listeners
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
+import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.event.Cancellable
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.persistence.PersistentDataType
 import org.quintilis.factions.Factions
 import org.quintilis.factions.annotations.AutoRegister
@@ -30,45 +33,45 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
     private val chunkService = FactionsServices.chunkService
 
 
+    private fun isProtected(block: org.bukkit.block.Block): Boolean {
+        val type = block.type
+        if (type != Material.IRON_BLOCK && type != Material.DIAMOND_BLOCK && type != Material.BEACON) {
+            return false
+        }
+
+        if (coreCache.findByChunk(block.chunk) == null) return false
+
+        if (coreCache.findByLocation(block.location) != null) return true
+
+        val locAbove = block.location
+        val originalY = locAbove.y
+        locAbove.y = originalY + 1
+
+        val protected = coreCache.findByLocation(locAbove) != null
+
+        locAbove.y = originalY
+        if (protected) return true
+
+        return false
+    }
+    @EventHandler
+    fun onEntityExplode(event: EntityExplodeEvent) {
+        event.blockList().removeIf { isProtected(it) }
+    }
+
+    @EventHandler
+    fun onBlockExplode(event: BlockExplodeEvent) {
+        event.blockList().removeIf { isProtected(it) }
+    }
+
     /**
      * Listener de evento de quebra de bloco para checagem de quebra de nexus
      */
     @EventHandler
     fun onBlockBreak(event: BlockBreakEvent) {
-        val block = event.block
-        val location = block.location
-        val player = event.player
-
-        val core = coreCache.findByLocation(location)
-
-        if (core != null) {
-//            if(player.hasPermission("factions.admin")) return
-
+        if(this.isProtected(event.block)){
             event.isCancelled = true
-            player.sendTranslatable("nexus.protect.indestructible")
-            return
-        }
-
-        if(block.type == Material.IRON_BLOCK || block.type == Material.DIAMOND_BLOCK) {
-            val world = block.world
-            val upY = block.y + 1
-
-            for(x in -1..1){
-                for(z in -1..1){
-                    val checkLocation = Location(
-                        world,
-                        (block.x + x).toDouble(),
-                        upY.toDouble(),
-                        (block.z + z).toDouble()
-                    )
-
-                    if(coreCache.findByLocation(checkLocation) != null) {
-                        event.isCancelled = true
-                        player.sendTranslatable("nexus.protect.indestructible")
-                        return
-                    }
-                }
-            }
+            event.player.sendTranslatable("nexus.protect.indestructible")
         }
     }
 
