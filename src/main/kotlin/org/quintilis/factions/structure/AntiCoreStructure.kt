@@ -3,6 +3,9 @@ package org.quintilis.factions.structure
 import fr.skytasul.guardianbeam.Laser
 import org.bukkit.ChatColor
 import org.bukkit.Location
+import org.bukkit.Material
+import org.bukkit.Particle
+import org.bukkit.Sound
 import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.entities.clan.AntiCoreEntity
 import org.quintilis.factions.services.FactionsServices.glowingBlocks
@@ -20,10 +23,14 @@ class AntiCoreStructure(
     }
     fun castRay(plugin: JavaPlugin){
         val core = antiCore.getCore() ?: return
-        val coreLocation = core.getLocation(core.getWorld())
+        val coreLocation = core.getLocation()
 
         val laser = Laser.CrystalLaser(location, coreLocation, 10, -1)
-        laser.start(plugin)
+        try {
+            laser.start(plugin)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun glow(glow: Boolean = true){
@@ -40,7 +47,11 @@ class AntiCoreStructure(
         }
     }
 
-    fun destroy(){
-
+    fun destroy() {
+        val loc = location!!
+        loc.block.type// Remove o bloco fisicamente
+        loc.world.spawnParticle(Particle.EXPLOSION, loc.add(0.5, 0.5, 0.5), 1)
+        loc.world.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f)
+        glow(false) // Remove o contorno brilhante
     }
 }

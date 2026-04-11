@@ -39,6 +39,15 @@ data class AntiCoreEntity(
 
     @Column("created_at")
     val createdAt: Instant = Instant.now(),
+
+    @Column("active")
+    var active: Boolean = true,
+
+    @Column("shots")
+    val shots: Int = 10,
+
+    @Column("shots_left")
+    var shotsLeft: Int = 10,
 ): BaseEntity() {
     fun getClan(): ClanEntity?{
         return clanCache.getClan(clanId!!)
@@ -53,9 +62,9 @@ data class AntiCoreEntity(
         return Location(world,this.x!!.toDouble(), this.y!!.toDouble(), this.z!!.toDouble())
     }
 
-//    fun getStructure(): AntiCoreStructure{
-//        return AntiCoreStructure.fromEntity(this)
-//    }
+    fun getStructure(): AntiCoreStructure{
+        return AntiCoreStructure.fromEntity(this)
+    }
 
     fun place(attackerClan: ClanEntity, targetCore: ClanCoreEntity, location: Location){
         this.x = location.blockX;

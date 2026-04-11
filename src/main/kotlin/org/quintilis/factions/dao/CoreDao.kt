@@ -37,7 +37,7 @@ interface CoreDao: BaseDao<ClanCoreEntity, Int> {
 
     fun delete(core: ClanCoreEntity, world: World){
         if (core != null){
-            val coreBlock = world.getBlockAt(core.getLocation(world)!!)
+            val coreBlock = world.getBlockAt(core.getLocation()!!)
 //            coreBlock.setBlockData()
         }
         this.deactivateCore(core.id!!)

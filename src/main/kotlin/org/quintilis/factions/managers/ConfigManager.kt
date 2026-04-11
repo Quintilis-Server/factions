@@ -105,4 +105,14 @@ object ConfigManager {
     fun getGlowstonePrice(): Int{
         return this.getInt("clan.glowstone-price")
     }
+
+    fun getAnticoreDamage(): Int{
+        return this.getInt("anticore.damage")
+    }
+    fun getAnticoreTime(): Int{
+        return this.getInt("anticore.time")
+    }
+    fun getAnticoreShots(): Int{
+        return this.getInt("anticore.shots")
+    }
 }

@@ -23,3 +23,7 @@ clan:
   core-price: 150
   anti-core-price: 100
   glowstone-price: 100
+anticore:
+  damage: 5
+  time: 400              #TICKS
+  shots: 10

@@ -97,6 +97,14 @@ class Factions : JavaPlugin() {
             try{
                 val annotation = clazz.getAnnotation(AutoTask::class.java)
 
+                val interval = if (annotation.configPath.isNotEmpty()) {
+                    // Tenta pegar da config. Se não existir (retornar 0 ou nulo), usa o period da anotação
+                    val fromConfig = config.getLong(annotation.configPath, 0L)
+                    if (fromConfig > 0L) fromConfig else annotation.period
+                } else {
+                    annotation.period
+                }
+
                 val taskInstance = try{
                     clazz.getConstructor(Factions::class.java).newInstance(this)
                 } catch (e: NoSuchMethodException){
@@ -108,14 +116,14 @@ class Factions : JavaPlugin() {
                         this,
                         taskInstance,
                         annotation.delay,
-                        annotation.period
+                        interval
                     )
                 } else {
                     server.scheduler.runTaskTimer(
                         this,
                         taskInstance,
                         annotation.delay,
-                        annotation.period
+                        interval
                     )
                 }
                 logger.info("Task registrada automaticamente: ${clazz.simpleName}")

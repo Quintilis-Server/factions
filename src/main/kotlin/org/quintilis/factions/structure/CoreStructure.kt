@@ -4,6 +4,8 @@ import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.Particle
+import org.bukkit.Sound
 import org.bukkit.World
 import org.bukkit.block.Block
 import org.quintilis.factions.entities.clan.ClanCoreEntity
@@ -64,7 +66,7 @@ class CoreStructure(
         fun fromCore(core: ClanCoreEntity): CoreStructure {
             val world = core.getWorld()
             val chunk = core.getOwnChunk()
-            val location = core.getLocation(world)
+            val location = core.getLocation()
             val structure = CoreStructure(
                 worldUUID = world.uid,
                 chunkX = chunk.x,
@@ -100,24 +102,26 @@ class CoreStructure(
 
         val targetLocation = targetBlock.location
 
-        if(targetLocation == core.getLocation(getWorld()!!)) return true
+        if(targetLocation == core.getLocation()) return true
 
         return structureLocation.containsKey(targetLocation)
     }
 
     fun destroyStructure(){
-        val world = getWorld() ?: return
-        val coreLocation = core.getLocation(world)!!
+        val coreLocation = core.getLocation()!!
 
         coreLocation.block.type = Material.AIR
         for(loc in structureLocation.keys){
             loc.block.type = Material.AIR
         }
+        coreLocation.world.spawnParticle(Particle.EXPLOSION, coreLocation.add(0.5, 0.5, 0.5), 1)
+        coreLocation.world.playSound(coreLocation, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f)
+
     }
 
     fun placeStructure(){
         val world = getWorld() ?: return
-        val center = (core.getLocation(world) ?: return).clone().subtract(0.0, 1.0, 0.0)
+        val center = (core.getLocation() ?: return).clone().subtract(0.0, 1.0, 0.0)
 
         val coreMaterial = when(core.type){
             CoreType.NEXUS -> Material.DIAMOND_BLOCK

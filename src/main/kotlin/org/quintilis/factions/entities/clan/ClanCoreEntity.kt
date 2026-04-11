@@ -60,16 +60,16 @@ data class ClanCoreEntity(
     var placedAt: Instant? = null,
 
 ) : BaseEntity() {
-    fun getLocation(world: World): Location? {
+    fun getLocation(): Location? {
         if(placed && x != null && y != null && z != null) {
-            return Location(world, x!!.toDouble(), y!!.toDouble(), z!!.toDouble())
+            return Location(getWorld(), x!!.toDouble(), y!!.toDouble(), z!!.toDouble())
         }
         return null
     }
 
     fun getOwnChunk(): Chunk{
         val world = getWorld()
-        val location = this.getLocation(world)!!
+        val location = this.getLocation()!!
         return world.getChunkAt(location)
     }
 
