@@ -10,7 +10,9 @@ import org.bukkit.World
 import org.bukkit.block.Block
 import org.quintilis.factions.entities.clan.ClanCoreEntity
 import org.quintilis.factions.enums.CoreType
+import org.quintilis.factions.factory.CoreLootFactory
 import java.util.UUID
+import kotlin.random.Random
 
 class CoreStructure(
     val worldUUID: UUID,
@@ -109,14 +111,27 @@ class CoreStructure(
 
     fun destroyStructure(){
         val coreLocation = core.getLocation()!!
+        val world = coreLocation.world
 
         coreLocation.block.type = Material.AIR
         for(loc in structureLocation.keys){
             loc.block.type = Material.AIR
         }
-        coreLocation.world.spawnParticle(Particle.EXPLOSION, coreLocation.add(0.5, 0.5, 0.5), 1)
-        coreLocation.world.playSound(coreLocation, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f)
+        world.spawnParticle(Particle.EXPLOSION, coreLocation.add(0.5, 0.5, 0.5), 1)
+        world.playSound(coreLocation, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f)
 
+        val rewards = CoreLootFactory.getDestructionLoot(core.type)
+
+        for (item in rewards) {
+            // Dropa os itens levemente para cima para dar um efeito de "explosão de loot"
+            world.dropItemNaturally(coreLocation.clone().add(0.5, 1.0, 0.5), item).apply {
+                velocity = org.bukkit.util.Vector(
+                    (Random.nextDouble() - 0.5) * 0.2,
+                    0.4,
+                    (Random.nextDouble() - 0.5) * 0.2
+                )
+            }
+        }
     }
 
     fun placeStructure(){
