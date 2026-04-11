@@ -5,10 +5,12 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.Particle
 import org.bukkit.Sound
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
+import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.player.PlayerInteractEvent
@@ -157,5 +159,19 @@ class AntiCoreListener : Listener {
         block.world.playSound(block.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.8f)
         block.location.broadcastInRadius(50.0, Component.translatable(""))
     }
-    //TODO fazer o evento de quebra de anticore soft delete na database
+
+    @EventHandler
+    fun onAntiCoreBlockBreak(event: BlockBreakEvent){
+        val block = event.block
+        if(block.type != Material.RESPAWN_ANCHOR) return
+
+        val anticore = antiCoreCache.findByLocation(block.location) ?: return
+
+        anticore.active = false
+        anticore.save<BaseEntity>()
+
+        antiCoreCache.invalidateSpatialCaches(block.location)
+        event.player.sendTranslatable("anticore.removed")
+        block.world.spawnParticle(Particle.SMOKE, block.location.add(0.5, 0.5, 0.5), 20)
+    }
 }
