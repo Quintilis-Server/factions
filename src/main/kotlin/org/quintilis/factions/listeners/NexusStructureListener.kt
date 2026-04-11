@@ -49,7 +49,7 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
             return
         }
 
-        if(block.type == Material.IRON_BLOCK) {
+        if(block.type == Material.IRON_BLOCK || block.type == Material.DIAMOND_BLOCK) {
             val world = block.world
             val upY = block.y + 1
 
