@@ -13,19 +13,37 @@ import org.quintilis.factions.annotations.AutoTask
 import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.entities.clan.AntiCoreEntity
 import org.quintilis.factions.events.CoreDamageEvent
+import org.quintilis.factions.extensions.getClan
 import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.services.FactionsServices.antiCoreCache
+import kotlin.math.pow
 
 @AutoTask(configPath = "anticore.time", period = 20L)
 class AntiCoreDamageTask(private val plugin: Factions): BukkitRunnable() {
     override fun run() {
         val anticores = antiCoreCache.findAllActive()
+        val radiusSq = ConfigManager.getAnticoreActivationRadius().pow(2)
         anticores.forEachIndexed { index, anticore ->
             val delay = (index * 2L)
             Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-                val block = anticore.getLocation()?.block ?: return@Runnable
+                val location = anticore.getLocation() ?: return@Runnable
+                val block = location.block
                 val data = block.blockData
                 if(data is RespawnAnchor){
+
+                    val attackerClanId = anticore.clanId
+
+                    val isAttackerNear = location.world.players.any { player ->
+                        val playerClan = player.getClan()
+                        playerClan?.id == attackerClanId &&
+                        player.location.distanceSquared(location) < radiusSq
+                    }
+
+                    if (!isAttackerNear) {
+                        // Opcional: Efeito visual/sonoro de que o AntiCore está "em espera"
+                        block.world.spawnParticle(Particle.SMOKE, location.add(0.5, 0.8, 0.5), 1)
+                        return@Runnable
+                    }
 
                     val targetCore = anticore.getCore() ?: return@Runnable
 

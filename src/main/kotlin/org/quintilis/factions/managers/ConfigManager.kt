@@ -109,10 +109,14 @@ object ConfigManager {
     fun getAnticoreDamage(): Int{
         return this.getInt("anticore.damage")
     }
-    fun getAnticoreTime(): Int{
-        return this.getInt("anticore.time")
-    }
+//    fun getAnticoreTime(): Int{
+//        return this.getInt("anticore.time")
+//    }
     fun getAnticoreShots(): Int{
         return this.getInt("anticore.shots")
+    }
+
+    fun getAnticoreActivationRadius(): Double {
+        return config.getDouble("anticore.activation-radius", 15.0)
     }
 }

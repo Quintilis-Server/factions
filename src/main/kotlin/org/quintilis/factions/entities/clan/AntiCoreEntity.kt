@@ -6,6 +6,7 @@ import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
 import org.quintilis.factions.entities.BaseEntity
+import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.services.FactionsServices.clanCache
 import org.quintilis.factions.services.FactionsServices.coreCache
 import org.quintilis.factions.structure.AntiCoreStructure
@@ -46,10 +47,10 @@ data class AntiCoreEntity(
     var active: Boolean = true,
 
     @Column("shots")
-    val shots: Int = 10,
+    val shots: Int = ConfigManager.getAnticoreShots(),
 
     @Column("shots_left")
-    var shotsLeft: Int = 10,
+    var shotsLeft: Int = ConfigManager.getAnticoreShots(),
 
     @Column("world_uuid")
     var worldUuid: UUID? = null,
