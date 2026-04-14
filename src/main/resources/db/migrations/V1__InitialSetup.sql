@@ -69,6 +69,7 @@ CREATE TABLE clan_cores(
         REFERENCES clan_cores,
     placed          BOOLEAN                     DEFAULT FALSE                           NOT NULL,
     placed_at       TIMESTAMP WITH TIME ZONE,
+    world_uuid      uuid,
 
     CHECK ( (placed = FALSE) OR ( (x IS NOT NULL) AND (y IS NOT NULL) AND (z IS NOT NULL) ) )
 );

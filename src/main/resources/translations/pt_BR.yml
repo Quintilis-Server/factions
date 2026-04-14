@@ -189,6 +189,9 @@ anticore:
     error:
         attacking-same-clan: "<yellow>Você esta atacando o seu próprio clã, coloque o anti core mais proximo de um núcleo de outro clã"
         no-influence-zone: "<red>Você esta tentando colocar o anticore em uma zona onde não tem núcleos ativos, coloque o anticore em um chunk inimigo"
+    destroyed:
+        glowstone: "<red>Um Anticore do clã <attacker_clan> foi destruido por <destroyer_player> usando glowstone."
+        
 # ============================================
 # Sistema de Guerra e Pontos
 # ============================================
@@ -208,3 +211,7 @@ war:
         defender:
             title: "<dark_red><bold>NÚCLEO SOB ATAQUE!</bold></dark_red>"
             subtitle: "<yellow>A integridade do Nexus está caindo! Destrua as âncoras inimigas!</yellow>"
+            
+npc:
+    anticore:
+        name: "Vendedor da guerra"

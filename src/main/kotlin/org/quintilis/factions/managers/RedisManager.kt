@@ -3,6 +3,7 @@ package org.quintilis.factions.managers
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
+import redis.clients.jedis.params.ScanParams
 
 object RedisManager {
     private lateinit var pool: JedisPool
@@ -33,6 +34,31 @@ object RedisManager {
     fun <T> run(action: (Jedis) -> T): T {
         return pool.resource.use{jedis ->
             action(jedis)
+        }
+    }
+
+    fun flushDatabase() {
+        run { jedis ->
+            jedis.flushDB()
+            println("[RedisManager] Database ${ConfigManager.getRedisDatabase()} resetada.")
+        }
+    }
+
+    fun deleteByPattern(pattern: String) {
+        run { jedis ->
+            var cursor = ScanParams.SCAN_POINTER_START
+            val params = ScanParams().match(pattern).count(100)
+
+            do {
+                val scanResult = jedis.scan(cursor, params)
+                val keys = scanResult.result
+
+                if (keys.isNotEmpty()) {
+                    jedis.del(*keys.toTypedArray())
+                }
+
+                cursor = scanResult.cursor
+            } while (cursor != ScanParams.SCAN_POINTER_START)
         }
     }
 }

@@ -16,6 +16,7 @@ import org.quintilis.factions.services.FactionsServices.clanChunkCache
 import org.quintilis.factions.services.FactionsServices.clanChunkDao
 import org.quintilis.factions.structure.CoreStructure
 import java.time.Instant
+import java.util.UUID
 
 @TableName("clan_cores")
 data class ClanCoreEntity(
@@ -59,16 +60,18 @@ data class ClanCoreEntity(
     @Column("placed_at")
     var placedAt: Instant? = null,
 
+    @Column("world_uuid")
+    var worldUuid: UUID? = null,
+
 ) : BaseEntity() {
     fun getLocation(): Location? {
-        if(placed && x != null && y != null && z != null) {
-            return Location(getWorld(), x!!.toDouble(), y!!.toDouble(), z!!.toDouble())
-        }
-        return null
+        if (!placed || x == null || y == null || z == null) return null
+        val world = getWorld() ?: return null
+        return Location(world, x!!.toDouble(), y!!.toDouble(), z!!.toDouble())
     }
 
-    fun getOwnChunk(): Chunk{
-        val world = getWorld()
+    fun getOwnChunk(): Chunk?{
+        val world = getWorld() ?: return null
         val location = this.getLocation()!!
         return world.getChunkAt(location)
     }
@@ -77,10 +80,9 @@ data class ClanCoreEntity(
         return clanChunkCache.findChunksByCoreId(this.id!!)
     }
 
-    fun getWorld(): World {
-        val chunks = chunkCache.getChunksByClan(clanId)
-        val world = Bukkit.getWorld(chunks.get(0).worldUuid)!!
-        return world
+    fun getWorld(): World? {
+        val uuid = worldUuid ?: return null
+        return Bukkit.getWorld(uuid)
     }
 
     fun takeDamage(amount: Int): Boolean {
@@ -88,22 +90,23 @@ data class ClanCoreEntity(
         return this.health <= 0
     }
 
-    fun getStructure(): CoreStructure {
+    fun getStructure(): CoreStructure? {
         return CoreStructure.fromCore(this)
     }
 
-    fun deleteCore(){
+    fun deleteCore(dropLoot: Boolean = false) { // Repassa o parâmetro
         val structure = getStructure()
         this.deletedAt = Instant.now()
         this.active = false
 
         val chunks = clanChunkDao.findByCore(this)
+        chunks.forEach { it.declaim() }
 
-        chunks.forEach {
-
-        }
+        clanChunkCache.invalidateCoreChunks(this.id!!)
         this.save<BaseEntity>()
-        structure.destroyStructure()
+
+        // Passa a decisão de drop para a estrutura
+        structure?.destroyStructure(dropLoot)
     }
 
     fun getClan(): ClanEntity?{

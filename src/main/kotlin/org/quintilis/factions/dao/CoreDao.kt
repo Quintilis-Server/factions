@@ -47,18 +47,18 @@ interface CoreDao: BaseDao<ClanCoreEntity, Int> {
     fun countActiveSubCores(@Bind("clanId") clanId: Int): Int
 
     @SqlQuery("""
-        SELECT * FROM clan_cores as cc
+        SELECT cc.* FROM clan_cores as cc
         JOIN public.clans c on c.id = cc.clan_id
         WHERE c.id = :clanId AND c.active = true
     """)
     fun findByClanId(@Bind("clanId") clanId: Int): List<ClanCoreEntity>
 
     @SqlQuery("""
-        SELECT * FROM clan_cores as cc
+        SELECT cc.* FROM clan_cores as cc
         JOIN clans c on cc.id = cc.clan_id
         WHERE c.id = :clanId AND c.active = true AND cc.type = 'NEXUS'
     """)
-    fun findNexusByClanId(clanId: Int): ClanCoreEntity?
+    fun findNexusByClanId(@Bind("clanId") clanId: Int): ClanCoreEntity?
 
     @SqlQuery("""
         SELECT core.* FROM clan_cores core

@@ -1,6 +1,7 @@
 package org.quintilis.factions.structure
 
 import fr.skytasul.guardianbeam.Laser
+import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Location
 import org.bukkit.Material
@@ -17,6 +18,7 @@ class AntiCoreStructure(
     companion object{
         fun fromEntity(entity: AntiCoreEntity): AntiCoreStructure {
             return AntiCoreStructure(
+                location = entity.getLocation(),
                 antiCore = entity,
             )
         }
@@ -28,6 +30,9 @@ class AntiCoreStructure(
         val laser = Laser.CrystalLaser(location, coreLocation, 10, -1)
         try {
             laser.start(plugin)
+            Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+                laser.stop()
+            }, 20L)
         } catch (e: Exception) {
             e.printStackTrace()
         }

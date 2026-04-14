@@ -1,6 +1,7 @@
 package org.quintilis.factions.listeners
 
-import net.citizensnpcs.api.event.NPCRightClickEvent
+import de.oliver.fancynpcs.api.actions.ActionTrigger
+import de.oliver.fancynpcs.api.events.NpcInteractEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
@@ -25,7 +26,6 @@ import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.gui.AntiCoreGUI
 import org.quintilis.factions.services.FactionsServices.antiCoreCache
 import org.quintilis.factions.services.FactionsServices.coreCache
-import org.quintilis.factions.traits.AntiCoreTrait
 import org.quintilis.factions.util.Keys
 import org.quintilis.factions.entities.clan.Relation
 import org.quintilis.factions.extensions.broadcastInRadius
@@ -38,14 +38,13 @@ import redis.clients.jedis.Jedis
 class AntiCoreListener : Listener {
 
     @EventHandler
-    fun onNpcClick(event: NPCRightClickEvent) {
-        val npc = event.npc
-        
-        if (npc.hasTrait(AntiCoreTrait::class.java)) {
-            val player = event.clicker
-            AntiCoreGUI(player).open()
-        }
+    fun onNpcClick(event: NpcInteractEvent) {
+        if (event.interactionType != ActionTrigger.RIGHT_CLICK) return
+        // filtra pelo nome ou tag configurada no NPC
+        if (event.npc.data.name != "anticore") return
+        AntiCoreGUI(event.player).open()
     }
+
     @EventHandler
     fun onAntiCorePlace(event: BlockPlaceEvent) {
         val player = event.player
@@ -57,7 +56,7 @@ class AntiCoreListener : Listener {
 
             // Verifica se é realmente um item de AntiCore conferindo a marcação interna dele na PDC
             if (!meta.persistentDataContainer.has(Keys.ANTI_CORE_ITEM, PersistentDataType.INTEGER)) {
-                println(meta.persistentDataContainer.has(Keys.ANTI_CORE_ITEM, PersistentDataType.INTEGER))
+//                println(meta.persistentDataContainer.has(Keys.ANTI_CORE_ITEM, PersistentDataType.INTEGER))
                 return
             }
 
@@ -65,7 +64,7 @@ class AntiCoreListener : Listener {
             val antiCoreId = meta.persistentDataContainer.get(Keys.ANTI_CORE_ITEM, PersistentDataType.INTEGER) ?: return
 
             // Pega a exata localização em que o jogador colocou o bloco
-            val location = event.block.location
+            val location = event.blockPlaced.location
 
             val placerClan = player.getClan() ?: throw ClanNotFoundError()
 
@@ -96,15 +95,17 @@ class AntiCoreListener : Listener {
             val antiCoreEntity = antiCoreCache.findById(antiCoreId)
                 ?: throw BaseError("error.anticore-entity-not-found")
 
-            var relation = clanRelationCache.findRelation(placerClan.id, targetClan.id)
-            if(relation != null && relation.relation != Relation.ENEMY) {
-                relation.deactivate()
+            val relation = clanRelationCache.findRelation(placerClan.id, targetClan.id)
+            if (relation != null && relation.relation == Relation.ENEMY) {
+                // Já é enemy, passa direto
+            } else {
+                relation?.deactivate() // desativa ally se existir
+                ClanRelationEntity(
+                    clan1Id = placerClan.id,
+                    clan2Id = targetClan.id,
+                    relation = Relation.ENEMY,
+                ).save<BaseEntity>()
             }
-            ClanRelationEntity(
-                clan1Id = placerClan.id,
-                clan2Id = targetClan.id,
-                relation = Relation.ENEMY,
-            ).save<BaseEntity>()
 
             antiCoreEntity.place(
                 attackerClan = placerClan,
@@ -112,15 +113,26 @@ class AntiCoreListener : Listener {
                 location = location
             )
 
-            targetClan.broadcastTitleTranslatable("war.started.attacker.title", "war.started.attacker.subtitle")
-            placerClan.broadcastTitleTranslatable("war.started.defender.title", "war.started.defender.subtitle")
+            if (relation != null && relation.relation == Relation.ENEMY) {
+                // Já é enemy, NÃO anuncia guerra de novo
+            } else {
+                relation?.deactivate()
+                ClanRelationEntity(
+                    clan1Id = placerClan.id,
+                    clan2Id = targetClan.id,
+                    relation = Relation.ENEMY,
+                ).save<BaseEntity>()
 
-            Bukkit.broadcast(Component.translatable(
-                "war.started.broadcast",
-                Argument.string("attacker", placerClan.name),
-                Argument.string("defender", targetClan.name)
-            ))
-
+                // Move os broadcasts pra cá
+                targetClan.broadcastTitleTranslatable("war.started.attacker.title", "war.started.attacker.subtitle")
+                placerClan.broadcastTitleTranslatable("war.started.defender.title", "war.started.defender.subtitle")
+                Bukkit.broadcast(Component.translatable(
+                    "war.started.broadcast",
+                    Argument.string("attacker", placerClan.name),
+                    Argument.string("defender", targetClan.name)
+                ))
+            }
+            event.player.sendTranslatable("anticore.placed")
         }catch (e: BaseError){
             event.isCancelled = true
             player.sendTranslatable(e.component)
@@ -130,34 +142,57 @@ class AntiCoreListener : Listener {
     @EventHandler
     fun onAnchorInteract(event: PlayerInteractEvent) {
         val block = event.clickedBlock ?: return
-        if (block.type != Material.RESPAWN_ANCHOR) return
-        if (event.action != Action.RIGHT_CLICK_BLOCK) return
+        if (block.type != Material.RESPAWN_ANCHOR || event.action != Action.RIGHT_CLICK_BLOCK) return
+        val item = event.item ?: return
+        if (item.type != Material.GLOWSTONE) return
 
         val antiCore = antiCoreCache.findByLocation(block.location) ?: return
-        val item = event.item
 
-        // Se o jogador estiver usando Glowstone, o Minecraft vai aumentar o nível (0-4)
-        if (item?.type == Material.GLOWSTONE) {
-            // Opcional: Você pode atualizar o shots_left no banco aqui se o nível subir!
-            return
+        antiCore.glowstoneCharges += 1
+
+        // 5ª Carga: O bloco VAI explodir agora
+        if (antiCore.glowstoneCharges >= 5) {
+            // Marcamos o BLOCO na memória do servidor (Metadata)
+            // O valor pode ser o ID do AntiCore para facilitar a busca depois
+            block.setMetadata("factions_exploding_anticore",
+                org.bukkit.metadata.FixedMetadataValue(org.bukkit.Bukkit.getPluginManager().getPlugin("Factions")!!, antiCore.id)
+            )
+            // NÃO definimos active = false aqui ainda!
         }
+
+        antiCore.save<BaseEntity>()
+        antiCoreCache.invalidateSpatialCaches(block.location)
     }
 
     @EventHandler
     fun onAntiCoreExplosion(event: BlockExplodeEvent){
         val block = event.block
-        if(block.type != Material.RESPAWN_ANCHOR) return
 
-        val anticore = antiCoreCache.findByLocation(block.location) ?: return
+        // 1. Verificamos se o bloco tem a nossa "Tag" de memória
+        val metadata = block.getMetadata("factions_exploding_anticore")
 
-        event.blockList().clear()
+        if (metadata.isNotEmpty()) {
+            // Se tem a tag, é 100% de certeza que é o AntiCore detonando
+            val antiCoreId = metadata[0].asInt()
 
-        anticore.active = false
-        anticore.save<BaseEntity>()
-        antiCoreCache.invalidateSpatialCaches(block.location)
+            // 2. PROTEGE OS BLOCOS (Limpa a lista de destruição)
+            event.blockList().clear()
 
-        block.world.playSound(block.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.8f)
-        block.location.broadcastInRadius(50.0, Component.translatable(""))
+            // 3. AGORA sim, desativamos ele no banco de forma segura
+            val anticore = antiCoreCache.findById(antiCoreId)
+            if (anticore != null && anticore.active) {
+                anticore.active = false
+                anticore.save<BaseEntity>()
+                antiCoreCache.invalidateSpatialCaches(block.location)
+
+                // Avisos e efeitos
+                block.world.playSound(block.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.8f)
+                block.location.broadcastInRadius(50.0, Component.translatable("anticore.destroyed.glowstone"))
+            }
+
+            // Remove a metadata para limpar a memória
+            block.removeMetadata("factions_exploding_anticore", org.bukkit.Bukkit.getPluginManager().getPlugin("Factions")!!)
+        }
     }
 
     @EventHandler

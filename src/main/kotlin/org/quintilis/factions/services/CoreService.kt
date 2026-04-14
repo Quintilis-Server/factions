@@ -31,6 +31,7 @@ class CoreService(private val plugin: Factions) {
         core.x = location.x.toInt()
         core.y = location.y.toInt()
         core.z = location.z.toInt()
+        core.worldUuid = location.world.uid
     }
 
     private fun getNexusDisplayName(tag: String, locale: Locale): Component {

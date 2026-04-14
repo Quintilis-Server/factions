@@ -33,7 +33,12 @@ abstract class AbstractDaoCache<D: BaseDao<E, K>, E: BaseEntity, K>(
             ?: kClass.memberProperties.find { it.name == "id" }
             ?: throw IllegalArgumentException("PK não encontrada em ${kClass.simpleName}")
 
-        pkColName = pkProp.findAnnotation<Column>()?.name ?: pkProp.name
+        val annotationName = pkProp.findAnnotation<Column>()?.name
+        pkColName = if (!annotationName.isNullOrBlank()) {
+            annotationName
+        } else {
+            pkProp.name // Se for vazio ou nulo, usa o nome da variável (ex: "id")
+        }
         EntityCacheRegistry.register(classType.kotlin, this)
     }
     /**

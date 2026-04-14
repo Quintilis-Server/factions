@@ -13,13 +13,12 @@ interface ClanChunkDao: BaseDao<ClanChunkEntity, Int> {
      * Lista todos os chunks afetados pelo core
      */
     @SqlQuery("""
-        SELECT c.* from chunk c
-        JOIN clan_chunk cc ON c.id = cc.chunk_id
-        WHERE cc.owner_core = :ownerId
+        SELECT * from clan_chunk
+        WHERE owner_core = :ownerId
     """)
-    fun findByCoreId(@Bind("ownerId") ownerId: Int): List<ChunkEntity>
+    fun findByCoreId(@Bind("ownerId") ownerId: Int): List<ClanChunkEntity>
 
-    fun findByCore(core: ClanCoreEntity): List<ChunkEntity>{
+    fun findByCore(core: ClanCoreEntity): List<ClanChunkEntity>{
         return this.findByCoreId(core.id!!)
     }
 

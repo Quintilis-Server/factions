@@ -40,34 +40,31 @@ class AntiCoreCache(
     }
 
     private fun genLocKey(location: Location): String {
-        return "${location.blockX}:${location.blockY}:${location.blockZ}"
+        return "${location.world.uid}:${location.blockX}:${location.blockY}:${location.blockZ}"
     }
 
-    // Sobrescrevendo o findByLocation para usar a hierarquia de cache
     override fun findByLocation(location: Location): AntiCoreEntity? {
         val key = genLocKey(location)
         val now = System.currentTimeMillis()
 
-        // 1. Tenta RAM Local
+        // 1. RAM Local
         val localEntry = localLocationCache[key]
         if (localEntry != null && localEntry.second > now) {
-            val cachedId = localEntry.first
-            return if (cachedId != null) findById(cachedId) else null
+            return localEntry.first?.let { findById(it) }
         }
 
-        // 2. Tenta Redis / Banco
+        // 2. Redis/Banco
         val cachedId = locationCache.getOrFetch(key) { _ ->
-            val entity = daoImpl.findByLocation(location)
-            entity?.id
+            // Use os métodos do Block (x, y, z) ou da Location (blockX, blockY, blockZ)
+            daoImpl.findByLocation(
+                location.world.uid,
+                location.blockX,
+                location.blockY,
+                location.blockZ
+            )?.id
         }
 
-        // 3. Salva na RAM local por 5s
         localLocationCache[key] = Pair(cachedId, now + LOCAL_TTL_MS)
-
-        // Limpeza básica do map local se crescer demais
-        if (localLocationCache.size > 2000) localLocationCache.clear()
-
-        if (cachedId == null) return null
-        return findById(cachedId)
+        return cachedId?.let { findById(it) }
     }
 }

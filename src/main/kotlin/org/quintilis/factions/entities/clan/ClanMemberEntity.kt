@@ -9,6 +9,7 @@ import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.cache.PlayerCache
 import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.entities.player.PlayerEntity
+import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -24,7 +25,7 @@ data class ClanMemberEntity(
     val playerId: UUID,
 
     @Column("created_at")
-    val createdAt: OffsetDateTime = OffsetDateTime.now(),
+    val createdAt: Instant = Instant.now(),
 
     @Column("active")
     val active: Boolean = true

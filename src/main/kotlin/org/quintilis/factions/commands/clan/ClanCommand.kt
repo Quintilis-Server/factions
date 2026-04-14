@@ -96,27 +96,27 @@ class ClanCommand(
     }
 
     private fun handleDelete(sender: Player) {
-        val clan = clanCache.findByLeaderId(sender.uniqueId)
-        if (clan == null) {
-            noClanLeader(sender)
-            return
-        }
-        
+        val clan = clanCache.findByLeaderId(sender.uniqueId) ?: return noClanLeader(sender)
+
         // Buscar membros antes de deletar (para notificar)
         val members = clanCache.getMembers(clan.id!!)
-        
+
+        // 1. BUSCAR TUDO ANTES DE DELETAR
+        val cores = coreCache.findByClanId(clan.id) // Busca enquanto ainda são "ativos"
+
+        // 2. EXECUTAR A DELEÇÃO FÍSICA (Blocos)
+        cores.forEach { c ->
+            c.deleteCore() // Isso remove os blocos e limpa chunks
+        }
+
+        // 3. EXECUTAR A DELEÇÃO LÓGICA (Banco/Service)
         when (val result = clanService.deleteClan(sender)) {
             is Result.Success -> {
-                // Notifica membros
                 members.forEach { member ->
                     Bukkit.getPlayer(member.playerId)?.sendTranslatable(
                         "clan.delete.member_response",
                         Argument.string("leader_name", sender.name)
                     )
-                }
-
-                coreCache.findByClanId(clan.id).forEach { c ->
-                    c.deleteCore()
                 }
                 sender.sendTranslatable("clan.delete.response")
             }

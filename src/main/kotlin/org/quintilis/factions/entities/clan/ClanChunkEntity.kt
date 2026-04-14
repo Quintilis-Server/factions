@@ -4,6 +4,9 @@ import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
+import org.quintilis.factions.entities.chunk.ChunkEntity
+import org.quintilis.factions.services.FactionsServices.chunkCache
+import org.quintilis.factions.services.FactionsServices.clanChunkCache
 
 @TableName("clan_chunk")
 data class ClanChunkEntity(
@@ -26,6 +29,16 @@ data class ClanChunkEntity(
     val transactionId: Int? = null,
 
     @Column("active")
-    val active: Boolean = true
+    var active: Boolean = true
 ): BaseEntity() {
+    fun getChunkEntity(): ChunkEntity? {
+        return chunkCache.findById(chunkId)
+    }
+
+    fun declaim(){
+        this.active = false
+        this.save<ClanCoreEntity>()
+        val chunkRel = getChunkEntity()!!
+        clanChunkCache.invalidateChunk(chunkRel.worldUuid, chunkRel.chunkX, chunkRel.chunkZ)
+    }
 }

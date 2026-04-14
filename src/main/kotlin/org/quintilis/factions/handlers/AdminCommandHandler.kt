@@ -1,11 +1,13 @@
 package org.quintilis.factions.handlers
 
+import de.oliver.fancynpcs.api.NpcData
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.log.ActionLogEntity
 import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.extensions.sendTranslatable
+import org.quintilis.factions.managers.TranslationManager
 import org.quintilis.factions.services.FactionsServices
 
 /**
@@ -285,10 +287,33 @@ class AdminCommandHandler {
 
         if (type == "anticore") {
             try {
-                val npc = net.citizensnpcs.api.CitizensAPI.getNPCRegistry().createNPC(org.bukkit.entity.EntityType.VILLAGER, "Vendedor de AntiCore")
-                npc.addTrait(org.quintilis.factions.traits.AntiCoreTrait::class.java)
-                npc.spawn(sender.location)
-                sender.sendMessage(net.kyori.adventure.text.Component.text("NPC Vendedor de AntiCore spawnado!", net.kyori.adventure.text.format.NamedTextColor.GREEN))
+                // 1. Instanciar usando o construtor correto: (Nome, Creator UUID, Location)
+                val npcData = de.oliver.fancynpcs.api.NpcData(
+                    "anticore",          // ID interno
+                    sender.uniqueId,     // UUID do criador
+                    sender.location      // Localização inicial
+                )
+
+                // 2. Configurar os detalhes estéticos
+                npcData.displayName = "<lang:npc.anticore.name>"
+                npcData.type = org.bukkit.entity.EntityType.VILLAGER
+
+                // Opcional: fazer o NPC olhar para quem interage
+                npcData.isTurnToPlayer = true
+
+                // 3. Obter o adapter e registrar o NPC
+                val api = de.oliver.fancynpcs.api.FancyNpcsPlugin.get()
+                val npc = api.npcAdapter.apply(npcData)
+
+                npc.create()
+                npc.spawnForAll()
+                api.npcManager.registerNpc(npc)
+
+                sender.sendMessage(net.kyori.adventure.text.Component.text(
+                    "NPC Vendedor de AntiCore spawnado com sucesso!",
+                    net.kyori.adventure.text.format.NamedTextColor.GREEN
+                ))
+
             } catch (e: Exception) {
                 e.printStackTrace()
                 sender.sendTranslatable("error.generic")

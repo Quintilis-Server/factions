@@ -1,5 +1,5 @@
 name: factions
-version: '1.0-SNAPSHOT'
+version: '1.0'
 main: org.quintilis.factions.Factions
 api-version: '1.21'
 
@@ -11,7 +11,7 @@ commands:
 
 dependencies:
     server:
-        Citizens:
+        FancyNpcs:
             load: BEFORE
             required: false
             join-classpath: true

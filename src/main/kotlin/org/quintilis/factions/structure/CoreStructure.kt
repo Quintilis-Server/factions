@@ -65,27 +65,25 @@ class CoreStructure(
         )
 
 
-        fun fromCore(core: ClanCoreEntity): CoreStructure {
-            val world = core.getWorld()
-            val chunk = core.getOwnChunk()
-            val location = core.getLocation()
+        fun fromCore(core: ClanCoreEntity): CoreStructure? {
+            val world = core.getWorld() ?: return null
+            val chunk = core.getOwnChunk() ?: return null
+            val location = core.getLocation() ?: return null
             val structure = CoreStructure(
                 worldUUID = world.uid,
                 chunkX = chunk.x,
                 chunkZ = chunk.z,
                 core = core
             )
-            if (location != null) {
-                val center = location.clone().subtract(0.0, 1.0, 0.0)
-                val coreMaterial = when(core.type) {
-                    CoreType.NEXUS -> Material.DIAMOND_BLOCK
-                    CoreType.SUB_CORE -> Material.IRON_BLOCK
-                }
-                for (x in -1..1) {
-                    for (z in -1..1) {
-                        val location = center.clone().add(x.toDouble(), 0.0, z.toDouble())
-                        structure.structureLocation[location] = coreMaterial
-                    }
+            val center = location.clone().subtract(0.0, 1.0, 0.0)
+            val coreMaterial = when(core.type) {
+                CoreType.NEXUS -> Material.DIAMOND_BLOCK
+                CoreType.SUB_CORE -> Material.IRON_BLOCK
+            }
+            for (x in -1..1) {
+                for (z in -1..1) {
+                    val location = center.clone().add(x.toDouble(), 0.0, z.toDouble())
+                    structure.structureLocation[location] = coreMaterial
                 }
             }
             return structure
@@ -109,7 +107,7 @@ class CoreStructure(
         return structureLocation.containsKey(targetLocation)
     }
 
-    fun destroyStructure(){
+    fun destroyStructure(dropLoot: Boolean = false) { // Adicionado parâmetro com default false
         val coreLocation = core.getLocation()!!
         val world = coreLocation.world
 
@@ -117,19 +115,21 @@ class CoreStructure(
         for(loc in structureLocation.keys){
             loc.block.type = Material.AIR
         }
+
         world.spawnParticle(Particle.EXPLOSION, coreLocation.add(0.5, 0.5, 0.5), 1)
         world.playSound(coreLocation, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f)
 
-        val rewards = CoreLootFactory.getDestructionLoot(core.type)
-
-        for (item in rewards) {
-            // Dropa os itens levemente para cima para dar um efeito de "explosão de loot"
-            world.dropItemNaturally(coreLocation.clone().add(0.5, 1.0, 0.5), item).apply {
-                velocity = org.bukkit.util.Vector(
-                    (Random.nextDouble() - 0.5) * 0.2,
-                    0.4,
-                    (Random.nextDouble() - 0.5) * 0.2
-                )
+        // SÓ dropa o loot se dropLoot for true
+        if (dropLoot) {
+            val rewards = CoreLootFactory.getDestructionLoot(core.type)
+            for (item in rewards) {
+                world.dropItemNaturally(coreLocation.clone().add(0.5, 1.0, 0.5), item).apply {
+                    velocity = org.bukkit.util.Vector(
+                        (Random.nextDouble() - 0.5) * 0.2,
+                        0.4,
+                        (Random.nextDouble() - 0.5) * 0.2
+                    )
+                }
             }
         }
     }

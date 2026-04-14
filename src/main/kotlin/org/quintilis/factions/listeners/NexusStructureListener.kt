@@ -34,25 +34,21 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
 
 
     private fun isProtected(block: org.bukkit.block.Block): Boolean {
+        val core = coreCache.findByChunk(block.chunk) ?: return false
+
+        // 2. FILTRO DE MATERIAL (Opcional, mas ajuda na performance)
+        // Se o bloco não for o Core (Beacon/Enchant) nem Ferro/Diamante, não precisamos checar a estrutura.
         val type = block.type
-        if (type != Material.IRON_BLOCK && type != Material.DIAMOND_BLOCK && type != Material.BEACON) {
-            return false
-        }
+        val isPossibleStructure = type == Material.IRON_BLOCK ||
+                type == Material.DIAMOND_BLOCK ||
+                type == Material.BEACON // Adicione o material real do seu Core aqui
 
-        if (coreCache.findByChunk(block.chunk) == null) return false
+        if (!isPossibleStructure) return false
 
-        if (coreCache.findByLocation(block.location) != null) return true
-
-        val locAbove = block.location
-        val originalY = locAbove.y
-        locAbove.y = originalY + 1
-
-        val protected = coreCache.findByLocation(locAbove) != null
-
-        locAbove.y = originalY
-        if (protected) return true
-
-        return false
+        // 3. VERIFICAÇÃO PELA ESTRUTURA
+        // Perguntamos para a classe CoreStructure se esse bloco faz parte dela.
+        // Isso protege tanto o bloco do Core quanto os 9 blocos da base.
+        return CoreStructure.fromCore(core)?.isPartOfStructure(block) ?: false
     }
     @EventHandler
     fun onEntityExplode(event: EntityExplodeEvent) {
@@ -109,7 +105,7 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
 
             val core = coreCache.findById(nexusId) ?: return cancelEventWithError(event, event.player)
 
-            coreService.placeCore(event.block.location, core)
+            coreService.placeCore(event.blockPlaced.location, core)
             val chunkResult = chunkService.claimChunk(
                 player = event.player,
                 clan = clan,
@@ -149,7 +145,10 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
                 }
             }
 
-            val structure: CoreStructure = CoreStructure.fromCore(core)
+            val structure: CoreStructure = CoreStructure.fromCore(core) ?: run {
+                cancelEventWithError(event, player)
+                return
+            }
             structure.placeStructure()
 
             player.sendTranslatable("nexus.place.success")

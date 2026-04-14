@@ -126,4 +126,27 @@ class ClanChunkCache(
     fun isOwnedBy(worldUuid: UUID, x: Int, z: Int, clanId: Int): Boolean {
         return getChunkOwner(worldUuid, x, z) == clanId
     }
+
+    fun invalidateChunk(worldUuid: UUID, x: Int, z: Int) {
+        val key = coordKey(worldUuid, x, z)
+        ownerCache.invalidate(key)
+    }
+
+    /**
+     * Invalida a lista de chunks de um Core específico.
+     */
+    fun invalidateCoreChunks(coreId: Int) {
+        coreChunksCache.invalidate(coreId)
+    }
+
+    /**
+     * Método "Nuclear" para quando um clã é deletado:
+     * Limpa todos os caches de posse de chunk para evitar inconsistência global.
+     * Se você tiver muitos chunks, o ideal é invalidar um por um,
+     * mas para garantir 100% de limpeza, podemos usar o pattern.
+     */
+    fun clearAllOwnerCache() {
+        // Usa o RedisManager que criamos antes
+        org.quintilis.factions.managers.RedisManager.deleteByPattern("factions:clan_chunk:owner:*")
+    }
 }

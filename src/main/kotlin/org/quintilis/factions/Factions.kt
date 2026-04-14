@@ -37,6 +37,7 @@ class Factions : JavaPlugin() {
         try{
             logger.info("Conectando ao banco de dados Redis...")
             RedisManager.connect()
+            RedisManager.flushDatabase()
             logger.info("Conexão com o banco de dados REDIS estabelecida com sucesso!")
         }catch (e: Exception){
             logger.severe("FALHA AO CONECTAR COM O REDIS! Desabilitando o plugin...")
@@ -57,13 +58,13 @@ class Factions : JavaPlugin() {
 
         TranslationManager.registerTranslations(this)
 
-        if (server.pluginManager.getPlugin("Citizens") != null && server.pluginManager.isPluginEnabled("Citizens")) {
-            net.citizensnpcs.api.CitizensAPI.getTraitFactory().registerTrait(
-                net.citizensnpcs.api.trait.TraitInfo.create(org.quintilis.factions.traits.AntiCoreTrait::class.java).withName("anticore")
-            )
-            logger.info("Citizens detectado. AntiCoreTrait registrado com sucesso.")
+        // Verificação do FancyNpcs
+        if (server.pluginManager.getPlugin("FancyNpcs") != null && server.pluginManager.isPluginEnabled("FancyNpcs")) {
+            logger.info("FancyNpcs detectado. Sistema de NPCs de AntiCore pronto.")
         } else {
-            logger.warning("Citizens não foi encontrado ou não está ativado. NPCs como o de AntiCore não funcionarão.")
+            logger.severe("FancyNpcs NÃO ENCONTRADO! NPCs como o de AntiCore não funcionarão.")
+            server.pluginManager.disablePlugin(this)
+            return
         }
     }
 

@@ -8,6 +8,7 @@ import org.bukkit.block.Block
 import org.bukkit.block.data.type.RespawnAnchor
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
+import org.quintilis.factions.Factions
 import org.quintilis.factions.annotations.AutoTask
 import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.entities.clan.AntiCoreEntity
@@ -15,34 +16,37 @@ import org.quintilis.factions.events.CoreDamageEvent
 import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.services.FactionsServices.antiCoreCache
 
-@AutoTask(configPath = "anticore.damage-time", period = 20L)
-class AntiCoreDamageTask(private val plugin: JavaPlugin): BukkitRunnable() {
+@AutoTask(configPath = "anticore.time", period = 20L)
+class AntiCoreDamageTask(private val plugin: Factions): BukkitRunnable() {
     override fun run() {
         val anticores = antiCoreCache.findAllActive()
-        for (anticore in anticores) {
-            val block = anticore.getLocation().block
-            val data = block.blockData
-            if(data is RespawnAnchor){
+        anticores.forEachIndexed { index, anticore ->
+            val delay = (index * 2L)
+            Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+                val block = anticore.getLocation()?.block ?: return@Runnable
+                val data = block.blockData
+                if(data is RespawnAnchor){
 
-                val targetCore = anticore.getCore() ?: continue
+                    val targetCore = anticore.getCore() ?: return@Runnable
 
-                val damage = ConfigManager.getAnticoreDamage()
+                    val damage = ConfigManager.getAnticoreDamage()
 
-                val damageEvent = CoreDamageEvent(
-                    antiCore = anticore,
-                    targetCore = targetCore,
-                    damage = damage
-                )
-                Bukkit.getPluginManager().callEvent(damageEvent)
-
-                if(!damageEvent.isCancelled){
-                    processPulse(
-                        block,
-                        data,
-                        anticore
+                    val damageEvent = CoreDamageEvent(
+                        antiCore = anticore,
+                        targetCore = targetCore,
+                        damage = damage
                     )
+                    Bukkit.getPluginManager().callEvent(damageEvent)
+
+                    if(!damageEvent.isCancelled){
+                        processPulse(
+                            block,
+                            data,
+                            anticore
+                        )
+                    }
                 }
-            }
+            }, delay)
         }
     }
     private fun processPulse(
@@ -61,7 +65,7 @@ class AntiCoreDamageTask(private val plugin: JavaPlugin): BukkitRunnable() {
 
     private fun updateAnchorCharges(block: Block, data: RespawnAnchor, antiCore: AntiCoreEntity) {
 
-        val charges = ((antiCore.shotsLeft - antiCore.shots) / antiCore.shots) * 4
+        val charges = ((antiCore.shots - antiCore.shotsLeft).toFloat() / antiCore.shots.toFloat() * 4).toInt()
 
         data.charges = charges.coerceIn(0, 4)
 
