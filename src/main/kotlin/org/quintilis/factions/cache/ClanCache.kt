@@ -238,11 +238,11 @@ class ClanCache(
     /**
      * Busca um clã pelo nome.
      */
-    fun getClanByName(name: String): ClanEntity? {
-        return nameCache.getOrFetch(name.lowercase()) { dbName ->
-            daoImpl.findByName(dbName)
-        }
-    }
+//    fun getClanByName(name: String): ClanEntity? {
+//        return nameCache.getOrFetch(name.lowercase()) { dbName ->
+//            daoImpl.findByName(dbName)
+//        }
+//    }
 
     /**
      * Busca um clã pelo UUID do líder.
@@ -293,7 +293,7 @@ class ClanCache(
      * Verifica se existe um clã com o nome (usa cache).
      */
     override fun existsByName(name: String): Boolean {
-        return getClanByName(name) != null
+        return this.findByName(name) != null
     }
 
     /**

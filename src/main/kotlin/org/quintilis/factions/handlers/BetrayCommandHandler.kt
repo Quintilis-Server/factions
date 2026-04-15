@@ -20,7 +20,7 @@ class BetrayCommandHandler {
         }
 
         val targetClanName = args[0]
-        val targetClan = clanCache.getClanByName(targetClanName)
+        val targetClan = clanCache.findByName(targetClanName)
 
         if (targetClan == null) {
             sender.sendTranslatable("error.no_clan")

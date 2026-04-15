@@ -31,7 +31,7 @@ class AdminCommandHandler {
         }
         
         val clanName = args[0]
-        val clan = clanCache.getClanByName(clanName)
+        val clan = clanCache.findByName(clanName)
         if (clan == null) {
             sender.sendTranslatable(
                 "error.clan_not_found",
@@ -91,7 +91,7 @@ class AdminCommandHandler {
         val clanName = args[0]
         val newName = args[1]
         
-        val clan = clanCache.getClanByName(clanName)
+        val clan = clanCache.findByName(clanName)
         if (clan == null) {
             sender.sendTranslatable(
                 "error.clan_not_found",
@@ -152,7 +152,7 @@ class AdminCommandHandler {
         val clanName = args[0]
         val newTag = args[1]
         
-        val clan = clanCache.getClanByName(clanName)
+        val clan = clanCache.findByName(clanName)
         if (clan == null) {
             sender.sendTranslatable(
                 "error.clan_not_found",
@@ -214,7 +214,7 @@ class AdminCommandHandler {
         val clanName = args[0]
         val playerName = args[1]
         
-        val clan = clanCache.getClanByName(clanName)
+        val clan = clanCache.findByName(clanName)
         if (clan == null) {
             sender.sendTranslatable(
                 "error.clan_not_found",

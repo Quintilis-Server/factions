@@ -78,5 +78,10 @@ enum class ClanCommands(
         "betray",
         "/clan betray <clan>",
         HelpEntry("clan.betray.description", "factions.usage")
+    ),
+    SURRENDER(
+        "surrender",
+        "/clan surrender <clan>",
+        HelpEntry("clan.surrender.description", "factions.usage")
     )
 }

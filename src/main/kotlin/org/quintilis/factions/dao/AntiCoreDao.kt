@@ -29,6 +29,27 @@ interface AntiCoreDao: BaseDao<AntiCoreEntity, Int> {
         @Bind("z") z: Int
     ): AntiCoreEntity?
 
+    @SqlQuery("""
+        SELECT ac.* FROM anticore ac
+        JOIN clan_cores cc ON ac.target_core_id = cc.id
+        WHERE ac.clan_id = :attackerClanId
+        AND cc.clan_id = :targetClanId
+        AND ac.active = TRUE
+        AND ac.placed = TRUE
+    """)
+    fun findActiveByAttackerAndTarget(
+        @Bind("attackerClanId") attackerClanId: Int,
+        @Bind("targetClanId") targetClanId: Int
+    ): List<AntiCoreEntity>
+
+    @SqlQuery("""
+        SELECT * FROM anticore
+        WHERE clan_id = :clanId
+        AND active = TRUE
+        AND placed = TRUE
+    """)
+    fun findActiveByClanId(@Bind("clanId") clanId: Int): List<AntiCoreEntity>
+
     // Método de conveniência atualizado para passar o world.uid
     fun findByLocation(location: Location): AntiCoreEntity? {
         return this.findByLocation(

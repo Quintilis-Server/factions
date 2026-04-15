@@ -33,7 +33,7 @@ class AllyCommandHandler {
             return
         }
         
-        val targetClan = clanCache.getClanByName(args[0])
+        val targetClan = clanCache.findByName(args[0])
         if (targetClan == null) {
             sender.sendTranslatable("error.no_clan")
             return
@@ -84,7 +84,7 @@ class AllyCommandHandler {
             return
         }
         
-        val targetClan = clanCache.getClanByName(args[0])
+        val targetClan = clanCache.findByName(args[0])
         if (targetClan == null) {
             sender.sendTranslatable("error.no_clan")
             return
@@ -129,7 +129,7 @@ class AllyCommandHandler {
             return
         }
         
-        val senderClan = clanCache.getClanByName(args[0])
+        val senderClan = clanCache.findByName(args[0])
         if (senderClan == null) {
             sender.sendTranslatable("error.no_clan")
             return
@@ -194,7 +194,7 @@ class AllyCommandHandler {
             return
         }
         
-        val senderClan = clanCache.getClanByName(args[0])
+        val senderClan = clanCache.findByName(args[0])
         if (senderClan == null) {
             sender.sendTranslatable("error.no_clan")
             return

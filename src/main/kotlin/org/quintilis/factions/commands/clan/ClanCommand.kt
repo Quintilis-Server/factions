@@ -13,6 +13,7 @@ import org.quintilis.factions.handlers.AdminCommandHandler
 import org.quintilis.factions.handlers.AllyCommandHandler
 import org.quintilis.factions.handlers.ClaimCommandHandler
 import org.quintilis.factions.handlers.BetrayCommandHandler
+import org.quintilis.factions.handlers.SurrenderCommandHandler
 import org.quintilis.factions.handlers.InviteCommandHandler
 import org.quintilis.factions.handlers.MemberCommandHandler
 import org.quintilis.factions.managers.ErrorManager
@@ -43,6 +44,7 @@ class ClanCommand(
     private val adminHandler = AdminCommandHandler()
     private val claimHandler = ClaimCommandHandler(coreService)
     private val betrayHandler = BetrayCommandHandler()
+    private val surrenderHandler = SurrenderCommandHandler()
 
     // Services e Caches (via singleton)
     private val clanService get() = FactionsServices.clanService
@@ -270,6 +272,11 @@ class ClanCommand(
         betrayHandler.betray(sender, clan, args)
     }
 
+    private fun handleSurrenderCommand(sender: Player, args: List<String>) {
+        val clan = sender.getClanAsLeader() ?: return this.noClanLeader(sender)
+        surrenderHandler.surrender(sender, clan, args)
+    }
+
     // ============================================
     // Command wrapper
     // ============================================
@@ -304,6 +311,7 @@ class ClanCommand(
                 ClanCommands.ADMIN -> handleAdminCommand(sender, subArgs)
                 ClanCommands.CLAIM -> handleClaimCommand(sender, subArgs)
                 ClanCommands.BETRAY -> handleBetrayCommand(sender, subArgs)
+                ClanCommands.SURRENDER -> handleSurrenderCommand(sender, subArgs)
             }
         }
         return true
@@ -344,6 +352,10 @@ class ClanCommand(
                 } else if (mainCommand?.command.equals("betray", ignoreCase = true)) {
                     if (clan != null) {
                         suggestions.addAll(betrayHandler.getSuggestions(clan))
+                    }
+                } else if (mainCommand?.command.equals("surrender", ignoreCase = true)) {
+                    if (clan != null) {
+                        suggestions.addAll(surrenderHandler.getSuggestions(clan))
                     }
                 }
             }

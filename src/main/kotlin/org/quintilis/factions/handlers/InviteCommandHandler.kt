@@ -30,7 +30,7 @@ class InviteCommandHandler {
             return
         }
         
-        val clan = clanCache.getClanByName(args[0])
+        val clan = clanCache.findByName(args[0])
         if (clan == null) {
             sender.sendTranslatable("error.no_clan")
             return
@@ -87,7 +87,7 @@ class InviteCommandHandler {
             return
         }
         
-        val clan = clanCache.getClanByName(args[0])
+        val clan = clanCache.findByName(args[0])
         if (clan == null) {
             sender.sendTranslatable("error.no_clan")
             return
