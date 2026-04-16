@@ -19,6 +19,9 @@ error:
     player_not_found: "<red>Jogador não encontrado."
     generic: "<red>Ocorreu um erro inesperado."
     clan_not_found: "<red>Clã <bold><clan_name></bold> não encontrado."
+    not-enough-points: "<red><bold>SALDO INSUFICIENTE!</bold></red> <gray>Você não possui pontos/recursos suficientes para realizar esta ação.</gray>"
+    invalid_arguments: "<yellow><bold>SINTAXE INVÁLIDA!</bold></yellow> <gray>Os argumentos informados estão incorretos. Verifique o comando e tente novamente.</gray>"
+    anticore-entity-not-found: "<red><bold>ERRO DE DADOS!</bold></red> <gray>A entidade vinculada a este Anti-Core não foi encontrada no banco de dados. O item pode estar corrompido.</gray>"
 
 info:
     admin_action: "<dark_red>Ação admin"
@@ -164,6 +167,25 @@ clan:
         response: "Você comprou um núcleo de clã. Coloque ele no chão para reivindicar uma área de 3x3 Chunks para seu clã. <bold>Somente o chefe do clã pode fazer isso</bold>."
         anti_core:
             purchased: "Você comprou um anticore, com ele você faz <bold>guerra</bold>. Coloque ele proximo a um núcleo de outro clã para começar uma guerra. <red>Defenda ele ate o final."
+        nexus:
+            already_placed: "<red><bold>ERRO!</bold> O Nexus do seu clã já foi estabelecido em outra localização."
+            success: "<gradient:green:dark_green><bold>NEXUS ESTABELECIDO!</bold></gradient> <gray>O coração do seu clã agora bate nestas coordenadas.</gray>"
+            
+    betray:
+        response: "<red><bold>TRAIÇÃO!</bold></red> <gray>A aliança com</gray> <white><clan_name></white> <gray>foi quebrada e agora vocês são inimigos mortais!</gray>"
+        require_command: "<yellow><bold>CUIDADO!</bold></yellow> <gray>Para trair um aliado, use o comando</gray> <white>/clan betray <clan></white> <gray>antes de colocar um Anti-Core.</gray>"
+        error:
+            same_clan: "<red>Você não pode trair a si mesmo.</red>"
+            not_ally: "<red>Este clã não é seu aliado, não há uma aliança para ser quebrada.</red>"
+            
+    surrender:
+        response: "<gray>Você se rendeu para</gray> <white><clan_name></white><gray>.</gray>"
+        error:
+            not_at_war: "<red>Você só pode se render se estiver em uma guerra ativa!</red>"
+            same_clan: "<red>Rendição interna? Seus membros já te obedecem (ou deveriam).</red>"
+            
+    glowstone:
+        purchased: "<yellow>Você adquiriu Pedras Luminosas. Use elas para explodir os Anti-Cores."
 
 # ============================================
 # Comandos de Membro (Raiz)
@@ -181,12 +203,22 @@ member:
 # ============================================
 # Estruturas e Items
 # ============================================
+core:
+    place:
+        success: "Nucleo de clã colocado com sucesso."
+
 nexus:
     name: "Núcleo do clã (<tag>)"
+    error: "<red><bold>ERRO!</bold> Não foi possível processar a criação do núcleo agora."
+    place:
+        success: "<gradient:green:dark_green><bold>NEXUS ESTABELECIDO!</bold></gradient> <gray>O coração do seu clã agora bate nestas coordenadas.</gray>"
+        error: "<red><bold>TERRENO OBSTRUÍDO!</bold> A base do Nexus precisa de uma área de 3x3 de blocos substituíveis (Ferro/Diamante)."
+        error_border: "<yellow><bold>BORDA DE CHUNK!</bold> Você não pode colocar o Core tão perto da borda. Ele deve estar inteiramente dentro de um único Chunk."
     protect.indestructible: "<red>Nucleo de clã, entre em <bold>guerra</bold> pra quebrar."
 anticore:
-    name: "Anticore"
-    placed: "<yellow>Anticore colocado no núcleo do clã <defender_clan>"
+    name: "Anti-Core"
+    placed: "<yellow>Anti-Core colocado no núcleo do clã <defender_clan>"
+    removed: "<gray>O Anti-Core foi removido e a drenagem cessou.</gray>"
     error:
         attacking-same-clan: "<yellow>Você esta atacando o seu próprio clã, coloque o anti core mais proximo de um núcleo de outro clã"
         no-influence-zone: "<red>Você esta tentando colocar o anticore em uma zona onde não tem núcleos ativos, coloque o anticore em um chunk inimigo"
@@ -212,4 +244,26 @@ war:
         defender:
             title: "<dark_red><bold>NÚCLEO SOB ATAQUE!</bold></dark_red>"
             subtitle: "<yellow>A integridade do Nexus está caindo! Destrua as âncoras inimigas!</yellow>"
+    ended:
+        broadcast: "<gold><bold>FIM DE GUERRA!</bold></gold> <white><surrendered></white> hasteou a bandeira branca diante de <white><winner></white>!"
+        
+        # O Atacante venceu porque o Defensor deu /surrender
+        attacker_won:
+            title: "<gradient:gold:yellow><bold>VITÓRIA ABSOLUTA</bold></gradient>"
+            subtitle: "<gray>O inimigo se rendeu! O Nexus adversário foi subjugado.</gray>"
+        
+        # O Atacante se rendeu e o Defensor venceu a defesa
+        defender_won:
+            title: "<gradient:green:dark_green><bold>VITÓRIA DEFENSIVA</bold></gradient>"
+            subtitle: "<gray>O invasor desistiu! Seu núcleo está seguro por enquanto.</gray>"
+        
+        # Título para quem deu /surrender sendo o Atacante
+        attacker_surrendered:
+            title: "<red><bold>RETIRADA ESTRATÉGICA</bold></red>"
+            subtitle: "<gray>Você abandonou o cerco. Suas âncoras de drenagem sumiram.</gray>"
+        
+        # Título para quem deu /surrender sendo o Defensor
+        defender_surrendered:
+            title: "<dark_red><bold>NÚCLEO ENTREGUE</bold></dark_red>"
+            subtitle: "<gray>Rendição confirmada. Suas defesas foram desativadas.</gray>"
             

@@ -5,7 +5,7 @@ error:
     invalid_page: "<red>Invalid page. Please use a number between [1-<total_pages>]."
     is_not_player: "This command can only be used by a player."
     unknown_subcommand: "<red>Unknown subcommand: <command_name>."
-    no_permission: "<red>You do not have permission to use this command."
+    no_permission: "<red>You don't have permission to use this command."
     no_player: "<red>Player not found."
     no_clan: "<red>Clan not found."
     no_member_invite: "<red>Clan invite not found."
@@ -15,17 +15,20 @@ error:
     not_in_clan: "<red>You are not in any clan."
     internal_error: "<dark_red>Internal error. Contact administration."
     missing_arguments: "<red>Missing arguments for this command."
-    not_implemented: "<yellow>This command has not been implemented yet."
+    not_implemented: "<yellow>This command is not yet implemented."
     player_not_found: "<red>Player not found."
     generic: "<red>An unexpected error occurred."
     clan_not_found: "<red>Clan <bold><clan_name></bold> not found."
+    not-enough-points: "<red><bold>INSUFFICIENT BALANCE!</bold></red> <gray>You don't have enough points/resources to perform this action.</gray>"
+    invalid_arguments: "<yellow><bold>INVALID SYNTAX!</bold></yellow> <gray>The provided arguments are incorrect. Check the command and try again.</gray>"
+    anticore-entity-not-found: "<red><bold>DATA ERROR!</bold></red> <gray>The entity linked to this Anti-Core was not found in the database. The item might be corrupted.</gray>"
 
 info:
     admin_action: "<dark_red>Admin action"
 
 help:
     header: "<gold>---[ Factions Help (Page <page>/<total_pages>) ]---</gold>"
-    footer: "<gold>---[ Type <bold>/<command> help <pagina></bold> to see more ]---</gold>"
+    footer: "<gold>---[ Type <bold>/<command> help <page></bold> to see more ]---</gold>"
     command:
         format: "<gold><command></gold><gray>: <description></gray>"
 
@@ -37,25 +40,33 @@ gui:
     next_page: "<yellow>Next Page »</yellow>"
     back: "<red>Back</red>"
     close: "<red>Close</red>"
+    anticore:
+        title: "<red>Shop for war!"
+        buy_item:
+            name: "Anti-Core"
+            lore: "Attacks a clan's core. Price: <price>"
+        glowstone:
+            name: "Glowstone"
+            lore: "Used to blow up an Anti-Core. \n The damage dealt to the player <bold>is not negated</bold>, only structural damage."
 
 # ============================================
-# Commands and Clan System
+# Clan System and Commands
 # ============================================
 clan:
     is_not_leader: "<red>You are not the clan leader."
     
     create:
-        description: "Command to create a clan. If no value is provided for [tag], it will be empty."
+        description: "Command to create a clan, if no value is set in [tag] it will be empty."
         error:
             already_exists: "<red>Clan <clan_name> already exists."
-        response: "Clan <bold><clan_name></bold> successfully created."
+        response: "Clan <bold><clan_name></bold> created successfully."
         dropped_item: "<yellow>Your inventory was full, the Nexus dropped on the ground!"
     
     quit:
-        response: "You left the clan."
+        response: "You left the clan"
         leader_response: "Member <player_name> left your clan."
         error:
-            leader: "<red>You are the clan leader, to disband the clan use <bold><gold>/clan delete"
+            leader: "<red>You are the clan leader, to delete the clan use <bold><gold>/clan delete"
     
     delete:
         description: "Command to delete a clan, can only be executed by the clan leader."
@@ -63,28 +74,28 @@ clan:
         member_response: "<red>Clan disbanded by <leader_name>."
     
     list:
-        description: "Command to list clans by pages. If no number is provided for [page], it will be 1."
+        description: "Command to list clans by pages. If no number is set in [page] it will be 1"
         header: "<gold>---[ Clans (Page <page>/<total_page>) ]---"
         footer: "<gold>---[ Type <bold><command> to see more ]---"
         response: "Clan: <bold><clan_name></bold> [<tag>], leader: <bold><leader_name></bold>."
         item:
             name: "<gold><clan_name> <dark_gray>[<yellow><clan_tag></yellow>]</dark_gray></gold>"
-            lore: "<gray>Leader: <white><leader_name></white><newline><gray>Honor: <yellow><points></yellow><newline><yellow>Click for details</yellow>"
+            lore: "<gray>Leader: <white><leader_name></white><newline><gray>Honor: <yellow><points></yellow><newline><yellow>Click to view details</yellow>"
     
     list_menu:
         title: "<dark_green><bold>Clan List</bold></dark_green>"
     
     invite:
-        invitation_text: "You have been invited to clan <bold><clan_name></bold>. To accept, use the command <gold>/clan invite accept <clan_name></gold>"
+        invitation_text: "You have been invited to the clan <bold><clan_name></bold> to accept use the command <gold>/clan invite accept <clan_name></gold>"
         response: "Invite to player <bold><player_name></bold> successfully sent."
         accept:
-            clan_response: "Member <bold><gold><player_name></gold></bold> joined the clan."
-            response: "You joined clan <bold><clan_name></bold>."
+            clan_response: "Member <bold><gold><player_name></gold></bold> joined the clan"
+            response: "You joined the clan <bold><clan_name></bold>"
         cancel:
-            response: "<yellow>You canceled the invite to <bold><player_name></bold>."
+            response: "<yellow>You cancelled the invite for <bold><player_name></bold>."
         reject:
-            response: "<yellow>You rejected the invite from clan <bold><clan_name></bold>."
-            clan_response: "<red>Player <bold><player_name></bold> rejected the invite."
+            response: "<yellow>You declined the invite from the clan <bold><clan_name></bold>."
+            clan_response: "<red>Player <bold><player_name></bold> declined the invite."
         list:
             header: "<gold>---[ Pending Invites (<count>) ]---</gold>"
             entry: "<gray>- Clan: <white><clan_name></white></gray>"
@@ -96,7 +107,7 @@ clan:
         remove:
             description: "Removes an alliance with another clan."
             response: "<yellow>Alliance with <bold><clan_name></bold> has been disbanded."
-            target_response: "<red>Clan <bold><clan_name></bold> disbanded the alliance."
+            target_response: "<red>The clan <bold><clan_name></bold> broke the alliance."
         list:
             description: "Lists allied clans."
             header: "<gold>---[ Allied Clans (<count>) ]---</gold>"
@@ -105,14 +116,14 @@ clan:
         accept:
             description: "Accepts an alliance invite."
             response: "<green>Alliance with <bold><clan_name></bold> has been accepted!"
-            sender_response: "<green>Clan <bold><clan_name></bold> accepted your alliance!"
+            sender_response: "<green>The clan <bold><clan_name></bold> accepted your alliance!"
         reject:
-            description: "Rejects an alliance invite."
-            response: "<yellow>You rejected the alliance from clan <bold><clan_name></bold>."
-            sender_response: "<red>Clan <bold><clan_name></bold> rejected your alliance."
+            description: "Declines an alliance invite."
+            response: "<yellow>You declined the alliance from the clan <bold><clan_name></bold>."
+            sender_response: "<red>The clan <bold><clan_name></bold> declined your alliance."
         invite:
-            response: "Alliance invite sent to clan <clan_name>."
-            invitation_text: "Clan <bold><clan_name></bold> sent an alliance invite. Use <gold>/clan ally accept <clan_name></gold> to accept."
+            response: "Alliance invite to clan <clan_name> sent."
+            invitation_text: "The clan <bold><clan_name></bold> sent an alliance invite. Use <gold>/clan ally accept <clan_name></gold> to accept."
         error:
             is_ally: "<red>The clans are already allies."
             is_enemy: "<red>The clans are enemies, to ally, the war must end."
@@ -125,10 +136,10 @@ clan:
             entry: "<gray>- <white><player_name></white> <dark_gray>(<role>)</dark_gray></gray>"
         kick:
             response: "<yellow>Player <bold><player_name></bold> was removed from the clan."
-            target_response: "<red>You were removed from the clan by <leader_name>."
+            target_response: "<red>You have been removed from the clan by <leader_name>."
         promote:
             response: "<green>You transferred the clan leadership to <bold><player_name></bold>."
-            new_leader: "<gold>You are now the leader of clan <bold><clan_name></bold>!"
+            new_leader: "<gold>You are now the leader of the clan <bold><clan_name></bold>!"
             error:
                 self: "<red>You cannot promote yourself."
     
@@ -137,23 +148,44 @@ clan:
         delete:
             description: "Deletes a clan."
             response: "<green>Clan <bold><clan_name></bold> successfully deleted."
-            target_response: "<red>Your clan was deleted by admin <admin_name>."
+            target_response: "<red>Your clan was deleted by the admin <admin_name>."
         setname:
-            description: "Changes a clan's name."
+            description: "Changes the name of a clan."
             response: "<green>Clan name changed from <bold><old_name></bold> to <bold><new_name></bold>."
         settag:
-            description: "Changes a clan's tag."
-            response: "<green>Clan <bold><clan_name></bold>'s tag changed to <bold><new_tag></bold>."
+            description: "Changes the tag of a clan."
+            response: "<green>Clan tag <bold><clan_name></bold> changed to <bold><new_tag></bold>."
             error:
-                exists: "<red>Tag <bold><tag></bold> is already in use."
+                exists: "<red>The tag <bold><tag></bold> is already in use."
         setleader:
-            description: "Changes a clan's leader."
-            response: "<green>Clan <bold><clan_name></bold>'s leader changed to <bold><new_leader></bold>."
-            target_response: "<gold>You are now the leader of clan <bold><clan_name></bold>! (Changed by admin <admin_name>)"
-            old_leader_response: "<yellow>You are no longer the leader of clan <clan_name>. The new leader is <new_leader>."
+            description: "Changes the leader of a clan."
+            response: "<green>Leader of clan <bold><clan_name></bold> changed to <bold><new_leader></bold>."
+            target_response: "<gold>You are now the leader of the clan <bold><clan_name></bold>! (Changed by admin <admin_name>)"
+            old_leader_response: "<yellow>You are no longer the leader of the clan <clan_name>. The new leader is <new_leader>."
     
     claim:
-        response: "You bought a clan core. Place it on the ground to claim a 3x3 Chunk area for your clan. <bold>Only the clan leader can do this</bold>."
+        response: "You bought a clan core. Place it on the ground to claim a 3x3 Chunks area for your clan. <bold>Only the clan leader can do this</bold>."
+        anti_core:
+            purchased: "You bought an anti-core, with it you make <bold>war</bold>. Place it near another clan's core to start a war. <red>Defend it until the end."
+        nexus:
+            already_placed: "<red><bold>ERROR!</bold> Your clan's Nexus has already been established in another location."
+            success: "<gradient:green:dark_green><bold>NEXUS ESTABLISHED!</bold></gradient> <gray>The heart of your clan now beats at these coordinates.</gray>"
+            
+    betray:
+        response: "<red><bold>BETRAYAL!</bold></red> <gray>The alliance with</gray> <white><clan_name></white> <gray>has been broken and now you are mortal enemies!</gray>"
+        require_command: "<yellow><bold>CAUTION!</bold></yellow> <gray>To betray an ally, use the command</gray> <white>/clan betray <clan></white> <gray>before placing an Anti-Core.</gray>"
+        error:
+            same_clan: "<red>You cannot betray yourself.</red>"
+            not_ally: "<red>This clan is not your ally, there is no alliance to be broken.</red>"
+            
+    surrender:
+        response: "<gray>You surrendered to</gray> <white><clan_name></white><gray>.</gray>"
+        error:
+            not_at_war: "<red>You can only surrender if you are in an active war!</red>"
+            same_clan: "<red>Internal surrender? Your members already obey you (or should).</red>"
+            
+    glowstone:
+        purchased: "<yellow>You acquired Glowstones. Use them to blow up Anti-Cores."
 
 # ============================================
 # Member Commands (Root)
@@ -164,19 +196,73 @@ member:
     remove:
         description: "Removes a member from the clan."
     promote:
-        description: "Promotes a member of the clan."
+        description: "Promotes a clan member."
     list:
         description: "Lists clan members."
 
 # ============================================
 # Structures and Items
 # ============================================
-nexus:
-    name: "Clan Core (<tag>)"
+core:
+    place:
+        success: "Clan core placed successfully."
 
+nexus:
+    name: "Clan Nexus (<tag>)"
+    error: "<red><bold>ERROR!</bold> Could not process the creation of the core right now."
+    place:
+        success: "<gradient:green:dark_green><bold>NEXUS ESTABLISHED!</bold></gradient> <gray>The heart of your clan now beats at these coordinates.</gray>"
+        error: "<red><bold>OBSTRUCTED TERRAIN!</bold> The Nexus base requires a 3x3 area of replaceable blocks (Iron/Diamond)."
+        error_border: "<yellow><bold>CHUNK BORDER!</bold> You cannot place the Core so close to the border. It must be entirely within a single Chunk."
+    protect.indestructible: "<red>Clan core, go to <bold>war</bold> to break it."
+anticore:
+    name: "Anti-Core"
+    placed: "<yellow>Anti-Core placed on clan <defender_clan>'s core"
+    removed: "<gray>The Anti-Core was removed and the drain has ceased.</gray>"
+    error:
+        attacking-same-clan: "<yellow>You are attacking your own clan, place the anti core near another clan's core"
+        no-influence-zone: "<red>You are trying to place the anticore in a zone where there are no active cores, place the anticore in an enemy chunk"
+    destroyed:
+        glowstone: "<red>An Anti-Core of the clan <attacker_clan> was destroyed by <destroyer_player> using glowstone."
+        
 # ============================================
-# War System and Points
+# War and Points System
 # ============================================
 kill:
     stolen:
-        victim: ""
+        killer: "<yellow>You stole <bold><stolen_points></bold> from player <bold><victim></bold>"
+        victim: "<red>Player <bold><player></bold> stole <bold><stolen_points></bold> from you"
+        
+war:
+    started:
+        broadcast: "<dark_red><bold>WAR!</bold></dark_red> <white><attacker></white> is draining energy from <white><defender></white>'s core!"
+        
+        attacker:
+            title: "<gradient:gold:yellow><bold>SIEGE STARTED</bold></gradient>"
+            subtitle: "<gray>Keep the Anti-Cores active to drain the enemy Nexus!</gray>"
+        
+        defender:
+            title: "<dark_red><bold>CORE UNDER ATTACK!</bold></dark_red>"
+            subtitle: "<yellow>Nexus integrity is dropping! Destroy the enemy anchors!</yellow>"
+    ended:
+        broadcast: "<gold><bold>WAR ENDED!</bold></gold> <white><surrendered></white> has raised the white flag to <white><winner></white>!"
+        
+        # O Atacante venceu porque o Defensor deu /surrender
+        attacker_won:
+            title: "<gradient:gold:yellow><bold>ABSOLUTE VICTORY</bold></gradient>"
+            subtitle: "<gray>The enemy surrendered! The adversary Nexus was subjugated.</gray>"
+        
+        # O Atacante se rendeu e o Defensor venceu a defesa
+        defender_won:
+            title: "<gradient:green:dark_green><bold>DEFENSIVE VICTORY</bold></gradient>"
+            subtitle: "<gray>The invader gave up! Your core is safe for now.</gray>"
+        
+        # Título para quem deu /surrender sendo o Atacante
+        attacker_surrendered:
+            title: "<red><bold>STRATEGIC RETREAT</bold></red>"
+            subtitle: "<gray>You abandoned the siege. Your drain anchors have vanished.</gray>"
+        
+        # Título para quem deu /surrender sendo o Defensor
+        defender_surrendered:
+            title: "<dark_red><bold>CORE SURRENDERED</bold></dark_red>"
+            subtitle: "<gray>Surrender confirmed. Your defenses have been deactivated.</gray>"

@@ -132,7 +132,7 @@ class AntiCoreListener : Listener {
                     Argument.string("defender", targetClan.name)
                 ))
             }
-            event.player.sendTranslatable("anticore.placed")
+            event.player.sendTranslatable("anticore.placed", Argument.string("defender_clan", targetClan.name))
         }catch (e: BaseError){
             event.isCancelled = true
             player.sendTranslatable(e.component)
