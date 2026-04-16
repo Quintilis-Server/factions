@@ -10,6 +10,7 @@ import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.commands.clan.MemberSubCommands
 import org.quintilis.factions.services.MemberInviteService
 import org.quintilis.factions.services.FactionsServices
+import org.quintilis.factions.services.FactionsServices.clanMemberCache
 
 /**
  * Handler para comandos de membros (/clan member).
@@ -39,7 +40,7 @@ class MemberCommandHandler {
         val targetPlayer = playerEntity.getPlayer()
         
         // Verifica se já é membro de algum clã
-        if (clanCache.isMember(targetPlayer.uniqueId)) {
+        if (clanMemberCache.isAnyMember(targetPlayer)) {
             sender.sendTranslatable(
                 "error.already_in_a_clan",
                 Argument.string("player_name", targetPlayer.name!!)

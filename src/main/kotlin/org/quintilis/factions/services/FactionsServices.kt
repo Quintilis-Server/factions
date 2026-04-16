@@ -8,6 +8,7 @@ import org.quintilis.factions.cache.AntiCoreCache
 import org.quintilis.factions.cache.ChunkCache
 import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.cache.ClanChunkCache
+import org.quintilis.factions.cache.ClanMemberCache
 import org.quintilis.factions.cache.ClanRelationCache
 import org.quintilis.factions.cache.CoreCache
 import org.quintilis.factions.cache.MemberInviteCache
@@ -17,6 +18,7 @@ import org.quintilis.factions.dao.AntiCoreDao
 import org.quintilis.factions.dao.ChunkDao
 import org.quintilis.factions.dao.ClanChunkDao
 import org.quintilis.factions.dao.ClanDao
+import org.quintilis.factions.dao.ClanMemberDao
 import org.quintilis.factions.dao.ClanRelationDao
 import org.quintilis.factions.dao.CoreDao
 import org.quintilis.factions.dao.MemberInviteDao
@@ -52,6 +54,10 @@ object FactionsServices {
     val clanRelationDao: ClanRelationDao by lazy { 
         DatabaseManager.getDAO(ClanRelationDao::class) 
     }
+
+    val clanMemberDao: ClanMemberDao by lazy {
+        DatabaseManager.getDAO(ClanMemberDao::class)
+    }
     
     val memberInviteDao: MemberInviteDao by lazy { 
         DatabaseManager.getDAO(MemberInviteDao::class) 
@@ -86,6 +92,10 @@ object FactionsServices {
 
     val clanRelationCache: ClanRelationCache by lazy {
         ClanRelationCache(clanRelationDao)
+    }
+
+    val clanMemberCache: ClanMemberCache by lazy {
+        ClanMemberCache(clanMemberDao)
     }
 
     val playerCache: PlayerCache by lazy { 
