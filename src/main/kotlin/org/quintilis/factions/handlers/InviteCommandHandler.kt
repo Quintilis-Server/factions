@@ -7,6 +7,7 @@ import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.services.MemberInviteService
 import org.quintilis.factions.services.FactionsServices
+import org.quintilis.factions.services.FactionsServices.clanMemberCache
 
 /**
  * Handler para comandos de convites do jogador (/clan invite).
@@ -37,7 +38,7 @@ class InviteCommandHandler {
         }
         
         // Verifica se já é membro de algum clã
-        if (clanCache.isMember(sender.uniqueId)) {
+        if (clanMemberCache.isAnyMember(sender.uniqueId)) {
             sender.sendTranslatable(
                 "error.already_in_a_clan",
                 Argument.string("player_name", sender.name)

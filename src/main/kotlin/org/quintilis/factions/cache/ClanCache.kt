@@ -296,13 +296,6 @@ class ClanCache(
         return this.findByName(name) != null
     }
 
-    /**
-     * Verifica se o jogador é membro de algum clã (usa cache).
-     */
-    override fun isMember(playerUuid: UUID): Boolean {
-        return getClanByMember(playerUuid) != null
-    }
-
     // ============================================
     // Métodos de invalidação de cache
     // ============================================

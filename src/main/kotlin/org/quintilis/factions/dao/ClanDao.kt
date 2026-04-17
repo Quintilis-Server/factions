@@ -6,6 +6,7 @@ import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import org.jdbi.v3.sqlobject.transaction.Transaction
+import org.quintilis.factions.entities.clan.ClanCoreEntity
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanMemberEntity
 import java.lang.IllegalArgumentException
@@ -37,6 +38,19 @@ interface ClanDao: BaseDao<ClanEntity, Int> {
     fun findByLeaderId(@Bind("leaderId") leaderId: UUID): ClanEntity?
 
     @SqlQuery("""
+        SELECT c.* FROM clans c
+        JOIN clan_cores cc on c.id = cc.clan_id
+            WHERE c.active = TRUE AND cc.active
+            AND cc.id = :coreId
+    """)
+    fun findByCore(@Bind("coreId") coreId:Int): ClanEntity?
+
+    fun findByCore(core: ClanCoreEntity): ClanEntity?{
+        if (core.id == null) return null
+        return this.findByCore(core.id)
+    }
+
+    @SqlQuery("""
         SELECT c.* 
         FROM clans c
             JOIN clan_member cm ON c.id = cm.clan_id
@@ -45,9 +59,6 @@ interface ClanDao: BaseDao<ClanEntity, Int> {
             AND c.active = true;
     """)
     fun findByMember(@Bind("playerId") playerId: UUID): ClanEntity?
-
-    @SqlQuery("SELECT EXISTS(SELECT 1 FROM clan_member WHERE player_id = :playerId AND active = true)")
-    fun isMember(@Bind("playerId") playerId: UUID): Boolean
 
     @Transaction
     fun deleteByIdAndLeader(id: Int){

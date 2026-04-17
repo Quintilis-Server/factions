@@ -48,35 +48,24 @@ class AntiCoreListener : Listener {
     @EventHandler
     fun onAntiCorePlace(event: BlockPlaceEvent) {
         val player = event.player
-        try{
-            val itemInHand = event.itemInHand;
-
-            // Verifica se o item possui MetaData
+        try {
+            val itemInHand = event.itemInHand
             val meta = itemInHand.itemMeta ?: return
 
-            // Verifica se é realmente um item de AntiCore conferindo a marcação interna dele na PDC
-            if (!meta.persistentDataContainer.has(Keys.ANTI_CORE_ITEM, PersistentDataType.INTEGER)) {
-//                println(meta.persistentDataContainer.has(Keys.ANTI_CORE_ITEM, PersistentDataType.INTEGER))
-                return
-            }
+            if (!meta.persistentDataContainer.has(Keys.ANTI_CORE_ITEM, PersistentDataType.INTEGER)) return
 
-            // Pega o ID da entidade do AntiCore gravada no item
             val antiCoreId = meta.persistentDataContainer.get(Keys.ANTI_CORE_ITEM, PersistentDataType.INTEGER) ?: return
-
-            // Pega a exata localização em que o jogador colocou o bloco
             val location = event.blockPlaced.location
-
             val placerClan = player.getClan() ?: throw ClanNotFoundError()
 
-            //SE ele não achar um core por perto o evento é cancelado
             val targetCore = coreCache.findByChunk(location.chunk)
                 ?: throw BaseError("anticore.error.no-influence-zone")
 
             val targetClan = targetCore.getClan() ?: throw ClanNotFoundError()
 
-            //SE o core for do próprio clã o evento é cancelado
-            if(targetClan == placerClan) throw BaseError("anticore.error.attacking-same-clan")
+            if (targetClan == placerClan) throw BaseError("anticore.error.attacking-same-clan")
 
+            // Lógica de Traição (Aliados)
             val isAlly = clanRelationCache.isRelation(placerClan.id!!, targetClan.id!!, Relation.ALLY)
             if (isAlly) {
                 val redisKey = "factions:betray:intent:${placerClan.id}:${targetClan.id}"
@@ -90,40 +79,23 @@ class AntiCoreListener : Listener {
                 }
             }
 
-            //SE o anticore não esta na área de influencia do core então o evento é cancelado
-
             val antiCoreEntity = antiCoreCache.findById(antiCoreId)
                 ?: throw BaseError("error.anticore-entity-not-found")
 
+            // --- LÓGICA DE RELAÇÃO CONSOLIDADA ---
             val relation = clanRelationCache.findRelation(placerClan.id, targetClan.id)
-            if (relation != null && relation.relation == Relation.ENEMY) {
-                // Já é enemy, passa direto
-            } else {
-                relation?.deactivate() // desativa ally se existir
-                ClanRelationEntity(
-                    clan1Id = placerClan.id,
-                    clan2Id = targetClan.id,
-                    relation = Relation.ENEMY,
-                ).save<BaseEntity>()
-            }
 
-            antiCoreEntity.place(
-                attackerClan = placerClan,
-                targetCore = targetCore,
-                location = location
-            )
+            // Se NÃO for inimigo, criamos a relação e anunciamos a guerra
+            if (relation == null || relation.relation != Relation.ENEMY) {
+                relation?.deactivate() // Desativa relação antiga (ex: neutral ou o que sobrar)
 
-            if (relation != null && relation.relation == Relation.ENEMY) {
-                // Já é enemy, NÃO anuncia guerra de novo
-            } else {
-                relation?.deactivate()
                 ClanRelationEntity(
                     clan1Id = placerClan.id,
                     clan2Id = targetClan.id,
                     relation = Relation.ENEMY,
                 ).save<BaseEntity>()
 
-                // Move os broadcasts pra cá
+                // Broadcasts de Início de Guerra
                 targetClan.broadcastTitleTranslatable("war.started.attacker.title", "war.started.attacker.subtitle")
                 placerClan.broadcastTitleTranslatable("war.started.defender.title", "war.started.defender.subtitle")
                 Bukkit.broadcast(Component.translatable(
@@ -132,10 +104,22 @@ class AntiCoreListener : Listener {
                     Argument.string("defender", targetClan.name)
                 ))
             }
-            event.player.sendTranslatable("anticore.placed", Argument.string("defender_clan", targetClan.name))
-        }catch (e: BaseError){
+
+            // Posiciona o AntiCore no mundo/banco
+            antiCoreEntity.place(
+                attackerClan = placerClan,
+                targetCore = targetCore,
+                location = location
+            )
+
+            event.player.sendTranslatable("anticore.place.success", Argument.string("defender_clan", targetClan.name))
+
+        } catch (e: BaseError) {
             event.isCancelled = true
             player.sendTranslatable(e.component)
+        } catch (e: Exception) {
+            event.isCancelled = true
+            e.printStackTrace()
         }
     }
 
@@ -155,7 +139,7 @@ class AntiCoreListener : Listener {
             // Marcamos o BLOCO na memória do servidor (Metadata)
             // O valor pode ser o ID do AntiCore para facilitar a busca depois
             block.setMetadata("factions_exploding_anticore",
-                org.bukkit.metadata.FixedMetadataValue(org.bukkit.Bukkit.getPluginManager().getPlugin("Factions")!!, antiCore.id)
+                org.bukkit.metadata.FixedMetadataValue(Bukkit.getPluginManager().getPlugin("Factions")!!, antiCore.id)
             )
             // NÃO definimos active = false aqui ainda!
         }
@@ -187,11 +171,15 @@ class AntiCoreListener : Listener {
 
                 // Avisos e efeitos
                 block.world.playSound(block.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.8f)
-                block.location.broadcastInRadius(50.0, Component.translatable("anticore.destroyed.glowstone"))
+                block.location.broadcastInRadius(50.0, Component.translatable(
+                    "anticore.destroyed.glowstone",
+                    Argument.string("attacker_clan", anticore.getClan()?.name!!),
+//                    Argument.string("destroyer_player", event.)
+                ))
             }
 
             // Remove a metadata para limpar a memória
-            block.removeMetadata("factions_exploding_anticore", org.bukkit.Bukkit.getPluginManager().getPlugin("Factions")!!)
+            block.removeMetadata("factions_exploding_anticore", Bukkit.getPluginManager().getPlugin("Factions")!!)
         }
     }
 

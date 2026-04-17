@@ -62,6 +62,14 @@ data class AntiCoreEntity(
         return clanCache.getClan(clanId!!)
     }
 
+    fun getAttackerClan(): ClanEntity?{
+        return clanCache.getClan(clanId!!)
+    }
+
+    fun getTargetClan(): ClanEntity?{
+        return clanCache.findByCore(this.targetCoreId!!)
+    }
+
     fun getCore(): ClanCoreEntity?{
         return coreCache.findById(targetCoreId!!)
     }
@@ -86,5 +94,11 @@ data class AntiCoreEntity(
         this.clanId = attackerClan.id!!
         this.targetCoreId = targetCore.id
         this.save<BaseEntity>()
+    }
+
+    fun deactivate(){
+        this.active = false;
+        this.save<BaseEntity>()
+        getStructure().destroy()
     }
 }

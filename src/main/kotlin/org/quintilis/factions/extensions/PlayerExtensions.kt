@@ -118,7 +118,7 @@ fun Player.isClanLeader(): Boolean {
  * Verifica se o jogador é membro de algum clã.
  */
 fun Player.isInClan(): Boolean {
-    return FactionsServices.clanCache.isMember(this.uniqueId)
+    return FactionsServices.clanMemberCache.isAnyMember(this.uniqueId)
 }
 
 fun Player.getPlayerEntity(): PlayerEntity? {

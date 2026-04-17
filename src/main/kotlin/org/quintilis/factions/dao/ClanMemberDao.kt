@@ -21,7 +21,7 @@ interface ClanMemberDao: BaseDao<ClanMemberEntity, Int> {
     ): Boolean
 
     @SqlQuery("""
-        SELECT 1 FROM clan_member WHERE clan_member.player_id = :playerId AND active = TRUE
+        SELECT EXISTS(SELECT 1 FROM clan_member WHERE player_id = :playerId AND active = true)
     """)
     fun isAnyMember(@Bind("playerId")playerId: UUID): Boolean
 

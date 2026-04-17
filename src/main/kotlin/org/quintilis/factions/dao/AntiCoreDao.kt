@@ -3,6 +3,7 @@ package org.quintilis.factions.dao
 import org.bukkit.Location
 import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.statement.SqlQuery
+import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import org.quintilis.factions.entities.clan.AntiCoreEntity
 import java.util.UUID
 
@@ -59,4 +60,27 @@ interface AntiCoreDao: BaseDao<AntiCoreEntity, Int> {
             location.blockZ
         )
     }
+
+    @SqlQuery("""
+        SELECT a.* FROM anticore a
+        JOIN clan_cores c ON a.target_core_id = c.id
+        WHERE a.active = true AND (
+            (a.clan_id = :clan1 AND c.clan_id = :clan2) OR
+            (a.clan_id = :clan2 AND c.clan_id = :clan1)
+        )
+    """)
+    fun findActiveBetween(@Bind("clan1") clan1: Int, @Bind("clan2") clan2: Int): List<AntiCoreEntity>
+
+    @SqlUpdate("""
+        UPDATE anticore a
+        SET active = false
+        FROM clan_cores c
+        WHERE a.target_core_id = c.id
+        AND a.active = true
+        AND (
+            (a.clan_id = :clan1 AND c.clan_id = :clan2) OR
+            (a.clan_id = :clan2 AND c.clan_id = :clan1)
+        )
+    """)
+    fun deactivateAllBetween(@Bind("clan1") clan1: Int, @Bind("clan2") clan2: Int)
 }

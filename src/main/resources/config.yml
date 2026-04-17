@@ -19,6 +19,7 @@ war:
   enemy-points: 10
   neutral-points: 5
   ally-points: 0
+  timeout: 1000
 clan:
   core-price: 150
   anti-core-price: 100

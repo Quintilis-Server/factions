@@ -78,4 +78,14 @@ interface ClanRelationDao: BaseDao<ClanRelationEntity, Int> {
         @Bind("clanId") clanId: Int,
         @Bind("targetId") targetId: Int
     ): ClanRelationEntity?
+
+
+    @SqlQuery("""
+        SELECT * FROM clan_relation
+        WHERE active = true AND
+        relation = 'ENEMY'
+    """)
+    fun findAllEnemyActive(): List<ClanRelationEntity>
+
+
 }

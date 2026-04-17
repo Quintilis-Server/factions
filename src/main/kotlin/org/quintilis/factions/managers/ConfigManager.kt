@@ -119,4 +119,8 @@ object ConfigManager {
     fun getAnticoreActivationRadius(): Double {
         return config.getDouble("anticore.activation-radius", 15.0)
     }
+
+    fun getWarTimeout(): Int{
+        return this.getInt("war.timeout")
+    }
 }

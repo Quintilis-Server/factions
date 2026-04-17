@@ -15,6 +15,7 @@ import org.quintilis.factions.entities.clan.AntiCoreEntity
 import org.quintilis.factions.events.CoreDamageEvent
 import org.quintilis.factions.extensions.getClan
 import org.quintilis.factions.managers.ConfigManager
+import org.quintilis.factions.managers.RedisManager
 import org.quintilis.factions.services.FactionsServices.antiCoreCache
 import kotlin.math.pow
 
@@ -40,9 +41,12 @@ class AntiCoreDamageTask(private val plugin: Factions): BukkitRunnable() {
                     }
 
                     if (!isAttackerNear) {
-                        // Opcional: Efeito visual/sonoro de que o AntiCore está "em espera"
                         block.world.spawnParticle(Particle.SMOKE, location.add(0.5, 0.8, 0.5), 1)
                         return@Runnable
+                    }
+                    val warKey = "factions:war:heartbeat:${anticore.clanId}:${anticore.getTargetClan()?.id!!}"
+                    RedisManager.run { jedis ->
+                        jedis.setex(warKey, 3600, System.currentTimeMillis().toString()) // Expira em 30min se ninguém renovar
                     }
 
                     val targetCore = anticore.getCore() ?: return@Runnable

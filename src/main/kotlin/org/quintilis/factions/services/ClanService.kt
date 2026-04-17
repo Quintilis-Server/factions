@@ -9,6 +9,7 @@ import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.enums.CoreType
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.results.Result
+import org.quintilis.factions.services.FactionsServices.clanMemberCache
 
 /**
  * Serviço de lógica de negócio para operações de clã.
@@ -29,7 +30,7 @@ class ClanService {
      */
     fun createClan(leader: Player, name: String, tag: String?): Result {
         // Verifica se já está em um clã
-        if (clanCache.isMember(leader.uniqueId)) {
+        if (clanMemberCache.isAnyMember(leader.uniqueId)) {
             return Result.Error("error.already_in_clan")
         }
         
