@@ -12,11 +12,14 @@ import org.quintilis.factions.Factions
 import org.quintilis.factions.annotations.AutoTask
 import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.entities.clan.AntiCoreEntity
+import org.quintilis.factions.enums.CoreType
 import org.quintilis.factions.events.CoreDamageEvent
 import org.quintilis.factions.extensions.getClan
 import org.quintilis.factions.managers.ConfigManager
+import org.quintilis.factions.managers.QuintilisScheduler
 import org.quintilis.factions.managers.RedisManager
 import org.quintilis.factions.services.FactionsServices.antiCoreCache
+import org.quintilis.factions.services.FactionsServices.coreCache
 import kotlin.math.pow
 
 @AutoTask(configPath = "anticore.time", period = 20L)
@@ -25,8 +28,10 @@ class AntiCoreDamageTask(private val plugin: Factions): BukkitRunnable() {
         val anticores = antiCoreCache.findAllActive()
         val radiusSq = ConfigManager.getAnticoreActivationRadius().pow(2)
         anticores.forEachIndexed { index, anticore ->
-            val delay = (index * 2L)
-            Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+            val delay = (index * 2L) + 1
+            val location = anticore.getLocation() ?: return@forEachIndexed
+
+            QuintilisScheduler.runDelayedAtLocation(plugin, location, Runnable {
                 val location = anticore.getLocation() ?: return@Runnable
                 val block = location.block
                 val data = block.blockData
@@ -50,6 +55,12 @@ class AntiCoreDamageTask(private val plugin: Factions): BukkitRunnable() {
                     }
 
                     val targetCore = anticore.getCore() ?: return@Runnable
+
+                    if (targetCore.type == CoreType.NEXUS && coreCache.hasActiveSubCores(targetCore.clanId)) {
+                        // Efeito visual de que o Nexus está invulnerável
+                        block.world.spawnParticle(Particle.ENCHANT, block.location.add(0.5, 1.0, 0.5), 10)
+                        return@Runnable
+                    }
 
                     val damage = ConfigManager.getAnticoreDamage()
 
@@ -80,7 +91,7 @@ class AntiCoreDamageTask(private val plugin: Factions): BukkitRunnable() {
         if(antiCore.shotsLeft <= 0) antiCore.active = false;
         antiCore.save<BaseEntity>()
 
-        antiCore.getStructure().castRay(plugin)
+        antiCore.getStructure().castRay()
 
         updateAnchorCharges(block, data, antiCore)
     }

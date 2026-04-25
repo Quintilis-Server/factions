@@ -33,12 +33,12 @@ object FactionsServices {
 
     private lateinit var plugin: Factions
     lateinit var glowingBlocks: GlowingBlocks
-    lateinit var glowingEntities: GlowingEntities
+//    lateinit var glowingEntities: GlowingEntities
 
     fun init(plugin: Factions) {
         this.plugin = plugin
-        this.glowingBlocks = GlowingBlocks(plugin)
-        this.glowingEntities = GlowingEntities(plugin)
+//        this.glowingBlocks = GlowingBlocks(plugin)
+//        this.glowingEntities = GlowingEntities(plugin)
     }
     // ============================================
     // DAOs
@@ -87,43 +87,43 @@ object FactionsServices {
     // Caches
     // ============================================
     val clanCache: ClanCache by lazy { 
-        ClanCache(clanDao) 
+        ClanCache(clanDao, plugin)
     }
 
     val clanRelationCache: ClanRelationCache by lazy {
-        ClanRelationCache(clanRelationDao)
+        ClanRelationCache(clanRelationDao, plugin)
     }
 
     val clanMemberCache: ClanMemberCache by lazy {
-        ClanMemberCache(clanMemberDao)
+        ClanMemberCache(clanMemberDao, plugin)
     }
 
     val playerCache: PlayerCache by lazy { 
-        PlayerCache(playerDao) 
+        PlayerCache(playerDao, plugin)
     }
     
     val memberInviteCache: MemberInviteCache by lazy { 
-        MemberInviteCache(memberInviteDao) 
+        MemberInviteCache(memberInviteDao, plugin)
     }
     
     val allyInviteCache: AllyInviteCache by lazy { 
-        AllyInviteCache(allyInviteDao) 
+        AllyInviteCache(allyInviteDao, plugin)
     }
 
     val chunkCache: ChunkCache by lazy {
-        ChunkCache(chunkDao)
+        ChunkCache(chunkDao, plugin)
     }
 
     val clanChunkCache: ClanChunkCache by lazy {
-        ClanChunkCache(clanChunkDao)
+        ClanChunkCache(clanChunkDao, plugin)
     }
 
     val coreCache: CoreCache by lazy {
-        CoreCache(coreDao)
+        CoreCache(coreDao, plugin)
     }
 
     val antiCoreCache: AntiCoreCache by lazy {
-        AntiCoreCache(antiCoreDao)
+        AntiCoreCache(antiCoreDao, plugin)
     }
     // ============================================
     // Services

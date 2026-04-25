@@ -1,6 +1,9 @@
 package org.quintilis.factions.listeners
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Particle
@@ -21,6 +24,7 @@ import org.quintilis.factions.extensions.getClanAsLeader
 import org.quintilis.factions.extensions.isClanLeader
 import org.quintilis.factions.extensions.isCoreItem
 import org.quintilis.factions.extensions.sendTranslatable
+import org.quintilis.factions.managers.TranslationManager
 import org.quintilis.factions.results.Result
 import org.quintilis.factions.services.FactionsServices.chunkService
 import org.quintilis.factions.services.FactionsServices.coreCache
@@ -37,69 +41,62 @@ class CoreListener: Listener {
         val player = event.player
         try{
             val item = event.itemInHand
+            if (!item.isCoreItem()) return
 
-            if(!item.isCoreItem()) return
+            val coreId = item.itemMeta.persistentDataContainer.get(Keys.CORE_ITEM, PersistentDataType.INTEGER)
+                ?: return run { event.isCancelled = true }
 
-            val coreId = event.itemInHand.itemMeta.persistentDataContainer
-                .get(Keys.CORE_ITEM, PersistentDataType.INTEGER)
-            if(coreId == null){
-                event.isCancelled = true
-                return
-            }
-            val clan = player.getClanAsLeader()
-
-            if(!player.isClanLeader() || clan == null){
-                return cancelEventWithError(event, event.player)
-            }
-
+            val clan = player.getClanAsLeader() ?: return cancelEventWithError(event, player)
             val core = coreCache.findById(coreId) ?: return cancelEventWithError(event, player)
 
-            coreService.placeCore(event.blockPlaced.location, core)
-
-            val chunkResult =  chunkService.claimChunk(
-                player = player,
-                clan = clan,
-                chunk = event.blockPlaced.chunk,
-                core
-            )
-            if(chunkResult is Result.Error){
-                cancelEventWithError(event, player, chunkResult)
-            }
-
-            core.save<ClanCoreEntity>()
-
-            val center = event.block.location.clone().subtract(0.0, 1.0, 0.0)
-            val centerChunk = center.chunk
-            val world = center.world
+            // --- 1. VALIDAÇÃO FÍSICA (DEVE SER A PRIMEIRA COISA) ---
+            val location = event.blockPlaced.location
+            val center = location.clone().subtract(0.0, 1.0, 0.0)
+            val centerChunk = location.chunk
+            val world = location.world
 
             for (x in -1..1) {
                 for (z in -1..1) {
+                    val targetLoc = Location(world, center.x + x, center.y, center.z + z)
 
-                    val targetLoc = Location(world, center.blockX + x.toDouble(), center.blockY.toDouble(), center.blockZ + z.toDouble())
-
-                    // 1. ANTI-LEAK: Se o bloco for cair fora do chunk central, bloqueia!
+                    // Verifica Borda de Chunk
                     if (targetLoc.chunk != centerChunk) {
-                        event.isCancelled = true
-                        player.sendTranslatable("nexus.place.error_border") // Crie essa tradução: "Você não pode colocar o Core tão perto da borda do Chunk!"
                         player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
-                        return
+                        return cancelEventWithError(event, player, Result.Error("nexus.place.error_border"))
                     }
 
-                    val block = world.getBlockAt(center.blockX + x, center.blockY, center.blockZ + z)
+                    // Verifica se o terreno é substituível (Pedra/Terra vs Obsidian/Bedrock)
+                    val block = world.getBlockAt(targetLoc)
                     if (!block.isReplaceable && !REPLACEABLE_MATERIALS.contains(block.type)) {
-                        event.isCancelled = true
-                        player.sendTranslatable("nexus.place.error")
                         player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
-                        return
+                        return cancelEventWithError(event, player, Result.Error("nexus.place.error"))
                     }
-
                 }
             }
 
-            val structure: CoreStructure = CoreStructure.fromCore(core) ?: run {
-                cancelEventWithError(event, player)
-                return
+            // --- 2. VALIDAÇÃO DE SISTEMA (ONION / DISTÂNCIA) ---
+            // Aqui você chamaria a lógica da cebola que discutimos antes, se necessário.
+
+            // --- 3. EXECUÇÃO NO BANCO DE DADOS (SÓ SE TUDO ACIMA PASSAR) ---
+
+            // Primeiro tentamos o Claim (se houver um inimigo perto, ele falha aqui e não salva nada)
+            val chunkResult = chunkService.claimChunk(
+                player = player,
+                clan = clan,
+                chunk = event.blockPlaced.chunk,
+                core = core
+            )
+
+            if (chunkResult is Result.Error) {
+                return cancelEventWithError(event, player, chunkResult)
             }
+
+            // Se o claim deu certo, salvamos a entidade do core
+            coreService.placeCore(location, core)
+            core.save<ClanCoreEntity>()
+
+            // --- 4. CONSTRUÇÃO FÍSICA ---
+            val structure = CoreStructure.fromCore(core) ?: return cancelEventWithError(event, player)
             structure.placeStructure()
 
             player.sendTranslatable("core.place.success")
@@ -153,7 +150,12 @@ class CoreListener: Listener {
 
         val location = core.getLocation() !!
         core.getWorld()?.getNearbyPlayers(location, 20.0)?.forEach { player ->
-            player.sendActionBar(Component.text("<yellow>NEXUS: §f${core.health} HP §7(-$damage)"))
+            player.sendActionBar(TranslationManager.render(
+                "core.damage",
+                player.locale(),
+                Placeholder.unparsed("core_health", core.health.toString()),
+                Placeholder.unparsed("damage", damage.toString())
+            ))
         }
 
         if (core.health <= 0) {

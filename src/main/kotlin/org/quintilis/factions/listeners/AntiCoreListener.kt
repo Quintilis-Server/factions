@@ -28,6 +28,7 @@ import org.quintilis.factions.services.FactionsServices.antiCoreCache
 import org.quintilis.factions.services.FactionsServices.coreCache
 import org.quintilis.factions.util.Keys
 import org.quintilis.factions.entities.clan.Relation
+import org.quintilis.factions.enums.CoreType
 import org.quintilis.factions.extensions.broadcastInRadius
 import org.quintilis.factions.extensions.broadcastTitleTranslatable
 import org.quintilis.factions.managers.RedisManager
@@ -60,6 +61,16 @@ class AntiCoreListener : Listener {
 
             val targetCore = coreCache.findByChunk(location.chunk)
                 ?: throw BaseError("anticore.error.no-influence-zone")
+
+            if (targetCore.type == CoreType.NEXUS) {
+                val targetClan = targetCore.getClan() ?: throw ClanNotFoundError()
+
+                val hasSubCore = coreCache.hasActiveSubCores(targetClan.id!!)
+                println(hasSubCore)
+                if (hasSubCore) {
+                    throw BaseError("anticore.error.nexus-protected")
+                }
+            }
 
             val targetClan = targetCore.getClan() ?: throw ClanNotFoundError()
 
@@ -141,6 +152,7 @@ class AntiCoreListener : Listener {
             block.setMetadata("factions_exploding_anticore",
                 org.bukkit.metadata.FixedMetadataValue(Bukkit.getPluginManager().getPlugin("Factions")!!, antiCore.id)
             )
+            println("Anticore explodindo")
             // NÃO definimos active = false aqui ainda!
         }
 
@@ -154,7 +166,7 @@ class AntiCoreListener : Listener {
 
         // 1. Verificamos se o bloco tem a nossa "Tag" de memória
         val metadata = block.getMetadata("factions_exploding_anticore")
-
+        println(metadata)
         if (metadata.isNotEmpty()) {
             // Se tem a tag, é 100% de certeza que é o AntiCore detonando
             val antiCoreId = metadata[0].asInt()

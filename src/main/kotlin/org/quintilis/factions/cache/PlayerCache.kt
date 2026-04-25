@@ -1,5 +1,6 @@
 package org.quintilis.factions.cache
 
+import org.bukkit.plugin.java.JavaPlugin
 import org.jdbi.v3.core.HandleConsumer
 import org.quintilis.factions.dao.PlayerDao
 import org.quintilis.factions.entities.player.PlayerEntity
@@ -10,17 +11,20 @@ import java.util.UUID
 
 class PlayerCache(
     private val playerDaoImpl: PlayerDao,
+    private val plugin: JavaPlugin
 ): AbstractDaoCache<PlayerDao, PlayerEntity, UUID>(
     dao = playerDaoImpl,
     prefix = "factions:player:uuid:",
     ttl = Duration.ofHours(2).seconds,
     classType = PlayerEntity::class.java,
+    plugin = plugin
 ), PlayerDao by playerDaoImpl {
     private val gson = GsonProvider.gson
 
     private val nameCache = object : BaseRedisCache<String, UUID?>(
         keyPrefix = "factions:player:name:",
-        ttlSeconds = Duration.ofHours(2).seconds
+        ttlSeconds = Duration.ofHours(2).seconds,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): UUID? {
             val uuidStr = jedis.get(key) ?: return null

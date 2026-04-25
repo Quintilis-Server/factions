@@ -2,22 +2,30 @@ package org.quintilis.factions.cache
 
 import org.bukkit.Chunk
 import org.bukkit.Location
+import org.bukkit.plugin.java.JavaPlugin
 import org.jdbi.v3.core.HandleConsumer
 import org.quintilis.factions.dao.CoreDao
 import org.quintilis.factions.entities.clan.ClanCoreEntity
+import org.quintilis.factions.enums.CoreType
+import org.quintilis.factions.services.FactionsServices.clanChunkCache
 import redis.clients.jedis.Jedis
 import java.lang.Exception
 
-class CoreCache(private val coreDao: CoreDao): AbstractDaoCache<CoreDao, ClanCoreEntity, Int>(
+class CoreCache(
+    private val coreDao: CoreDao,
+    private val plugin: JavaPlugin,
+): AbstractDaoCache<CoreDao, ClanCoreEntity, Int>(
     prefix = "factions:core:",
     ttl = 10800,
     classType = ClanCoreEntity::class.java,
-    dao = coreDao
+    dao = coreDao,
+    plugin = plugin
 ), CoreDao by coreDao {
 
     private val locationCache = object : BaseRedisCache<String, Int?>(
         keyPrefix = "factions:core:loc:",
-        ttlSeconds = 10800
+        ttlSeconds = 10800,
+        plugin = this.plugin
     ){
         override fun readFromRedis(jedis: Jedis, key: String): Int? {
             return jedis.get(key)?.toIntOrNull()
@@ -39,7 +47,8 @@ class CoreCache(private val coreDao: CoreDao): AbstractDaoCache<CoreDao, ClanCor
 
     private val chunkPosCache = object : BaseRedisCache<String, Int?>(
         keyPrefix = "factions:core:chunk_pos:",
-        ttlSeconds = 10800
+        ttlSeconds = 10800,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): Int? {
             val value = jedis.get(key) ?: return null
@@ -105,6 +114,58 @@ class CoreCache(private val coreDao: CoreDao): AbstractDaoCache<CoreDao, ClanCor
         if(cachedId == null) return null
 
         return findById(cachedId)
+    }
+
+    fun hasActiveSubCores(clanId: Int): Boolean {
+        val subCores = dao.findAllByClan(clanId)
+        println(subCores)
+        // Busca todos os núcleos do clã e verifica se existe algum SUB_CORE ativo
+        return subCores.any { it.active && it.type == CoreType.SUB_CORE }
+    }
+
+    fun isProtectedByOnion(core: ClanCoreEntity): Boolean {
+        // 1. REGRA DO NEXUS:
+        // Protegido se houver qualquer outro SUB_CORE ativo.
+        if (core.type == CoreType.NEXUS) {
+            return this.hasActiveSubCores(core.clanId)
+        }
+
+
+        // 2. REGRA DO SUB-CORE:
+        // Ele só está protegido se estiver totalmente cercado.
+        return isCoreInternal(core)
+    }
+
+    private fun isCoreInternal(core: ClanCoreEntity): Boolean {
+        val clanId = core.clanId
+        val worldUuid = core.worldUuid ?: return false
+
+        // Centro do núcleo em coordenadas de Chunk
+        val cx = core.x!! shr 4
+        val cz = core.z!! shr 4
+
+
+        val faceNeighbors = listOf(
+            // Face Norte (Z+2)
+            Pair(cx - 1, cz + 2), Pair(cx, cz + 2), Pair(cx + 1, cz + 2),
+            // Face Sul (Z-2)
+            Pair(cx - 1, cz - 2), Pair(cx, cz - 2), Pair(cx + 1, cz - 2),
+            // Face Leste (X+2)
+            Pair(cx + 2, cz - 1), Pair(cx + 2, cz), Pair(cx + 2, cz + 1),
+            // Face Oeste (X-2)
+            Pair(cx - 2, cz - 1), Pair(cx - 2, cz), Pair(cx - 2, cz + 1)
+        )
+
+        for ((nx, nz) in faceNeighbors) {
+            val ownerId = clanChunkCache.getChunkOwner(worldUuid, nx, nz)
+
+            // Se qualquer uma dessas faces for Wilderness ou Inimigo, o núcleo está exposto.
+            if (ownerId == null || ownerId != clanId) {
+                return false
+            }
+        }
+
+        return true
     }
 
 //    override fun findByChunk(chunk: Chunk): ClanCoreEntity? {

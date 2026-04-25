@@ -1,5 +1,6 @@
 package org.quintilis.factions.cache
 
+import org.bukkit.plugin.java.JavaPlugin
 import redis.clients.jedis.Jedis
 
 /**
@@ -8,7 +9,8 @@ import redis.clients.jedis.Jedis
 abstract class StringSetCache<K>(
     prefix: String,
     ttl: Long,
-): BaseRedisCache<K, List<String>>(prefix, ttl) {
+    plugin: JavaPlugin,
+): BaseRedisCache<K, List<String>>(prefix, ttl, plugin) {
     override fun readFromRedis(jedis: Jedis, key: String): List<String>? {
         if (!jedis.exists(key)) return null
         return jedis.smembers(key).toList()

@@ -114,6 +114,7 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
             )
             if (chunkResult is Result.Error) {
                 cancelEventWithError(event, event.player, chunkResult)
+                return
             }
             core.save<ClanCoreEntity>()
 

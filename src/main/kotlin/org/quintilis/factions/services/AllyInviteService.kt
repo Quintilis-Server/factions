@@ -12,12 +12,12 @@ import org.quintilis.factions.entities.invite.ally.AllyInviteEntity
 import org.quintilis.factions.exceptions.invite.AlreadyInvitedError
 import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.managers.DatabaseManager
+import org.quintilis.factions.services.FactionsServices.allyInviteCache
 import java.time.Instant
 
 class AllyInviteService {
     companion object {
         val allyInviteDao : AllyInviteDao = DatabaseManager.getDAO(AllyInviteDao::class)
-        val allyInviteCache = AllyInviteCache(allyInviteDao)
         private val maxInviteTime: Instant = Instant.now().plusSeconds(ConfigManager.getMaxAllyInvitationTime() * 86400L)
 
         fun createInvite(clanCache: ClanCache, clan: ClanEntity, target: ClanEntity){

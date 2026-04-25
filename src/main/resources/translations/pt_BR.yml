@@ -206,6 +206,7 @@ member:
 core:
     place:
         success: "Nucleo de clã colocado com sucesso."
+    damage: "<yellow>NEXUS:</yellow> <white><core_health> HP <gray>(-<damage>)"
 
 nexus:
     name: "Núcleo do clã (<tag>)"

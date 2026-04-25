@@ -1,5 +1,6 @@
 package org.quintilis.factions.cache
 
+import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.dao.ClanRelationDao
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanRelationEntity
@@ -7,12 +8,14 @@ import org.quintilis.factions.entities.clan.Relation
 import java.time.Instant
 
 class ClanRelationCache(
-    private val daoImpl: ClanRelationDao
+    private val daoImpl: ClanRelationDao,
+    private val plugin: JavaPlugin
 ): ClanRelationDao by daoImpl {
 
     private val relationsCache = object : StringSetCache<Int>(
         prefix = "factions:relation:clan:",
-        ttl = 3600L // 1 hora de TTL
+        ttl = 3600L, // 1 hora de TTL
+        plugin = this.plugin
     ) {}
 
     private fun getActiveRelations(clanId: Int): List<String> {

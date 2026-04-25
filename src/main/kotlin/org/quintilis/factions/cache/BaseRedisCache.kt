@@ -1,5 +1,7 @@
 package org.quintilis.factions.cache
 
+import org.bukkit.plugin.java.JavaPlugin
+import org.quintilis.factions.managers.QuintilisScheduler
 import org.quintilis.factions.managers.RedisManager
 import redis.clients.jedis.Jedis
 
@@ -10,8 +12,24 @@ import redis.clients.jedis.Jedis
  */
 abstract class BaseRedisCache<K, V>(
     private val keyPrefix: String,
-    private val ttlSeconds: Long
+    private val ttlSeconds: Long,
+    private val plugin: JavaPlugin,
 ) {
+
+    /**
+     * Versão ASSÍNCRONA do Get.
+     * @param callback O que fazer quando o valor chegar (ex: atualizar a UI ou o Player)
+     */
+    fun getOrFetchAsync(key: K, dbFetcher: (K) -> V, callback: (V) -> Unit) {
+        QuintilisScheduler.runGlobal(plugin, Runnable {
+            val result = getOrFetch(key, dbFetcher) // Executa a lógica pesada na thread global
+
+            // Após buscar, se precisar fazer algo no mundo (ex: dar item ao player),
+            // você usaria o runAtLocation aqui dentro do callback se necessário.
+            callback(result)
+        })
+    }
+
     /**
      * Método principal. Tenta pegar do cache, se falhar, usa o 'dbFetcher'.
      */
@@ -69,6 +87,15 @@ abstract class BaseRedisCache<K, V>(
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    /**
+     * Put agora é não-bloqueante
+     */
+    fun putAsync(key: K, value: V) {
+        QuintilisScheduler.runGlobal(plugin, Runnable {
+            put(key, value)
+        })
     }
 
     // --- Métodos que as classes filhas devem implementar ---

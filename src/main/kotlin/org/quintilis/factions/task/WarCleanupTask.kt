@@ -8,6 +8,7 @@ import org.quintilis.factions.Factions
 import org.quintilis.factions.annotations.AutoTask
 import org.quintilis.factions.entities.clan.ClanRelationEntity
 import org.quintilis.factions.managers.ConfigManager
+import org.quintilis.factions.managers.QuintilisScheduler
 import org.quintilis.factions.managers.RedisManager
 import org.quintilis.factions.services.FactionsServices.antiCoreCache
 import org.quintilis.factions.services.FactionsServices.clanCache
@@ -33,7 +34,7 @@ class WarCleanupTask(private val plugin: Factions): BukkitRunnable() {
 
             if (now - lastActivity > timeoutMs) {
                 // GUERRA ESFRIOU: Finalizar de forma assíncrona para não travar a Main Thread
-                Bukkit.getScheduler().runTask(plugin, Runnable {
+                QuintilisScheduler.runGlobal(plugin, Runnable {
                     endWarByInactivity(relation)
                 })
             }

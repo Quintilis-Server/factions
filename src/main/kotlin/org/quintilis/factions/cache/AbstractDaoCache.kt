@@ -1,5 +1,6 @@
 package org.quintilis.factions.cache
 
+import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.annotations.Column
 import org.quintilis.factions.annotations.PrimaryKey
 import org.quintilis.factions.annotations.TableName
@@ -16,8 +17,9 @@ abstract class AbstractDaoCache<D: BaseDao<E, K>, E: BaseEntity, K>(
     protected val dao: D,
     prefix: String,
     ttl: Long,
-    classType: Class<E>
-): JsonCache<K, E>(prefix, ttl, classType), CacheSync {
+    classType: Class<E>,
+    plugin: JavaPlugin
+): JsonCache<K, E>(prefix, ttl, classType, plugin), CacheSync {
 
     protected val tableName: String
     protected val pkColName: String

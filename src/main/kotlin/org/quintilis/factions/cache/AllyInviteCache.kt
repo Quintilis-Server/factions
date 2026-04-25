@@ -1,5 +1,6 @@
 package org.quintilis.factions.cache
 
+import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.dao.AllyInviteDao
 import org.quintilis.factions.managers.ConfigManager
 
@@ -9,20 +10,25 @@ import org.quintilis.factions.managers.ConfigManager
  */
 class AllyInviteCache(
     private val allyInviteDao: AllyInviteDao,
+    private val plugin: JavaPlugin,
 ): StringSetCache<Int>(
     prefix = "factions:invites:ally:",
     ttl = ConfigManager.getMaxAllyInvitationTime() * 86400L, // dias para segundos
+    plugin = plugin
+
 ){
     // Cache para clãs que ENVIARAM convite (usado no accept/reject)
     private val senderNamesCache = object : StringSetCache<Int>(
         prefix = "factions:invites:ally:senders:",
         ttl = ConfigManager.getMaxAllyInvitationTime() * 86400L,
+        plugin = this.plugin
     ) {}
     
     // Cache para clãs ALVO do convite (usado para listar convites enviados)
     private val targetNamesCache = object : StringSetCache<Int>(
         prefix = "factions:invites:ally:targets:",
         ttl = ConfigManager.getMaxAllyInvitationTime() * 86400L,
+        plugin = this.plugin
     ) {}
     
     /**

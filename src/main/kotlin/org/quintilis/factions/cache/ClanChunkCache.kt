@@ -2,6 +2,7 @@ package org.quintilis.factions.cache
 
 import com.google.common.reflect.TypeToken
 import org.bukkit.Chunk
+import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.dao.ClanChunkDao
 import org.quintilis.factions.entities.chunk.ChunkEntity
 import org.quintilis.factions.entities.clan.ClanChunkEntity
@@ -11,18 +12,21 @@ import java.util.UUID
 
 class ClanChunkCache(
     private val daoImpl: ClanChunkDao,
+    private val plugin: JavaPlugin
 ): AbstractDaoCache<ClanChunkDao, ClanChunkEntity, Int>(
     dao = daoImpl,
     prefix = "factions:clan_chunk:",
     ttl = 1200L,
     classType = ClanChunkEntity::class.java,
+    plugin = plugin
 ), ClanChunkDao by daoImpl {
     private val gson = GsonProvider.gson
     private val chunkListType = object : TypeToken<List<ChunkEntity>>() {}.type
 
     private val coreChunksCache = object : BaseRedisCache<Int, List<ChunkEntity>>(
         keyPrefix = "factions:clan_chunk:core:",
-        ttlSeconds = 300L
+        ttlSeconds = 300L,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: redis.clients.jedis.Jedis, key: String): List<ChunkEntity>? {
             val json = jedis.get(key) ?: return null
@@ -49,7 +53,8 @@ class ClanChunkCache(
 
     private val ownerCache = object : BaseRedisCache<String, Int?>(
         keyPrefix = "factions:clan_chunk:owner:",
-        ttlSeconds = 300L
+        ttlSeconds = 300L,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): Int? {
             val value = jedis.get(key) ?: return null

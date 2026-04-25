@@ -1,6 +1,7 @@
 package org.quintilis.factions.cache
 
 import com.google.gson.reflect.TypeToken
+import org.bukkit.plugin.java.JavaPlugin
 import org.jdbi.v3.core.HandleConsumer
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.entities.clan.ClanEntity
@@ -11,12 +12,14 @@ import redis.clients.jedis.Jedis
 import java.util.UUID
 
 class ClanCache(
-    private val daoImpl: ClanDao
+    private val daoImpl: ClanDao,
+    private val plugin: JavaPlugin
 ) : AbstractDaoCache<ClanDao, ClanEntity, Int>(
     daoImpl,
     "factions:clan:id:",
     ttl = 3600L,
-    classType = ClanEntity::class.java
+    classType = ClanEntity::class.java,
+    plugin = plugin
 ), ClanDao by daoImpl {
     private val gson = GsonProvider.gson
 
@@ -31,7 +34,8 @@ class ClanCache(
     // ============================================
     private val pageCache = object : BaseRedisCache<Int, List<ClanEntity>>(
         keyPrefix = "factions:clan:page:",
-        ttlSeconds = PAGE_TTL
+        ttlSeconds = PAGE_TTL,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): List<ClanEntity>? {
             val json = jedis.get(key) ?: return null
@@ -63,7 +67,8 @@ class ClanCache(
     // ============================================
     private val nameCache = object : BaseRedisCache<String, ClanEntity?>(
         keyPrefix = "factions:clan:name:",
-        ttlSeconds = 300L
+        ttlSeconds = 300L,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): ClanEntity? {
             val json = jedis.get(key) ?: return null
@@ -94,7 +99,8 @@ class ClanCache(
     // ============================================
     private val leaderCache = object : BaseRedisCache<UUID, ClanEntity?>(
         keyPrefix = "factions:clan:leader:",
-        ttlSeconds = 300L
+        ttlSeconds = 300L,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): ClanEntity? {
             val json = jedis.get(key) ?: return null
@@ -125,7 +131,8 @@ class ClanCache(
     // ============================================
     private val memberClanCache = object : BaseRedisCache<UUID, ClanEntity?>(
         keyPrefix = "factions:clan:member:",
-        ttlSeconds = 300L
+        ttlSeconds = 300L,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): ClanEntity? {
             val json = jedis.get(key) ?: return null
@@ -156,7 +163,8 @@ class ClanCache(
     // ============================================
     private val membersCache = object : BaseRedisCache<Int, List<ClanMemberEntity>>(
         keyPrefix = "factions:clan:members:",
-        ttlSeconds = 120L
+        ttlSeconds = 120L,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): List<ClanMemberEntity>? {
             val json = jedis.get(key) ?: return null
@@ -186,7 +194,8 @@ class ClanCache(
     // ============================================
     private val namesCache = object : StringSetCache<String>(
         prefix = "factions:clan:names",
-        ttl = 120L
+        ttl = 120L,
+        plugin = this.plugin
     ) {}
 
     // ============================================
@@ -194,7 +203,8 @@ class ClanCache(
     // ============================================
     private val totalCache = object : BaseRedisCache<String, Int>(
         keyPrefix = "factions:clan:total:",
-        ttlSeconds = SHORT_TTL
+        ttlSeconds = SHORT_TTL,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): Int? {
             val value = jedis.get(key) ?: return null

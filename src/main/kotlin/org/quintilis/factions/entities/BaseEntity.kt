@@ -39,7 +39,7 @@ private data class EntityMetadata(
     val primaryKeyColumnNames: List<String>
 )
 /**
- * Classe abstrata que outras entidade herdam
+ * Classe abstrata que outras entidades herdam
  * Essa classe precisa da `@TableName`, `@Column` e pelo menos uma `@PrimaryKey`
  */
 abstract class BaseEntity {

@@ -17,6 +17,13 @@ interface CoreDao: BaseDao<ClanCoreEntity, Int> {
     fun findByLocation(@Bind("x") x: Int, @Bind("y") y: Int, @Bind("z") z: Int): ClanCoreEntity?
 
     @SqlQuery("""
+        SELECT cc.* FROM clan_cores cc
+        JOIN public.clans c on c.id = cc.clan_id
+        WHERE c.id = :clanId
+    """)
+    fun findAllByClan(@Bind("clanId") clanId: Int): List<ClanCoreEntity>
+
+    @SqlQuery("""
         SELECT * FROM clan_cores 
         JOIN clan_chunk cc on clan_cores.id = cc.owner_core
         JOIN chunk c on cc.chunk_id = c.id

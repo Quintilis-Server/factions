@@ -2,6 +2,8 @@ package org.quintilis.factions.cache
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import org.bukkit.plugin.java.JavaPlugin
+import org.quintilis.factions.Factions
 import org.quintilis.factions.managers.GsonProvider
 import org.quintilis.factions.util.json.InstantAdapter
 import redis.clients.jedis.Jedis
@@ -11,8 +13,9 @@ import java.time.Instant
 abstract class JsonCache<K, V>(
     prefix: String,
     ttl: Long,
-    val classType: Class<V>
-): BaseRedisCache<K, V?>(prefix, ttl) {
+    val classType: Class<V>,
+    plugin: JavaPlugin
+): BaseRedisCache<K, V?>(prefix, ttl, plugin = plugin) {
     private val gson: Gson = GsonProvider.gson
 
     override fun readFromRedis(jedis: Jedis, key: String): V? {

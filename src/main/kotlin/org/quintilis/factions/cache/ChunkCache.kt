@@ -2,6 +2,7 @@ package org.quintilis.factions.cache
 
 import com.google.gson.reflect.TypeToken
 import org.bukkit.Chunk
+import org.bukkit.plugin.java.JavaPlugin
 import org.jdbi.v3.core.HandleConsumer
 import org.quintilis.factions.dao.ChunkDao
 import org.quintilis.factions.entities.chunk.ChunkEntity
@@ -16,12 +17,14 @@ import java.util.UUID
  * Cacheia por coordenadas (world:x:z) e por clã.
  */
 class ChunkCache(
-    private val chunkDao: ChunkDao
+    private val chunkDao: ChunkDao,
+    private val plugin: JavaPlugin
 ): AbstractDaoCache<ChunkDao, ChunkEntity, Int>(
     dao = chunkDao,
     prefix = "factions:chunk:",
     ttl = 1200,
     classType = ChunkEntity::class.java,
+    plugin = plugin
 ), ChunkDao by chunkDao {
     private val gson = GsonProvider.gson
     
@@ -35,7 +38,8 @@ class ChunkCache(
     // ============================================
     private val chunkEntityCache = object : BaseRedisCache<String, ChunkEntity?>(
         keyPrefix = "factions:chunk:entity:",
-        ttlSeconds = CHUNK_TTL
+        ttlSeconds = CHUNK_TTL,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): ChunkEntity? {
             val json = jedis.get(key) ?: return null
@@ -61,7 +65,8 @@ class ChunkCache(
     // ============================================
     private val clanChunksCache = object : BaseRedisCache<Int, List<ChunkEntity>>(
         keyPrefix = "factions:chunk:clan:",
-        ttlSeconds = CLAN_CHUNKS_TTL
+        ttlSeconds = CLAN_CHUNKS_TTL,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): List<ChunkEntity>? {
             val json = jedis.get(key) ?: return null
@@ -91,7 +96,8 @@ class ChunkCache(
     // ============================================
     private val countCache = object : BaseRedisCache<Int, Int>(
         keyPrefix = "factions:chunk:count:",
-        ttlSeconds = CLAN_CHUNKS_TTL
+        ttlSeconds = CLAN_CHUNKS_TTL,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): Int? {
             val value = jedis.get(key) ?: return null

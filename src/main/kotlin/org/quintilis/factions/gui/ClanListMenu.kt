@@ -12,6 +12,7 @@ import org.bukkit.entity.Player
 import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.managers.DatabaseManager
+import org.quintilis.factions.services.FactionsServices.clanCache
 import kotlin.math.ceil
 
 class ClanListMenu(
@@ -22,9 +23,6 @@ class ClanListMenu(
     titleKey = "clan.list_menu.title",
     pageSize = 45
 ) {
-    private val clanDao = DatabaseManager.getDAO(ClanDao::class)
-    private val clanCache = ClanCache(clanDao)
-
     private var currentPageIndex = 1
 
     override fun loadItems() {

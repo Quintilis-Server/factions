@@ -6,34 +6,41 @@ import org.bukkit.Location
 import org.bukkit.Particle
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
+import org.quintilis.factions.Factions
 import org.quintilis.factions.annotations.AutoTask
 import org.quintilis.factions.extensions.getClan
 import org.quintilis.factions.extensions.isAntiCore
 import org.quintilis.factions.extensions.isCoreItem
 import org.quintilis.factions.extensions.isNexusItem
+import org.quintilis.factions.managers.QuintilisScheduler
 import org.quintilis.factions.services.FactionsServices
 
-@AutoTask(period = 10L, async = true)
-class VisualizerTask: BukkitRunnable() {
+@AutoTask(period = 10L, async = false)
+class VisualizerTask(private val plugin: Factions): BukkitRunnable() {
     private val newTerritoryColor = Particle.DustOptions(Color.LIME, 1.5f)
     private val enemyClanTerritoryColor = Particle.DustOptions(Color.RED, 1.5f)
     private val clanTerritoryColor = Particle.DustOptions(Color.AQUA, 1.5f)
 
     override fun run() {
-        for(player in Bukkit.getOnlinePlayers()) {
-            val item = player.inventory.itemInMainHand
-
-            if(!item.hasItemMeta()) continue
-
-            val isAntiCore = item.isAntiCore()
-
-            if(!item.isNexusItem() && !item.isCoreItem() && !isAntiCore) continue
-
-            val clanId = player.getClan()?.id
-
-            if(!isAntiCore) showNewTerritoryBorder(player)
-            showCurrentTerritory(player, clanId)
+        for (player in Bukkit.getOnlinePlayers()) {
+            // No Folia, precisamos pular para a thread do jogador para acessar o Chunk
+            QuintilisScheduler.runAtEntity(plugin, player) {
+                renderVisuals(player)
+            }
         }
+    }
+
+    private fun renderVisuals(player: Player) {
+        val item = player.inventory.itemInMainHand
+        if (!item.hasItemMeta()) return
+
+        val isAntiCore = item.isAntiCore()
+        if (!item.isNexusItem() && !item.isCoreItem() && !isAntiCore) return
+
+        val clanId = player.getClan()?.id
+
+        if (!isAntiCore) showNewTerritoryBorder(player)
+        showCurrentTerritory(player, clanId)
     }
 
     private fun showCurrentTerritory(player: Player, clanId: Int?){

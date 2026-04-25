@@ -1,22 +1,26 @@
 package org.quintilis.factions.cache
 
 import org.bukkit.Location
+import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.dao.AntiCoreDao
 import org.quintilis.factions.entities.clan.AntiCoreEntity
 import redis.clients.jedis.Jedis
 
 class AntiCoreCache(
     private val daoImpl: AntiCoreDao,
+    private val plugin: JavaPlugin,
 ): AbstractDaoCache<AntiCoreDao, AntiCoreEntity, Int>(
     dao = daoImpl,
     ttl = 1200,
     classType = AntiCoreEntity::class.java,
-    prefix = "factions:anticore:"
+    prefix = "factions:anticore:",
+    plugin = plugin
 ), AntiCoreDao by daoImpl {
 
     private val locationCache = object : BaseRedisCache<String, Int?>(
         keyPrefix = "factions:anticore:loc:",
-        ttlSeconds = 10800
+        ttlSeconds = 10800,
+        plugin = this.plugin
     ) {
         override fun readFromRedis(jedis: Jedis, key: String): Int? = jedis.get(key)?.toIntOrNull()
         override fun writeToRedis(jedis: Jedis, key: String, value: Int?) {

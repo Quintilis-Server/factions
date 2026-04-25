@@ -15,6 +15,8 @@ import org.quintilis.factions.services.CoreService
 import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.util.Keys
 import fr.skytasul.glowingentities.GlowingEntities
+import org.quintilis.factions.managers.QuintilisScheduler
+import org.quintilis.factions.managers.QuintilisScheduler.isFolia
 
 class Factions : JavaPlugin() {
 
@@ -112,21 +114,14 @@ class Factions : JavaPlugin() {
                     clazz.getConstructor().newInstance()
                 }
 
-                if(annotation.async){
-                    server.scheduler.runTaskTimerAsynchronously(
-                        this,
-                        taskInstance,
-                        annotation.delay,
-                        interval
-                    )
-                } else {
-                    server.scheduler.runTaskTimer(
-                        this,
-                        taskInstance,
-                        annotation.delay,
-                        interval
-                    )
-                }
+                QuintilisScheduler.runTimer(
+                    this,
+                    taskInstance,
+                    annotation.delay,
+                    interval,
+                    annotation.async
+                )
+
                 logger.info("Task registrada automaticamente: ${clazz.simpleName}")
             }catch (e: Exception){
                 logger.severe("Falha ao registrar task: ${clazz.simpleName}")
