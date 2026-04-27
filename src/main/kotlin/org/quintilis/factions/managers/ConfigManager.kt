@@ -120,6 +120,10 @@ object ConfigManager {
         return config.getDouble("anticore.activation-radius", 15.0)
     }
 
+    fun getAnticoreCompassExpiry(): Int{
+        return config.getInt("anticore.compassExpity")
+    }
+
     fun getWarTimeout(): Int{
         return this.getInt("war.timeout")
     }

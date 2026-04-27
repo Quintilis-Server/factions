@@ -54,6 +54,8 @@ class WarCleanupTask(private val plugin: Factions): BukkitRunnable() {
         // 1. Desativa a relação no banco e cache
         relation.deactivate()
 
+        //TODO deve desativar todas as estruturas dos anticores
+
         // 2. Limpa TODOS os Anti-Cores ativos entre esses dois clãs
         // Dica: Crie esse método no seu AntiCoreCache para facilitar
         antiCoreCache.deactivateAllBetween(clan1.id!!, clan2.id!!)

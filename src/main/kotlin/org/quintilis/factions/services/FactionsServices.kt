@@ -142,6 +142,11 @@ object FactionsServices {
         ChunkService()
     }
 
+    val anticoreService: AnticoreService by lazy {
+        checkInitialized()
+        AnticoreService()
+    }
+
     private fun checkInitialized() {
         if (!::plugin.isInitialized) {
             throw IllegalStateException("Services.init(plugin) não foi chamado no onEnable!")

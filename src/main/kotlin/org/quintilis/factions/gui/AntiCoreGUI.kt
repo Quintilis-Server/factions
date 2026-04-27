@@ -11,9 +11,12 @@ import org.quintilis.factions.extensions.getClanAsLeader
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.managers.ErrorManager
+import org.quintilis.factions.services.AnticoreService
 import org.quintilis.factions.services.FactionsServices
 
 class AntiCoreGUI(player: Player) : BaseGUI(player, "gui.anticore.title", rows = 4, pageSize = 18) {
+
+    private val anticoreService =  AnticoreService()
 
     override fun loadItems() {
         // AntiCore Setup
@@ -51,7 +54,7 @@ class AntiCoreGUI(player: Player) : BaseGUI(player, "gui.anticore.title", rows =
             }
         }
         
-        gui.setItem(2, 4, antiCoreItem) // Position shifted left to make room
+        gui.setItem(2, 3, antiCoreItem) // Position shifted left to make room
 
         // Glowstone Setup
         val glowstonePrice = ConfigManager.getGlowstonePrice()
@@ -81,6 +84,24 @@ class AntiCoreGUI(player: Player) : BaseGUI(player, "gui.anticore.title", rows =
             }
         }
         
-        gui.setItem(2, 6, glowstoneItem) // Flow to the right
+        gui.setItem(2, 5, glowstoneItem) // Flow to the right
+
+
+        val compassItem = createItem(
+            Material.COMPASS,
+            "gui.anticore.compass.name",
+            "gui.anticore.compass.lore",
+            Placeholder.parsed("price", glowstonePrice.toString())
+        ).asGuiItem { event ->
+            event.isCancelled = true
+            ErrorManager.runSafe(player) {
+                val compass = anticoreService.createCompassItem(player)
+
+                player.inventory.addItem(compass)
+                player.sendTranslatable("anticore.compass.purchased")
+            }
+        }
+
+        gui.setItem(2, 7, compassItem)
     }
 }

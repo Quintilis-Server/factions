@@ -7,12 +7,14 @@ object Keys {
     lateinit var NEXUS_ITEM: NamespacedKey
     lateinit var CORE_ITEM: NamespacedKey
     lateinit var ANTI_CORE_ITEM: NamespacedKey
+    lateinit var ANTI_CORE_COMPASS_EXPIRY: NamespacedKey
     lateinit var WAR_TIMER_KEY: String
 
     fun load(plugin: Factions) {
         NEXUS_ITEM = NamespacedKey(plugin, "nexus_core_item")
         CORE_ITEM = NamespacedKey(plugin, "core_core_item")
         ANTI_CORE_ITEM = NamespacedKey(plugin, "anti_core_item")
+        ANTI_CORE_COMPASS_EXPIRY = NamespacedKey(plugin, "anti_core_compass")
         WAR_TIMER_KEY = ""
     }
 }

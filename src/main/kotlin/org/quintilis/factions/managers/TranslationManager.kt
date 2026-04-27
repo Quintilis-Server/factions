@@ -123,7 +123,7 @@ object TranslationManager {
 
         // Passa a lista de todas as chaves do YAML para o Kyori registrar
         override fun getKeys(): Enumeration<String> {
-            val keys = yaml.getKeys(true).filter { yaml.isString(it) }
+            val keys = yaml.getKeys(true).filter { yaml.isString(it) || yaml.isList(it) }
             return Collections.enumeration(keys)
         }
     }
@@ -149,5 +149,34 @@ object TranslationManager {
     fun render(key: String, locale: Locale = Locale.forLanguageTag("pt-BR"), vararg resolvers: TagResolver): Component {
         val rawMessage = getRawMessage(key, locale)
         return MiniMessage.miniMessage().deserialize(rawMessage, *resolvers)
+    }
+
+    /**
+     * Pega uma lista de strings do YAML sem processar.
+     */
+    fun getRawList(key: String, locale: Locale): List<String> {
+        val yaml = loadedYamls[locale] ?: loadedYamls.values.firstOrNull() ?: return listOf(key)
+
+        return if (yaml.isList(key)) {
+            yaml.getStringList(key)
+        } else {
+            // Se o cara definiu como string simples no YAML, mas pedimos lista,
+            // envolvemos em uma lista de um único item.
+            listOf(yaml.getString(key) ?: key)
+        }
+    }
+
+    /**
+     * Renderiza uma lista de mensagens (útil para Lores de itens).
+     */
+    fun renderList(
+        key: String,
+        locale: Locale = Locale.forLanguageTag("pt-BR"),
+        vararg resolvers: TagResolver
+    ): List<Component> {
+        val mm = MiniMessage.miniMessage()
+        return getRawList(key, locale).map { line ->
+            mm.deserialize(line, *resolvers)
+        }
     }
 }

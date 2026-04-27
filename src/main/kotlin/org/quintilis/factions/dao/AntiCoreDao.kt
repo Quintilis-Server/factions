@@ -5,6 +5,7 @@ import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import org.quintilis.factions.entities.clan.AntiCoreEntity
+import org.quintilis.factions.entities.clan.ClanEntity
 import java.util.UUID
 
 interface AntiCoreDao: BaseDao<AntiCoreEntity, Int> {
@@ -83,4 +84,16 @@ interface AntiCoreDao: BaseDao<AntiCoreEntity, Int> {
         )
     """)
     fun deactivateAllBetween(@Bind("clan1") clan1: Int, @Bind("clan2") clan2: Int)
+
+    @SqlQuery("""
+        SELECT a.* FROM anticore a
+        JOIN clan_cores cc ON a.target_core_id = cc.id
+        WHERE cc.clan_id = :clanId 
+        AND a.active = TRUE
+    """)
+    fun findAllAttackingClan(@Bind("clanId") clanId: Int): List<AntiCoreEntity>
+
+    fun findAllAttackingClan(clan: ClanEntity): List<AntiCoreEntity>{
+        return this.findAllAttackingClan(clan.id!!)
+    }
 }

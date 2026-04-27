@@ -26,6 +26,7 @@ clan:
   glowstone-price: 100
 anticore:
   damage: 5
-  time: 400              #TICKS
+  time: 400               #TICKS
   shots: 10
   activation-radius: 15
+  compassExpiry: 60       #SECONDS
