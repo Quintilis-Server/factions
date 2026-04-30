@@ -174,6 +174,10 @@ abstract class BaseCommand(
             return true;
         }
 
+        if(commands.isEmpty()) {
+            return this.commandWrapper(commandSender, label, args)
+        }
+
         if(args.isEmpty() || args[0].equals("help", ignoreCase = true)){
             val helpArgs = if(args.isNotEmpty()) {
                 args.copyOfRange(1, args.size).toList()

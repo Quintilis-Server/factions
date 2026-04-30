@@ -8,6 +8,7 @@ import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.data.type.RespawnAnchor
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.quintilis.factions.Factions
@@ -80,6 +81,10 @@ class CoreService(private val plugin: Factions) {
             }
             .build()
         return item
+    }
+
+    fun teleportPlayer(player: Player){
+
     }
 
 //    fun placeNexus(item: ItemStack, block: Block, clan: ClanEntity) {

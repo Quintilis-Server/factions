@@ -276,4 +276,11 @@ war:
         defender_surrendered:
             title: "<dark_red><bold>NÚCLEO ENTREGUE</bold></dark_red>"
             subtitle: "<gray>Rendição confirmada. Suas defesas foram desativadas.</gray>"
-            
+teleport:
+    starting: "<gray>Teleportando em <yellow><seconds>s</yellow>. Não se mova!</gray>"
+    success: "<green>Teleporte concluído!</green>"
+    error:
+        in_combat: "<red>Você está em combate! Aguarde mais <seconds>s para teleportar.</red>"
+        moved: "<red>Teleporte cancelado: você se moveu!</red>"
+        no_nexus: "<red>Seu clã não possui um Nexus ativo para teleporte.</red>"
+        insufficient_points: "<red>Você precisa de <cost> pontos para teleportar.</red>"

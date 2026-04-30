@@ -110,5 +110,29 @@ interface CoreDao: BaseDao<ClanCoreEntity, Int> {
     fun findClosestCore(location: Location, radius: Int): ClanCoreEntity?{
         return this.findClosestCore(radius,location.blockX, location.blockY, location.blockZ)
     }
+    @SqlQuery("""
+    SELECT c.* FROM clan_cores c
+    WHERE c.clan_id = :clanId 
+      AND c.active = TRUE
+      -- Se o raio for -1, ele ignora essa checagem (Busca Global do Clã)
+      AND (:radius = -1 OR (ABS(x - :x) <= :radius AND ABS(z - :z) <= :radius))
+    ORDER BY (
+        (x - :x) * (x - :x) + 
+        (y - :y) * (y - :y) + 
+        (z - :z) * (z - :z)
+    )
+    LIMIT 1
+""")
+    fun findClosestCoreByClan(
+        @Bind("clanId") clanId: Int,
+        @Bind("x") x: Int,
+        @Bind("y") y: Int,
+        @Bind("z") z: Int,
+        @Bind("radius") radius: Int = -1
+    ): ClanCoreEntity?
+
+    fun findClosestCoreByClan(clanId: Int, location: Location, radius: Int = -1): ClanCoreEntity?{
+        return this.findClosestCoreByClan(clanId, location.blockX, location.blockY, location.blockZ, radius)
+    }
 
 }

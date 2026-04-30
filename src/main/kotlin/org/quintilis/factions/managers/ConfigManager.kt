@@ -127,4 +127,7 @@ object ConfigManager {
     fun getWarTimeout(): Int{
         return this.getInt("war.timeout")
     }
+    fun getNexusTeleportCost(): Int{
+        return config.getInt("clan.teleportCost")
+    }
 }
