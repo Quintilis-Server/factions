@@ -9,7 +9,7 @@ import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin
 import org.jdbi.v3.sqlobject.SqlObjectPlugin
 import org.quintilis.factions.Factions
-//import org.jdbi.v3.sqlobject.kotlin.KotlinSqlObjectPlugin
+
 import org.quintilis.factions.dao.BaseDao
 import java.sql.Connection
 import java.sql.SQLException
@@ -20,16 +20,16 @@ object DatabaseManager {
     private var dataSource: HikariDataSource? = null
     lateinit var jdbi: Jdbi
 
-    fun connect(logger: Logger) {
+    fun connect(logger: Logger, configManager: BaseConfigManager) {
         if(dataSource != null && !dataSource!!.isClosed) {
             return
         }
 
-        val host = ConfigManager.getHost()
-        val port = ConfigManager.getPort()
-        val dbName = ConfigManager.getDatabaseName()
-        val user = ConfigManager.getUsername()
-        val pass = ConfigManager.getPassword()
+        val host = configManager.getHost()
+        val port = configManager.getPort()
+        val dbName = configManager.getDatabaseName()
+        val user = configManager.getUsername()
+        val pass = configManager.getPassword()
 
         val dbUrl = "jdbc:postgresql://$host:$port/$dbName"
         logger.info("Connecting to database: $dbUrl")

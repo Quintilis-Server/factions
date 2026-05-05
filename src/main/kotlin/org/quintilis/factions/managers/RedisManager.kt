@@ -8,13 +8,13 @@ import redis.clients.jedis.params.ScanParams
 object RedisManager {
     private lateinit var pool: JedisPool
 
-    fun connect(){
+    fun connect(configManager: BaseConfigManager){
         val config = JedisPoolConfig()
         config.maxTotal = 16
 
-        val host = ConfigManager.getRedisHost()
-        val port = ConfigManager.getRedisPort()
-        val database = ConfigManager.getRedisDatabase()
+        val host = configManager.getRedisHost()
+        val port = configManager.getRedisPort()
+        val database = configManager.getRedisDatabase()
 
         println("[RedisManager] Database host: $host, port: $port")
         println("[RedisManager] Database number: $database")

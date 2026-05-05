@@ -6,49 +6,7 @@ import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.exceptions.ConfigFileNullValueException
 
-object ConfigManager {
-    private lateinit var config: FileConfiguration
-
-
-    fun initialize(config: FileConfiguration, plugin: JavaPlugin) {
-        this.config = config
-    }
-    private fun getString(path: String): String{
-        val value = this.config.getString(path)
-        if(value.isNullOrBlank()){
-            throw ConfigFileNullValueException(path)
-        }
-        return value
-    }
-    private fun getInt(path: String): Int{
-        val value = this.config.getInt(path)
-        return value
-    }
-
-    private fun getPercentage(path: String): Double{
-        val value = this.getInt(path).toDouble()
-        return value / 100
-    }
-
-    fun getHost(): String{
-        return this.getString("database.host")
-    }
-
-    fun getPort(): Int{
-        return this.config.getInt("database.port")
-    }
-
-    fun getUsername(): String{
-        return this.getString("database.username")
-    }
-
-    fun getPassword(): String{
-        return this.getString("database.password")
-    }
-
-    fun getDatabaseName(): String{
-        return this.getString("database.dbName")
-    }
+object ConfigManager: BaseConfigManager() {
 
     fun getMaxInvitationTime(): Int{
         return this.getInt("invite.maxInvitationTime")
@@ -56,18 +14,6 @@ object ConfigManager {
 
     fun getMaxAllyInvitationTime(): Int{
         return this.getInt("invite.maxAllyInvitationTime")
-    }
-
-    fun getRedisPort(): Int{
-        return this.getInt("redis.port")
-    }
-
-    fun getRedisHost(): String{
-        return this.getString("redis.host")
-    }
-
-    fun getRedisDatabase(): Int{
-        return this.getInt("redis.database")
     }
 
     fun getWarEnemyPoints(): Int{
@@ -117,17 +63,17 @@ object ConfigManager {
     }
 
     fun getAnticoreActivationRadius(): Double {
-        return config.getDouble("anticore.activation-radius", 15.0)
+        return this.getDouble("anticore.activation-radius", 15.0)
     }
 
     fun getAnticoreCompassExpiry(): Int{
-        return config.getInt("anticore.compassExpity")
+        return this.getInt("anticore.compassExpity")
     }
 
     fun getWarTimeout(): Int{
         return this.getInt("war.timeout")
     }
     fun getNexusTeleportCost(): Int{
-        return config.getInt("clan.teleportCost")
+        return this.getInt("clan.teleportCost")
     }
 }

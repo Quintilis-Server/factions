@@ -2,6 +2,7 @@ package org.quintilis.factions.services
 
 import fr.skytasul.glowingentities.GlowingBlocks
 import fr.skytasul.glowingentities.GlowingEntities
+import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.Factions
 import org.quintilis.factions.cache.AllyInviteCache
 import org.quintilis.factions.cache.AntiCoreCache
@@ -31,11 +32,11 @@ import org.quintilis.factions.managers.DatabaseManager
  */
 object FactionsServices {
 
-    private lateinit var plugin: Factions
+    private lateinit var plugin: JavaPlugin
     lateinit var glowingBlocks: GlowingBlocks
 //    lateinit var glowingEntities: GlowingEntities
 
-    fun init(plugin: Factions) {
+    fun init(plugin: JavaPlugin) {
         this.plugin = plugin
 //        this.glowingBlocks = GlowingBlocks(plugin)
 //        this.glowingEntities = GlowingEntities(plugin)
@@ -134,7 +135,7 @@ object FactionsServices {
 
     val coreService: CoreService by lazy {
         checkInitialized()
-        CoreService(plugin)
+        CoreService()
     }
 
     val chunkService: ChunkService by lazy {

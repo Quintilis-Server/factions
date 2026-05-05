@@ -22,9 +22,7 @@ import org.quintilis.factions.util.Keys
 import java.time.Instant
 import java.util.Locale
 
-class CoreService(private val plugin: Factions) {
-
-    private val coreDao = FactionsServices.coreCache
+class CoreService {
 
     fun placeCore(location: Location, core: ClanCoreEntity) {
         core.placed = true

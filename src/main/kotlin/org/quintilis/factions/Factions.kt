@@ -27,7 +27,7 @@ class Factions : JavaPlugin() {
 
         try {
             logger.info("Conectando ao banco de dados PostgreSQL...")
-            DatabaseManager.connect(logger)
+            DatabaseManager.connect(logger, ConfigManager)
             logger.info("Conexão com o banco de dados estabelecida com sucesso!")
         } catch (e: Exception) {
             logger.severe("FALHA AO CONECTAR COM O BANCO DE DADOS! Desabilitando o plugin...")
@@ -38,7 +38,7 @@ class Factions : JavaPlugin() {
 
         try{
             logger.info("Conectando ao banco de dados Redis...")
-            RedisManager.connect()
+            RedisManager.connect(ConfigManager)
             RedisManager.flushDatabase()
             logger.info("Conexão com o banco de dados REDIS estabelecida com sucesso!")
         }catch (e: Exception){
@@ -82,7 +82,7 @@ class Factions : JavaPlugin() {
                 }
             }
         }
-        val coreService = CoreService(this)
+        val coreService = CoreService()
         val commands = listOf(ClanCommand(coreService));
         this.server.commandMap.registerAll("factions", commands)
         commands.forEach {
