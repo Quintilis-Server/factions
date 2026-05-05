@@ -5,6 +5,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.entities.clan.AntiCoreEntity
 import org.quintilis.factions.exceptions.points.NotEnoughPointsError
 import org.quintilis.factions.extensions.getClanAsLeader
@@ -14,7 +15,7 @@ import org.quintilis.factions.managers.ErrorManager
 import org.quintilis.factions.services.AnticoreService
 import org.quintilis.factions.services.FactionsServices
 
-class AntiCoreGUI(player: Player) : BaseGUI(player, "gui.anticore.title", rows = 4, pageSize = 18) {
+class AntiCoreGUI(player: Player, plugin: JavaPlugin) : BaseGUI(player, "gui.anticore.title", rows = 4, pageSize = 18, plugin = plugin) {
 
     private val anticoreService =  AnticoreService()
 

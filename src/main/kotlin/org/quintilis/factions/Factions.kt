@@ -58,7 +58,7 @@ class Factions : JavaPlugin() {
 
         GlowingEntities(this)
 
-        TranslationManager.registerTranslations(this)
+        TranslationManager.registerTranslations(this, "factions")
 
         // Verificação do FancyNpcs
         if (server.pluginManager.getPlugin("FancyNpcs") != null && server.pluginManager.isPluginEnabled("FancyNpcs")) {
@@ -83,7 +83,7 @@ class Factions : JavaPlugin() {
             }
         }
         val coreService = CoreService()
-        val commands = listOf(ClanCommand(coreService));
+        val commands = listOf(ClanCommand(coreService, this));
         this.server.commandMap.registerAll("factions", commands)
         commands.forEach {
             printName(it)

@@ -16,6 +16,7 @@ import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.persistence.PersistentDataType
+import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.annotations.AutoRegister
 import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.entities.clan.ClanRelationEntity
@@ -36,14 +37,14 @@ import org.quintilis.factions.services.FactionsServices.clanRelationCache
 import redis.clients.jedis.Jedis
 
 @AutoRegister
-class AntiCoreListener : Listener {
+class AntiCoreListener(val plugin: JavaPlugin) : Listener {
 
     @EventHandler
     fun onNpcClick(event: NpcInteractEvent) {
         if (event.interactionType != ActionTrigger.RIGHT_CLICK) return
         // filtra pelo nome ou tag configurada no NPC
         if (event.npc.data.name != "anticore") return
-        AntiCoreGUI(event.player).open()
+        AntiCoreGUI(event.player, plugin = plugin).open()
     }
 
     @EventHandler

@@ -5,6 +5,7 @@ import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.commands.BaseCommand
 import org.quintilis.factions.extensions.getClanAsLeader
 import org.quintilis.factions.extensions.sendTranslatable
@@ -30,6 +31,7 @@ import kotlin.math.max
  */
 class ClanCommand(
     private val coreService: CoreService,
+    private val plugin: JavaPlugin
 ): BaseCommand(
     name = "clan",
     description = "Main clan command",
@@ -133,7 +135,7 @@ class ClanCommand(
         
         if (page == null) {
             // Abre GUI
-            ClanListMenu(sender).open()
+            ClanListMenu(sender, plugin).open()
             return
         }
         

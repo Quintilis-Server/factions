@@ -23,8 +23,8 @@ object TranslationManager {
      * Inicia o sistema de traduções dinâmico.
      * @param plugin A instância principal do seu plugin (Factions)
      */
-    fun registerTranslations(plugin: JavaPlugin) {
-        val translationKey = Key.key("factions", "translations")
+    fun registerTranslations(plugin: JavaPlugin, key: String) {
+        val translationKey = Key.key(key, "translations")
 
         // Usa a sua classe moderna (livre de Deprecation e perfeita pro MiniMessage)
         val store = MiniMessageTranslationStore.create(translationKey)
