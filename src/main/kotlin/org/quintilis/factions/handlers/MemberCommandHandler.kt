@@ -37,7 +37,7 @@ class MemberCommandHandler {
             return
         }
         
-        val targetPlayer = playerEntity.getPlayer()
+        val targetPlayer = playerEntity.getOfflinePlayer()
         
         // Verifica se já é membro de algum clã
         if (clanMemberCache.isAnyMember(targetPlayer)) {

@@ -13,6 +13,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.cache.ClanCache
 import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.managers.DatabaseManager
+import org.quintilis.factions.managers.TranslationManager
 import org.quintilis.factions.services.FactionsServices.clanCache
 import kotlin.math.ceil
 
@@ -31,15 +32,26 @@ class ClanListMenu(
         loadPageData(
             page = 1,
             fetcher = {
-                clanCache.getClans((currentPageIndex - 1) * pageSize, pageSize)
+                clanCache.getClans(currentPageIndex, pageSize)
             },
             totalFetcher = {
                 clanCache.getTotalClans()
             },
             itemMapper = { clan ->
+                val leader = clan.getLeader()
                 ItemBuilder.skull()
                     .owner(Bukkit.getOfflinePlayer(clan.leaderUuid))
-                    // ... etc
+                    .name(TranslationManager.render(
+                        "clan.list.item.name",
+                        player.locale(),
+                        Placeholder.unparsed("clan_name", clan.name),
+                        Placeholder.unparsed("clan_tag", clan.tag ?: "")
+                    ))
+                    .lore(transLore(
+                        "clan.list.item.lore",
+                        Placeholder.unparsed("leader_name", leader?.name ?: ""),
+                        Placeholder.unparsed("points", clan.points.toString())
+                    ))
                     .asGuiItem()
             }
         )

@@ -37,12 +37,28 @@ abstract class BaseGUI(
         .disableAllInteractions()
         .create()
 
+    private var lastFetcher: (() -> List<Any>)? = null
+    private var lastTotalFetcher: (() -> Int)? = null
+    private var lastMapper: ((Any) -> GuiItem)? = null
+
+    fun refreshCurrentPage() {
+        val fetcher = lastFetcher ?: return
+        val totalFetcher = lastTotalFetcher ?: return
+        val mapper = lastMapper ?: return
+        loadPageData(currentPageIndex, fetcher, totalFetcher, mapper)
+    }
+
     protected fun <T> loadPageData(
         page: Int,
         fetcher: () -> List<T>,       // Função que busca a lista no DB
         totalFetcher: () -> Int,      // Função que conta o total no DB
         itemMapper: (T) -> dev.triumphteam.gui.guis.GuiItem // Como transformar T em item da GUI
     ) {
+
+        this.lastFetcher = fetcher as (() -> List<Any>)
+        this.lastTotalFetcher = totalFetcher
+        this.lastMapper = itemMapper as ((Any) -> GuiItem)
+
         this.currentPageIndex = page
         gui.clearPageItems()
 
@@ -100,16 +116,7 @@ abstract class BaseGUI(
     }
 
     protected fun transLore(key: String, vararg resolvers: TagResolver): List<Component> {
-        val template = TranslationManager.getRawMessage(key, player.locale())
-        
-        // Split by <newline> tag first
-        val lines = template.split("<newline>")
-        
-        // Deserialize each line with tag resolvers
-        return lines.map { line ->
-            val trimmed = line.trim()
-            mm.deserialize(trimmed, *resolvers)
-        }
+        return TranslationManager.renderList(key, player.locale(), *resolvers)
     }
 
     protected fun createItem(

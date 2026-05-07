@@ -3,8 +3,6 @@ package org.quintilis.factions.services
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.entity.Player
-import org.quintilis.factions.cache.MemberInviteCache
-import org.quintilis.factions.dao.ClanDao
 import org.quintilis.factions.dao.MemberInviteDao
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanMemberEntity
@@ -30,7 +28,7 @@ class MemberInviteService {
                 expiresAt = this.maxInvitationTime
             ).save<MemberInviteEntity>()
 
-            player.getOnlinePlayer()?.sendMessage {
+            player.getPlayer()?.sendMessage {
                 Component.translatable(
                     "clan.invite.invitation_text",
                     Argument.string("clan_name", clan.name)

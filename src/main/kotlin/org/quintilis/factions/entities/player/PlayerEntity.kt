@@ -20,9 +20,9 @@ data class PlayerEntity(
     @Column("points")
     var points: Int
 ): BaseEntity() {
-    fun getPlayer(): OfflinePlayer = Bukkit.getOfflinePlayer(id)
+    fun getOfflinePlayer(): OfflinePlayer = Bukkit.getOfflinePlayer(id)
 
-    fun getOnlinePlayer(): Player? = Bukkit.getPlayer(id)
+    fun getPlayer(): Player? = Bukkit.getPlayer(id)
 
     fun getClan(): ClanEntity? = clanCache.getClanByMember(id)
 }

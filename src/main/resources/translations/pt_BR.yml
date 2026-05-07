@@ -80,7 +80,10 @@ clan:
         response: "Clã: <bold><clan_name></bold> [<tag>], líder: <bold><leader_name></bold>."
         item:
             name: "<gold><clan_name> <dark_gray>[<yellow><clan_tag></yellow>]</dark_gray></gold>"
-            lore: "<gray>Líder: <white><leader_name></white><newline><gray>Honra: <yellow><points></yellow><newline><yellow>Clique para ver detalhes</yellow>"
+            lore:
+            - "<gray>Líder: <white><leader_name></white>"
+            - "<gray>Honra: <yellow><points></yellow>"
+#            - "<yellow>Clique para ver detalhes</yellow>"
     
     list_menu:
         title: "<dark_green><bold>Lista de Clãs</bold></dark_green>"
