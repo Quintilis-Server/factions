@@ -32,6 +32,7 @@ import org.quintilis.factions.entities.clan.Relation
 import org.quintilis.factions.enums.CoreType
 import org.quintilis.factions.extensions.broadcastInRadius
 import org.quintilis.factions.extensions.broadcastTitleTranslatable
+import org.quintilis.factions.extensions.isOverworld
 import org.quintilis.factions.managers.RedisManager
 import org.quintilis.factions.services.FactionsServices.clanRelationCache
 import redis.clients.jedis.Jedis
@@ -58,6 +59,14 @@ class AntiCoreListener(val plugin: JavaPlugin) : Listener {
 
             val antiCoreId = meta.persistentDataContainer.get(Keys.ANTI_CORE_ITEM, PersistentDataType.INTEGER) ?: return
             val location = event.blockPlaced.location
+            if(!location.world.isOverworld()){
+                event.isCancelled = true
+
+                player.sendTranslatable("error.only_overworld")
+            }
+
+
+
             val placerClan = player.getClan() ?: throw ClanNotFoundError()
 
             val targetCore = coreCache.findByChunk(location.chunk)
@@ -67,7 +76,6 @@ class AntiCoreListener(val plugin: JavaPlugin) : Listener {
                 val targetClan = targetCore.getClan() ?: throw ClanNotFoundError()
 
                 val hasSubCore = coreCache.hasActiveSubCores(targetClan.id!!)
-                println(hasSubCore)
                 if (hasSubCore) {
                     throw BaseError("anticore.error.nexus-protected")
                 }

@@ -20,6 +20,7 @@ import org.quintilis.factions.extensions.getClanAsLeader
 import org.quintilis.factions.extensions.isClanLeader
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.extensions.isNexusItem
+import org.quintilis.factions.extensions.isOverworld
 import org.quintilis.factions.results.Result
 import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.structure.CoreStructure
@@ -97,6 +98,11 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
                 event.isCancelled = true
                 return
             }
+
+            if(!event.blockPlaced.location.world.isOverworld()){
+                return cancelEventWithError(event, event.player, Result.Error("error.only_overworld"))
+            }
+
             val clan = event.player.getClanAsLeader()
 
             if (!event.player.isClanLeader() || clan == null) {
