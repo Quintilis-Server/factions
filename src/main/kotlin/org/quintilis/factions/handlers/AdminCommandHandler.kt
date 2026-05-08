@@ -295,7 +295,7 @@ class AdminCommandHandler {
                 )
 
                 // 2. Configurar os detalhes estéticos
-                npcData.displayName = "<lang:npc.anticore.name>"
+                npcData.displayName = "%factions_lang_npc.anticore.name%"
                 npcData.type = org.bukkit.entity.EntityType.VILLAGER
 
                 // Opcional: fazer o NPC olhar para quem interage

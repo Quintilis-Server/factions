@@ -15,8 +15,10 @@ import org.quintilis.factions.services.CoreService
 import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.util.Keys
 import fr.skytasul.glowingentities.GlowingEntities
+import org.bukkit.Bukkit
 import org.quintilis.factions.managers.QuintilisScheduler
 import org.quintilis.factions.managers.QuintilisScheduler.isFolia
+import org.quintilis.factions.placeholders.FactionsLangExpansion
 
 class Factions : JavaPlugin() {
 
@@ -56,9 +58,9 @@ class Factions : JavaPlugin() {
 
         this.registerCommands()
 
-        GlowingEntities(this)
+//        GlowingEntities(this)
 
-        TranslationManager.registerTranslations(this, "factions")
+        this.registerTranslations()
 
         // Verificação do FancyNpcs
         if (server.pluginManager.getPlugin("FancyNpcs") != null && server.pluginManager.isPluginEnabled("FancyNpcs")) {
@@ -68,6 +70,17 @@ class Factions : JavaPlugin() {
             server.pluginManager.disablePlugin(this)
             return
         }
+    }
+    private fun registerTranslations() {
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            FactionsLangExpansion(
+                "factions",
+                "Quintilis",
+                "1.0",
+            ).register()
+            logger.info("PlaceholderAPI conectado! Traduções dinâmicas ativadas.")
+        }
+        TranslationManager.registerTranslations(this, "factions")
     }
 
     private fun registerCommands(){
@@ -138,17 +151,20 @@ class Factions : JavaPlugin() {
 
         classes.forEach { clazz ->
             val listener = try {
-                // 1. Tenta achar o construtor que pede (Factions)
-                clazz.getConstructor(Factions::class.java).newInstance(this)
+                // Agora ele procura pelo construtor genérico JavaPlugin
+                clazz.getConstructor(JavaPlugin::class.java).newInstance(this)
             } catch (e: NoSuchMethodException) {
                 try {
-                    // 2. Se falhar, tenta o construtor vazio ()
-                    clazz.getConstructor().newInstance()
-                } catch (e2: Exception) {
-                    // Se falhar os dois, avisa no console
-                    logger.severe("Não foi possível registrar o listener ${clazz.simpleName}. Verifique os construtores.")
-                    e2.printStackTrace()
-                    return@forEach
+                    // Tenta achar o construtor exato (Factions) como fallback
+                    clazz.getConstructor(Factions::class.java).newInstance(this)
+                } catch (e2: NoSuchMethodException) {
+                    try {
+                        // Se falhar os dois, tenta o construtor vazio ()
+                        clazz.getConstructor().newInstance()
+                    } catch (e3: Exception) {
+                        logger.severe("Não foi possível registrar o listener ${clazz.simpleName}. Verifique os construtores.")
+                        return@forEach
+                    }
                 }
             }
 

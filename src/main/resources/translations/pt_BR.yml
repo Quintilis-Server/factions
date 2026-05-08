@@ -287,3 +287,7 @@ teleport:
         moved: "<red>Teleporte cancelado: você se moveu!</red>"
         no_nexus: "<red>Seu clã não possui um Nexus ativo para teleporte.</red>"
         insufficient_points: "<red>Você precisa de <cost> pontos para teleportar.</red>"
+        
+npc:
+    anticore:
+        name: "Vendedor da guerra"
