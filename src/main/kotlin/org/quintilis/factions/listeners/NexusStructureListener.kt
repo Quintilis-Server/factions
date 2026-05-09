@@ -10,6 +10,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
+import org.bukkit.event.block.BlockPistonExtendEvent
+import org.bukkit.event.block.BlockPistonRetractEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.persistence.PersistentDataType
@@ -164,6 +166,22 @@ class NexusStructureListener(private val plugin: Factions) : Listener {
             event.isCancelled = true
             player.sendTranslatable("nexus.error")
             e.printStackTrace()
+        }
+    }
+
+    @EventHandler
+    fun onPistonExtend(event: BlockPistonExtendEvent) {
+        // Se qualquer um dos blocos sendo empurrados for protegido, cancela a ação inteira
+        if (event.blocks.any { isProtected(it) }) {
+            event.isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun onPistonRetract(event: BlockPistonRetractEvent) {
+        // Se qualquer um dos blocos sendo puxados for protegido, cancela a ação inteira
+        if (event.blocks.any { isProtected(it) }) {
+            event.isCancelled = true
         }
     }
 }

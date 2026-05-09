@@ -13,6 +13,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
+import org.bukkit.event.block.BlockPistonExtendEvent
+import org.bukkit.event.block.BlockPistonRetractEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.persistence.PersistentDataType
@@ -202,6 +204,31 @@ class AntiCoreListener(val plugin: JavaPlugin) : Listener {
             // Remove a metadata para limpar a memória
             block.removeMetadata("factions_exploding_anticore", Bukkit.getPluginManager().getPlugin("Factions")!!)
         }
+    }
+
+    @EventHandler
+    fun onPistonExtend(event: BlockPistonExtendEvent) {
+        // Verifica se algum dos blocos sendo empurrados é um AntiCore
+        if (event.blocks.any { isAntiCore(it) }) {
+            event.isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun onPistonRetract(event: BlockPistonRetractEvent) {
+        // Verifica se algum dos blocos sendo puxados (sticky piston) é um AntiCore
+        if (event.blocks.any { isAntiCore(it) }) {
+            event.isCancelled = true
+        }
+    }
+
+    // Função auxiliar privada para deixar o código limpo
+    private fun isAntiCore(block: org.bukkit.block.Block): Boolean {
+        // Primeiro um filtro rápido de performance: o AntiCore é um RESPAWN_ANCHOR
+        if (block.type != Material.RESPAWN_ANCHOR) return false
+
+        // Se for âncora, vai no cache checar se está registrado
+        return antiCoreCache.findByLocation(block.location) != null
     }
 
     @EventHandler
