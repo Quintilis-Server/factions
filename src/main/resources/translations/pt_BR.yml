@@ -55,6 +55,11 @@ gui:
 clan:
     is_not_leader: "<red>Você não é o líder do clã."
     
+    chat:
+        toggle_clan: "<green>Você entrou no chat do clã! Tudo que você digitar agora será enviado apenas para seus aliados. Digite /clan chat novamente para sair."
+        toggle_global: "<red>Você saiu do chat do clã. Suas mensagens agora são globais."
+        format: "<dark_aqua>[Clã] <aqua><player_name></aqua> <gray>»</gray> <white><message>"
+    
     create:
         description: "Comando para criar um clã, se nenhum valor for colocado no [tag] ele será vazio."
         error:

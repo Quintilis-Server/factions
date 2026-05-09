@@ -17,6 +17,7 @@ import org.quintilis.factions.handlers.BetrayCommandHandler
 import org.quintilis.factions.handlers.SurrenderCommandHandler
 import org.quintilis.factions.handlers.InviteCommandHandler
 import org.quintilis.factions.handlers.MemberCommandHandler
+import org.quintilis.factions.managers.ChatManager
 import org.quintilis.factions.managers.ErrorManager
 import org.quintilis.factions.results.Result
 import org.quintilis.factions.services.CoreService
@@ -196,6 +197,16 @@ class ClanCommand(
         }
     }
 
+    fun handleChatToggle(sender: Player) {
+        val isNowEnabled = ChatManager.toggleClanChat(sender)
+
+        if (isNowEnabled) {
+            sender.sendTranslatable("clan.chat.toggle_clan")
+        } else {
+            sender.sendTranslatable("clan.chat.toggle_global")
+        }
+    }
+
     // ============================================
     // Handlers de subcomandos
     // ============================================
@@ -314,6 +325,7 @@ class ClanCommand(
                 ClanCommands.CLAIM -> handleClaimCommand(sender, subArgs)
                 ClanCommands.BETRAY -> handleBetrayCommand(sender, subArgs)
                 ClanCommands.SURRENDER -> handleSurrenderCommand(sender, subArgs)
+                ClanCommands.CHAT -> handleChatToggle(sender)
             }
         }
         return true

@@ -83,5 +83,10 @@ enum class ClanCommands(
         "surrender",
         "/clan surrender <clan>",
         HelpEntry("clan.surrender.description", "factions.usage")
+    ),
+    CHAT(
+        "chat",
+        "/clan chat",
+        HelpEntry("clan.chat.description", "factions.usage"),
     )
 }

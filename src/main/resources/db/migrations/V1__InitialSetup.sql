@@ -156,9 +156,9 @@ CREATE TABLE chat_logs(
         REFERENCES players,
     content         TEXT                                    NOT NULL,
     channel         VARCHAR(32)                             NOT NULL,
-    recipient_id    uuid                                    NOT NULL
+    recipient_id    uuid
         REFERENCES players,
-    clan_id         INTEGER                                 NOT NULL
+    clan_id         INTEGER
         REFERENCES clans,
     location_x      INTEGER,
     location_z      INTEGER,
