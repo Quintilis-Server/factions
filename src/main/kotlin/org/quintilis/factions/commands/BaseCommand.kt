@@ -1,11 +1,14 @@
 package org.quintilis.factions.commands
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.util.StringUtil
+import org.quintilis.factions.extensions.sendTranslatable
+import org.quintilis.factions.managers.TranslationManager
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
@@ -90,57 +93,55 @@ abstract class BaseCommand(
 
 
     private fun help(sender: CommandSender, alias: String, helpArguments: List<String>){
+        val player = sender as Player
         val accessibleCommands = this.commands.filter { sender.hasPermission(it.helpEntry.permission) }
 
         val totalPages = max(1, ceil(accessibleCommands.size.toDouble() / pageSize).toInt())
         val page = helpArguments.getOrNull(0)?.toIntOrNull() ?: 1
 
         if(page !in 1 .. totalPages){
-            sender.sendMessage {
-                Component.translatable(
-                    "error.invalid_page",
-                    Argument.numeric("total_pages", totalPages)
-                )
-            }
+            player.sendTranslatable(
+                "error.invalid_page",
+                Argument.numeric("total_pages", totalPages)
+            )
             return
         }
 
-        sender.sendMessage {
-            Component.translatable(
-                "help.header",
-                Argument.numeric("page", page),
-                Argument.numeric("total_pages", totalPages)
-            )
-        }
+        player.sendTranslatable(
+            "help.header",
+            Argument.numeric("page", page),
+            Argument.numeric("total_pages", totalPages)
+        )
 
         val startIndex = (page - 1) * pageSize
         val endIndex = min(startIndex + pageSize, accessibleCommands.size)
         val pageEntries = accessibleCommands.subList(startIndex, endIndex)
 
         for(entry in pageEntries){
-            val descriptionComponent = Component.translatable(entry.helpEntry.descriptionKey)
+            val descriptionComponent = TranslationManager.render(entry.helpEntry.descriptionKey)
 
             val descriptionArgument = Argument.component("description", descriptionComponent)
 
-            val commandFormat = Component.translatable(
+            val commandFormat = TranslationManager.render(
                 "command.format",
-                Argument.string("alias",alias),
-                Argument.string("subcommand", entry.command),
+                player.locale(),
+                Placeholder.unparsed("alias", alias),
+                Placeholder.unparsed("subcommand", entry.command)
             )
 
-            val lineComponent = Component.translatable(
+            val lineComponent = TranslationManager.render(
                 "help.command.format",
-                Argument.component("command", commandFormat),
-                Argument.component("description", descriptionComponent),
+                player.locale(),
+                Placeholder.component("command", commandFormat),
+                Placeholder.component("description", descriptionComponent)
             )
-            sender.sendMessage(lineComponent)
+
+            player.sendTranslatable(lineComponent)
         }
-        sender.sendMessage {
-            Component.translatable(
-                "help.footer",
-                Argument.string("command", alias)
-            )
-        }
+        player.sendTranslatable(
+            "help.footer",
+            Argument.string("command", alias)
+        )
     }
 
     override fun tabComplete(sender: CommandSender, alias: String, args: Array<out String>): List<String?> {

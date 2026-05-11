@@ -129,8 +129,18 @@ object TranslationManager {
     }
 
     fun getRawMessage(key: String, locale: Locale): String {
-        val yaml = loadedYamls[locale] ?: loadedYamls.values.firstOrNull() ?: return key
-        
+        var yaml: YamlConfiguration? = loadedYamls[locale] ?: loadedYamls.values.firstOrNull() ?: return key
+
+        if (yaml == null) {
+            yaml = loadedYamls.entries.firstOrNull {
+                it.key.language.equals(locale.language, ignoreCase = true)
+            }?.value
+        }
+
+        if (yaml == null) {
+            yaml = loadedYamls.values.firstOrNull() ?: return key
+        }
+
         if (yaml.isList(key)) {
             return yaml.getStringList(key).joinToString("<newline>")
         }

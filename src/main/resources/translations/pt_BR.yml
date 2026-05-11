@@ -66,6 +66,7 @@ clan:
             already_exists: "<red>Clã <clan_name> já existe."
         response: "Clã <bold><clan_name></bold> criado com sucesso."
         dropped_item: "<yellow>Seu inventário estava cheio, o Nexus caiu no chão!"
+        broadcast: "Clã criado <bold><clan_name>"
     
     quit:
         response: "Você saiu do clã"
@@ -110,6 +111,7 @@ clan:
             empty: "<yellow>Você não tem convites pendentes."
     
     ally:
+        description: ""
         add:
             description: "Envia um convite de aliança para outro clã."
         remove:
