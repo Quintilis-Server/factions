@@ -8,6 +8,7 @@ import org.quintilis.factions.entities.log.ActionLogEntity
 import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.commands.clan.MemberSubCommands
+import org.quintilis.factions.events.MemberRemoveEvent
 import org.quintilis.factions.services.MemberInviteService
 import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.services.FactionsServices.clanMemberCache
@@ -20,7 +21,8 @@ class MemberCommandHandler {
     private val clanCache get() = FactionsServices.clanCache
     private val playerDao get() = FactionsServices.playerDao
     private val memberInviteCache get() = FactionsServices.memberInviteCache
-    
+    private val pluginManager = Bukkit.getServer().pluginManager
+
     /**
      * Convida um jogador para o clã.
      * /clan member invite <playerName>
@@ -110,7 +112,9 @@ class MemberCommandHandler {
         // Invalida caches
         clanCache.invalidateMember(playerEntity.id)
         clanCache.invalidateMembersOfClan(clan.id)
-        
+
+        pluginManager.callEvent(MemberRemoveEvent(clan, playerEntity))
+
         // Notifica o jogador expulso
         Bukkit.getPlayer(playerEntity.id)?.sendTranslatable(
             "clan.member.kick.target_response",

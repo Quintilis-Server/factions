@@ -56,6 +56,7 @@ clan:
     is_not_leader: "<red>Você não é o líder do clã."
     
     chat:
+        description: "Comando para trocar entre chat de clã e chat global"
         toggle_clan: "<green>Você entrou no chat do clã! Tudo que você digitar agora será enviado apenas para seus aliados. Digite /clan chat novamente para sair."
         toggle_global: "<red>Você saiu do chat do clã. Suas mensagens agora são globais."
         format: "<dark_aqua>[Clã] <aqua><player_name></aqua> <gray>»</gray> <white><message>"
@@ -69,6 +70,7 @@ clan:
         broadcast: "Clã criado <bold><clan_name>"
     
     quit:
+        description: "Comando para sair do clã que se é membro"
         response: "Você saiu do clã"
         leader_response: "Membro <player_name> saiu do seu clã."
         error:
@@ -95,6 +97,7 @@ clan:
         title: "<dark_green><bold>Lista de Clãs</bold></dark_green>"
     
     invite:
+        description: "Comando para convidar membros no seu clã"
         invitation_text: "Você foi convidado para o clã <bold><clan_name></bold> para aceitar use o comando <gold>/clan invite accept <clan_name></gold>"
         response: "Convite para jogador <bold><player_name></bold> enviado com sucesso."
         accept:
@@ -111,7 +114,7 @@ clan:
             empty: "<yellow>Você não tem convites pendentes."
     
     ally:
-        description: ""
+        description: "Comando para adicionar e tirar clãs aliados."
         add:
             description: "Envia um convite de aliança para outro clã."
         remove:
@@ -141,6 +144,7 @@ clan:
             same_clan: "<red>Você não pode se aliar ao próprio clã."
     
     member:
+        description: "Comando para o líder do clã gerenciar membros"
         list:
             header: "<gold>---[ Membros do Clã (<count> membros) ]---</gold>"
             entry: "<gray>- <white><player_name></white> <dark_gray>(<role>)</dark_gray></gray>"
@@ -174,6 +178,7 @@ clan:
             old_leader_response: "<yellow>Você não é mais o líder do clã <clan_name>. O novo líder é <new_leader>."
     
     claim:
+        description: "Comando para comprar território de clã"
         response: "Você comprou um núcleo de clã. Coloque ele no chão para reivindicar uma área de 3x3 Chunks para seu clã. <bold>Somente o chefe do clã pode fazer isso</bold>."
         anti_core:
             purchased: "Você comprou um anticore, com ele você faz <bold>guerra</bold>. Coloque ele proximo a um núcleo de outro clã para começar uma guerra. <red>Defenda ele ate o final."
@@ -182,6 +187,7 @@ clan:
             success: "<gradient:green:dark_green><bold>NEXUS ESTABELECIDO!</bold></gradient> <gray>O coração do seu clã agora bate nestas coordenadas.</gray>"
             
     betray:
+        description: "Comando de confirmação para a traição."
         response: "<red><bold>TRAIÇÃO!</bold></red> <gray>A aliança com</gray> <white><clan_name></white> <gray>foi quebrada e agora vocês são inimigos mortais!</gray>"
         require_command: "<yellow><bold>CUIDADO!</bold></yellow> <gray>Para trair um aliado, use o comando</gray> <white>/clan betray <clan></white> <gray>antes de colocar um Anti-Core.</gray>"
         error:
@@ -189,6 +195,7 @@ clan:
             not_ally: "<red>Este clã não é seu aliado, não há uma aliança para ser quebrada.</red>"
             
     surrender:
+        description: "Comando para se render de uma guerra em andamento"
         response: "<gray>Você se rendeu para</gray> <white><clan_name></white><gray>.</gray>"
         error:
             not_at_war: "<red>Você só pode se render se estiver em uma guerra ativa!</red>"
@@ -298,3 +305,15 @@ teleport:
 npc:
     anticore:
         name: "Vendedor da guerra"
+        
+broadcast:
+    clan:
+        create: "<gold>Novo clã formado <bold><clan_name></bold>, lider: <leader>"
+        ally:
+            create: "<cyan>Aliança criada entre os clãs <bold><clan_name></bold> e <bold><clan_name2></bold>."
+            delete: "<red>Aliança encerrada entre os clãs <bold><clan_name></bold> e <bold><clan_name2></bold>."
+    member:
+        add: "<gray>Jogador <bold><player_name></bold> adicionado ao clã"
+        remove: "<gray>Jogador <bold><player_name></bold> removido do clã"
+    war:
+        begin: "<dark_red>GUERRA ENTRE CLÂS, clã <attacker_clan> atacou <receiver_clan>."

@@ -1,9 +1,11 @@
 package org.quintilis.factions.handlers
 
 import net.kyori.adventure.text.minimessage.translation.Argument
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.log.ActionLogEntity
 import org.quintilis.factions.entities.log.ActionLogType
+import org.quintilis.factions.events.MemberAcceptEvent
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.services.MemberInviteService
 import org.quintilis.factions.services.FactionsServices
@@ -20,6 +22,7 @@ class InviteCommandHandler {
     private val memberInviteDao get() = FactionsServices.memberInviteDao
     private val memberInviteCache get() = FactionsServices.memberInviteCache
     private val playerCache get() = FactionsServices.playerCache
+    private val pluginManager = Bukkit.getServer().pluginManager
     
     /**
      * Aceita um convite de clã.
@@ -71,7 +74,9 @@ class InviteCommandHandler {
         // Invalida cache
         clanCache.invalidateMember(sender.uniqueId)
         clanCache.invalidateMembersOfClan(clan.id)
-        
+
+        pluginManager.callEvent(MemberAcceptEvent(clan,sender))
+
         sender.sendTranslatable(
             "clan.invite.accept.response",
             Argument.string("clan_name", clan.name)

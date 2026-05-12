@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.minimessage.translation.Argument
 import net.kyori.adventure.title.Title
+import org.bukkit.Server
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.player.PlayerEntity
@@ -25,6 +26,14 @@ fun Player.sendTranslatable(key: String, vararg args: ComponentLike) {
     this.sendMessage {
         Component.translatable(key, *args)
     }
+}
+
+/**
+ * Extension function para o Servidor fazer broadcast nativo do Kyori.
+ */
+fun Server.broadcastTranslatable(key: String, vararg args: ComponentLike) {
+    val message = Component.translatable(key, *args)
+    this.broadcast(message)
 }
 
 /**

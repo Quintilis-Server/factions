@@ -9,6 +9,10 @@ commands:
         description: Main clan command
         aliases: [c]
         usage: /clan [subcommand]
+    home:
+        description: Teleport home command
+        aliases: [h]
+        usage: /home
 
 dependencies:
     server:

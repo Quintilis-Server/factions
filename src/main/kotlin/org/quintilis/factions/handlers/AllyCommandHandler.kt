@@ -1,6 +1,7 @@
 package org.quintilis.factions.handlers
 
 import net.kyori.adventure.text.minimessage.translation.Argument
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.clan.ClanEntity
 import org.quintilis.factions.entities.clan.ClanRelationEntity
@@ -9,6 +10,8 @@ import org.quintilis.factions.entities.log.ActionLogEntity
 import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.commands.clan.AllySubCommands
+import org.quintilis.factions.events.ClanAllyCreateEvent
+import org.quintilis.factions.events.ClanAllyDeleteEvent
 import org.quintilis.factions.services.AllyInviteService
 import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.services.FactionsServices.clanRelationCache
@@ -22,7 +25,8 @@ class AllyCommandHandler {
     private val clanRelationDao get() = FactionsServices.clanRelationDao
     private val allyInviteDao get() = FactionsServices.allyInviteDao
     private val allyInviteCache get() = FactionsServices.allyInviteCache
-    
+    private val pluginManager = Bukkit.getServer().pluginManager
+
     /**
      * Adiciona uma aliança (envia convite).
      * /clan ally add <clanName>
@@ -106,6 +110,8 @@ class AllyCommandHandler {
             clanId = clan.id,
             details = "Removed alliance with: ${targetClan.name}"
         )
+
+        pluginManager.callEvent(ClanAllyDeleteEvent(clan, targetClan))
         
         // Notifica o outro clã
         targetClan.getLeader()?.sendTranslatable(
@@ -150,13 +156,13 @@ class AllyCommandHandler {
             senderClan.id to clan.id
         }
         
-        val relation = ClanRelationEntity(
-            id = null,
-            clan1Id = smallerId,
-            clan2Id = largerId,
-            relation = Relation.ALLY,
-            active = true
-        )
+//        val relation = ClanRelationEntity(
+//            id = null,
+//            clan1Id = smallerId,
+//            clan2Id = largerId,
+//            relation = Relation.ALLY,
+//            active = true
+//        )
 
         clanRelationCache.createRelation(smallerId, largerId, Relation.ALLY)
         
@@ -171,7 +177,9 @@ class AllyCommandHandler {
         // Remove o convite
         allyInviteDao.deleteInvite(senderClan.id, clan.id)
         allyInviteCache.invalidate(clan.id)
-        
+
+        pluginManager.callEvent(ClanAllyCreateEvent(clan, senderClan))
+
         // Notifica o clã que enviou o convite
         senderClan.getLeader()?.sendTranslatable(
             "clan.ally.accept.sender_response",

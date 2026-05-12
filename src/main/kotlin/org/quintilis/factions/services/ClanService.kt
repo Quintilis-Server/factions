@@ -1,5 +1,6 @@
 package org.quintilis.factions.services
 
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.quintilis.factions.entities.clan.ClanCoreEntity
 import org.quintilis.factions.entities.clan.ClanEntity
@@ -7,6 +8,8 @@ import org.quintilis.factions.entities.clan.ClanMemberEntity
 import org.quintilis.factions.entities.log.ActionLogEntity
 import org.quintilis.factions.entities.log.ActionLogType
 import org.quintilis.factions.enums.CoreType
+import org.quintilis.factions.events.ClanCreateEvent
+import org.quintilis.factions.events.ClanDisbandEvent
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.results.Result
 import org.quintilis.factions.services.FactionsServices.clanMemberCache
@@ -88,7 +91,11 @@ class ClanService {
             clanId = clan.id,
             details = "Created clan: ${clan.name}"
         )
-        
+
+        val event = ClanCreateEvent(leader, clan)
+
+        Bukkit.getPluginManager().callEvent(event)
+
         return Result.Success(
             "clan.create.response",
             mapOf("clan_name" to clan.name)
@@ -128,7 +135,10 @@ class ClanService {
             clanId = clan.id,
             details = "Deleted clan: ${clan.name}"
         )
-        
+
+        val event = ClanDisbandEvent(clan, leader)
+        Bukkit.getPluginManager().callEvent(event)
+
         return Result.Success("clan.delete.response")
     }
     
