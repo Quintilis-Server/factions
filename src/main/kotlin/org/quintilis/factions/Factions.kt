@@ -16,6 +16,7 @@ import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.util.Keys
 import fr.skytasul.glowingentities.GlowingEntities
 import org.bukkit.Bukkit
+import org.quintilis.factions.commands.home.HomeCommand
 import org.quintilis.factions.managers.QuintilisScheduler
 import org.quintilis.factions.managers.QuintilisScheduler.isFolia
 import org.quintilis.factions.placeholders.FactionsLangExpansion
@@ -96,7 +97,7 @@ class Factions : JavaPlugin() {
             }
         }
         val coreService = CoreService()
-        val commands = listOf(ClanCommand(coreService, this));
+        val commands = listOf(ClanCommand(coreService, this), HomeCommand(this));
         this.server.commandMap.registerAll("factions", commands)
         commands.forEach {
             printName(it)

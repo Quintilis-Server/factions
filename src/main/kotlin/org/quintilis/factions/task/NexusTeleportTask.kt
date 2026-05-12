@@ -47,14 +47,18 @@ class NexusTeleportTask(
         if(remaining <= 0){
             val target = nexus.getLocation()!!.add(0.5, 1.1, 0.5)
 
-            player.teleport(target)
-            playerEntity.points -= cost
-
-            playerEntity.save<PlayerEntity>()
-
-            player.playSound(Sound.ENTITY_ENDERMAN_TELEPORT.asKyori())
-            player.sendTranslatable("teleport.success")
             task.cancel()
+
+            player.teleportAsync(target).thenAccept { success ->
+                // O código aqui dentro só roda quando o teleporte terminar (e se não for cancelado por outro plugin)
+                if (success) {
+                    playerEntity.points -= cost
+                    playerEntity.save<PlayerEntity>()
+
+                    player.playSound(Sound.ENTITY_ENDERMAN_TELEPORT.asKyori())
+                    player.sendTranslatable("teleport.success")
+                }
+            }
             return
         }
 
