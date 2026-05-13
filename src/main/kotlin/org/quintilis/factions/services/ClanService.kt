@@ -13,6 +13,7 @@ import org.quintilis.factions.events.ClanDisbandEvent
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.results.Result
 import org.quintilis.factions.services.FactionsServices.clanMemberCache
+import org.quintilis.factions.util.Keys
 
 /**
  * Serviço de lógica de negócio para operações de clã.
@@ -115,7 +116,7 @@ class ClanService {
         
         // Busca membros antes de deletar (para notificar)
         val members = clanCache.getMembers(clan.id!!)
-        
+
         // Deleta o clã
         try {
             clanDao.deleteByIdAndLeader(clan.id)
@@ -123,7 +124,17 @@ class ClanService {
             e.printStackTrace()
             return Result.Error("error.generic")
         }
-        
+
+        leader.inventory.contents.forEachIndexed { index, item ->
+            if (item != null && item.hasItemMeta()) {
+                val pdc = item.itemMeta.persistentDataContainer
+                // Usamos a sua chave Keys.NEXUS_ITEM que você definiu antes
+                if (pdc.has(Keys.NEXUS_ITEM, org.bukkit.persistence.PersistentDataType.INTEGER)) {
+                    // Remove o item daquele slot
+                    leader.inventory.setItem(index, null)
+                }
+            }
+        }
         // Invalida caches
         clanCache.invalidateClan(clan)
         members.forEach { clanCache.invalidateMember(it.playerId) }

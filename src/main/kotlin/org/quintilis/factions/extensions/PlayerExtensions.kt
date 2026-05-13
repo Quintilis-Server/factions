@@ -32,8 +32,13 @@ fun Player.sendTranslatable(key: String, vararg args: ComponentLike) {
  * Extension function para o Servidor fazer broadcast nativo do Kyori.
  */
 fun Server.broadcastTranslatable(key: String, vararg args: ComponentLike) {
+    val prefix = Component.translatable("broadcast.prefix")
+
     val message = Component.translatable(key, *args)
-    this.broadcast(message)
+
+    val finalMessage = prefix.append(Component.text(" ")).append(message)
+
+    this.broadcast(finalMessage)
 }
 
 /**

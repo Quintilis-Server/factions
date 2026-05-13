@@ -22,7 +22,8 @@ error:
     not-enough-points: "<red><bold>SALDO INSUFICIENTE!</bold></red> <gray>Você não possui pontos/recursos suficientes para realizar esta ação.</gray>"
     invalid_arguments: "<yellow><bold>SINTAXE INVÁLIDA!</bold></yellow> <gray>Os argumentos informados estão incorretos. Verifique o comando e tente novamente.</gray>"
     anticore-entity-not-found: "<red><bold>ERRO DE DADOS!</bold></red> <gray>A entidade vinculada a este Anti-Core não foi encontrada no banco de dados. O item pode estar corrompido.</gray>"
-
+    nexus_leaving_inventory: "<red>O Nexus está ligado à sua alma. Você não pode guardá-lo em baús."
+    nexus_drop: "<red>Você não pode jogar o Nexus do clã no chão!"
 info:
     admin_action: "<dark_red>Ação admin"
 
@@ -307,11 +308,13 @@ npc:
         name: "Vendedor da guerra"
         
 broadcast:
+    prefix: "<dark_gray>[<red>Sistema</red>]</dark_gray>"
     clan:
         create: "<gold>Novo clã formado <bold><clan_name></bold>, lider: <leader>"
         ally:
             create: "<cyan>Aliança criada entre os clãs <bold><clan_name></bold> e <bold><clan_name2></bold>."
             delete: "<red>Aliança encerrada entre os clãs <bold><clan_name></bold> e <bold><clan_name2></bold>."
+        disband: "Clã <clan_name> desfeito pelo líder."
     member:
         add: "<gray>Jogador <bold><player_name></bold> adicionado ao clã"
         remove: "<gray>Jogador <bold><player_name></bold> removido do clã"
