@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.quintilis.factions.Factions
 import org.quintilis.factions.annotations.AutoRegister
 import org.quintilis.factions.dao.PlayerDao
@@ -13,9 +14,11 @@ import org.quintilis.factions.entities.BaseEntity
 import org.quintilis.factions.entities.Death
 import org.quintilis.factions.entities.clan.Relation
 import org.quintilis.factions.entities.player.PlayerEntity
+import org.quintilis.factions.extensions.getClan
 import org.quintilis.factions.extensions.getPlayerEntity
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.managers.ConfigManager
+import org.quintilis.factions.managers.TagManager
 import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.services.FactionsServices.clanRelationCache
 import org.quintilis.factions.services.FactionsServices.playerCache
@@ -31,6 +34,7 @@ class PlayerListener(private val plugin: Factions): Listener {
         val player = event.player
         val uuid = player.uniqueId
 
+
         if(!this.playerDao.isInDatabase(uuid)){
             plugin.logger.info("Player ${player.name} is not in the database")
             val playerEntity = PlayerEntity(uuid, player.name, 0);
@@ -40,7 +44,11 @@ class PlayerListener(private val plugin: Factions): Listener {
         }
 
         plugin.logger.info("Player ${player.name} joined successfully")
+    }
 
+    @EventHandler
+    fun onPlayerQuit(event: PlayerQuitEvent) {
+        TagManager.remove(event.player)
     }
 
     @EventHandler

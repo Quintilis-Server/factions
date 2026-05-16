@@ -3,7 +3,6 @@ version: '1.0'
 main: org.quintilis.factions.Factions
 api-version: '1.21'
 folia-supported: true
-
 commands:
     clan:
         description: Main clan command
@@ -13,7 +12,6 @@ commands:
         description: Teleport home command
         aliases: [h]
         usage: /home
-
 dependencies:
     server:
         FancyNpcs:
@@ -23,4 +21,8 @@ dependencies:
         PlaceholderAPI:
             load: BEFORE
             required: true
+            join-classpath: true
+        TAB:
+            load: BEFORE
+            required: false
             join-classpath: true

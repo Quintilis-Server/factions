@@ -1,5 +1,6 @@
 package org.quintilis.factions
 
+import me.neznamy.tab.api.TabAPI
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.annotations.AutoRegister
@@ -14,19 +15,33 @@ import org.quintilis.factions.managers.TranslationManager
 import org.quintilis.factions.services.CoreService
 import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.util.Keys
-import fr.skytasul.glowingentities.GlowingEntities
 import org.bukkit.Bukkit
 import org.quintilis.factions.commands.home.HomeCommand
+import org.quintilis.factions.extensions.getClan
 import org.quintilis.factions.managers.QuintilisScheduler
-import org.quintilis.factions.managers.QuintilisScheduler.isFolia
+import org.quintilis.factions.managers.TagManager
 import org.quintilis.factions.placeholders.FactionsLangExpansion
 
 class Factions : JavaPlugin() {
+
+    override fun onLoad() {
+        super.onLoad()
+
+    }
 
     override fun onEnable() {
         this.saveDefaultConfig()
 
         ConfigManager.initialize(this.config, this)
+
+        TabAPI.getInstance().eventBus?.register(
+            me.neznamy.tab.api.event.player.PlayerLoadEvent::class.java
+        ) { event ->
+            println(event.player.name)
+            val bukkit = Bukkit.getPlayer(event.player.uniqueId) ?: return@register
+            val clan = bukkit.getClan()
+            TagManager.update(bukkit, clan)
+        }
 
         try {
             logger.info("Conectando ao banco de dados PostgreSQL...")

@@ -13,6 +13,7 @@ import org.quintilis.factions.events.MemberAcceptEvent
 import org.quintilis.factions.events.MemberRemoveEvent
 import org.quintilis.factions.events.WarBeginEvent
 import org.quintilis.factions.extensions.broadcastTranslatable
+import org.quintilis.factions.managers.TagManager
 
 
 @AutoRegister
@@ -22,6 +23,7 @@ class BroadcastListener: Listener {
     //Clã
     @EventHandler
     fun onClanCreate(event: ClanCreateEvent) {
+        TagManager.update(event.player, event.clan)
         server.broadcastTranslatable(
             "broadcast.clan.create",
             Argument.string("clan_name", event.clan.name),
@@ -58,6 +60,7 @@ class BroadcastListener: Listener {
     //Member
     @EventHandler
     fun onMemberAdd(event: MemberAcceptEvent){
+        TagManager.update(event.member, event.clan)
         event.clan.broadcastTranslatable(
             "broadcast.member.add",
             Argument.string("player_name", event.member.name)
