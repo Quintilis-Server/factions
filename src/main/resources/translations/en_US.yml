@@ -22,6 +22,8 @@ error:
     not-enough-points: "<red><bold>INSUFFICIENT BALANCE!</bold></red> <gray>You don't have enough points/resources to perform this action.</gray>"
     invalid_arguments: "<yellow><bold>INVALID SYNTAX!</bold></yellow> <gray>The provided arguments are incorrect. Check the command and try again.</gray>"
     anticore-entity-not-found: "<red><bold>DATA ERROR!</bold></red> <gray>The entity linked to this Anti-Core was not found in the database. The item might be corrupted.</gray>"
+    nexus_leaving_inventory: "<red>The Nexus is bound to your soul. You cannot store it in chests."
+    nexus_drop: "<red>You cannot drop the clan's Nexus on the ground!"
 
 info:
     admin_action: "<dark_red>Admin action"
@@ -55,14 +57,22 @@ gui:
 clan:
     is_not_leader: "<red>You are not the clan leader."
     
+    chat:
+        description: "Command to toggle between clan chat and global chat"
+        toggle_clan: "<green>You joined the clan chat! Everything you type now will only be sent to your allies. Type /clan chat again to leave."
+        toggle_global: "<red>You left the clan chat. Your messages are now global."
+        format: "<dark_aqua>[Clan] <aqua><player_name></aqua> <gray>»</gray> <white><message>"
+    
     create:
         description: "Command to create a clan, if no value is set in [tag] it will be empty."
         error:
             already_exists: "<red>Clan <clan_name> already exists."
         response: "Clan <bold><clan_name></bold> created successfully."
         dropped_item: "<yellow>Your inventory was full, the Nexus dropped on the ground!"
+        broadcast: "Clan created <bold><clan_name>"
     
     quit:
+        description: "Command to leave the clan you are a member of"
         response: "You left the clan"
         leader_response: "Member <player_name> left your clan."
         error:
@@ -86,6 +96,7 @@ clan:
         title: "<dark_green><bold>Clan List</bold></dark_green>"
     
     invite:
+        description: "Command to invite members to your clan"
         invitation_text: "You have been invited to the clan <bold><clan_name></bold> to accept use the command <gold>/clan invite accept <clan_name></gold>"
         response: "Invite to player <bold><player_name></bold> successfully sent."
         accept:
@@ -102,6 +113,7 @@ clan:
             empty: "<yellow>You have no pending invites."
     
     ally:
+        description: "Command to add and remove allied clans."
         add:
             description: "Sends an alliance invite to another clan."
         remove:
@@ -131,6 +143,7 @@ clan:
             same_clan: "<red>You cannot ally with your own clan."
     
     member:
+        description: "Command for the clan leader to manage members"
         list:
             header: "<gold>---[ Clan Members (<count> members) ]---</gold>"
             entry: "<gray>- <white><player_name></white> <dark_gray>(<role>)</dark_gray></gray>"
@@ -164,26 +177,29 @@ clan:
             old_leader_response: "<yellow>You are no longer the leader of the clan <clan_name>. The new leader is <new_leader>."
     
     claim:
+        description: "Command to buy clan territory"
         response: "You bought a clan core. Place it on the ground to claim a 3x3 Chunks area for your clan. <bold>Only the clan leader can do this</bold>."
         anti_core:
             purchased: "You bought an anti-core, with it you make <bold>war</bold>. Place it near another clan's core to start a war. <red>Defend it until the end."
         nexus:
             already_placed: "<red><bold>ERROR!</bold> Your clan's Nexus has already been established in another location."
             success: "<gradient:green:dark_green><bold>NEXUS ESTABLISHED!</bold></gradient> <gray>The heart of your clan now beats at these coordinates.</gray>"
-            
+    
     betray:
+        description: "Confirmation command for betrayal."
         response: "<red><bold>BETRAYAL!</bold></red> <gray>The alliance with</gray> <white><clan_name></white> <gray>has been broken and now you are mortal enemies!</gray>"
         require_command: "<yellow><bold>CAUTION!</bold></yellow> <gray>To betray an ally, use the command</gray> <white>/clan betray <clan></white> <gray>before placing an Anti-Core.</gray>"
         error:
             same_clan: "<red>You cannot betray yourself.</red>"
             not_ally: "<red>This clan is not your ally, there is no alliance to be broken.</red>"
-            
+    
     surrender:
+        description: "Command to surrender from an ongoing war"
         response: "<gray>You surrendered to</gray> <white><clan_name></white><gray>.</gray>"
         error:
             not_at_war: "<red>You can only surrender if you are in an active war!</red>"
             same_clan: "<red>Internal surrender? Your members already obey you (or should).</red>"
-            
+    
     glowstone:
         purchased: "<yellow>You acquired Glowstones. Use them to blow up Anti-Cores."
 
@@ -206,6 +222,7 @@ member:
 core:
     place:
         success: "Clan core placed successfully."
+    damage: "<yellow>NEXUS:</yellow> <white><core_health> HP <gray>(-<damage>)"
 
 nexus:
     name: "Clan Nexus (<tag>)"
@@ -215,6 +232,7 @@ nexus:
         error: "<red><bold>OBSTRUCTED TERRAIN!</bold> The Nexus base requires a 3x3 area of replaceable blocks (Iron/Diamond)."
         error_border: "<yellow><bold>CHUNK BORDER!</bold> You cannot place the Core so close to the border. It must be entirely within a single Chunk."
     protect.indestructible: "<red>Clan core, go to <bold>war</bold> to break it."
+
 anticore:
     name: "Anti-Core"
     placed: "<yellow>Anti-Core placed on clan <defender_clan>'s core"
@@ -224,7 +242,16 @@ anticore:
         no-influence-zone: "<red>You are trying to place the anticore in a zone where there are no active cores, place the anticore in an enemy chunk"
     destroyed:
         glowstone: "<red>An Anti-Core of the clan <attacker_clan> was destroyed by <destroyer_player> using glowstone."
-        
+    compass:
+        name: "Anti-Core Tracker"
+        lore:
+            - "<gray>This item will self-destruct in <white>60 seconds</white>."
+            - "<gray>Points to the nearest active Anti-Core."
+            - ""
+            - "<red><bold>WARNING:</bold> <gray>Single and temporary use.</gray>"
+        activate: "<gradient:green:dark_green><bold>TRACKER ACTIVATED: Threat Detected!</bold></gradient>"
+        message: "<yellow>Target: <white><dist>m <dark_gray>| <red>Expires in: <white><seconds_left>s"
+
 # ============================================
 # War and Points System
 # ============================================
@@ -232,7 +259,7 @@ kill:
     stolen:
         killer: "<yellow>You stole <bold><stolen_points></bold> from player <bold><victim></bold>"
         victim: "<red>Player <bold><player></bold> stole <bold><stolen_points></bold> from you"
-        
+
 war:
     started:
         broadcast: "<dark_red><bold>WAR!</bold></dark_red> <white><attacker></white> is draining energy from <white><defender></white>'s core!"
@@ -247,22 +274,63 @@ war:
     ended:
         broadcast: "<gold><bold>WAR ENDED!</bold></gold> <white><surrendered></white> has raised the white flag to <white><winner></white>!"
         
-        # O Atacante venceu porque o Defensor deu /surrender
+        # The Attacker won because the Defender used /surrender
         attacker_won:
             title: "<gradient:gold:yellow><bold>ABSOLUTE VICTORY</bold></gradient>"
             subtitle: "<gray>The enemy surrendered! The adversary Nexus was subjugated.</gray>"
         
-        # O Atacante se rendeu e o Defensor venceu a defesa
+        # The Attacker surrendered and the Defender won the defense
         defender_won:
             title: "<gradient:green:dark_green><bold>DEFENSIVE VICTORY</bold></gradient>"
             subtitle: "<gray>The invader gave up! Your core is safe for now.</gray>"
         
-        # Título para quem deu /surrender sendo o Atacante
+        # Title for who used /surrender being the Attacker
         attacker_surrendered:
             title: "<red><bold>STRATEGIC RETREAT</bold></red>"
             subtitle: "<gray>You abandoned the siege. Your drain anchors have vanished.</gray>"
         
-        # Título para quem deu /surrender sendo o Defensor
+        # Title for who used /surrender being the Defender
         defender_surrendered:
             title: "<dark_red><bold>CORE SURRENDERED</bold></dark_red>"
             subtitle: "<gray>Surrender confirmed. Your defenses have been deactivated.</gray>"
+
+teleport:
+    starting: "<gray>Teleporting in <yellow><seconds>s</yellow>. Do not move!</gray>"
+    success: "<green>Teleport complete!</green>"
+    error:
+        in_combat: "<red>You are in combat! Wait <seconds>s more to teleport.</red>"
+        moved: "<red>Teleport cancelled: you moved!</red>"
+        no_nexus: "<red>Your clan does not have an active Nexus to teleport to.</red>"
+        insufficient_points: "<red>You need <cost> points to teleport.</red>"
+
+npc:
+    anticore:
+        name: "War Merchant"
+
+broadcast:
+    prefix: "<dark_gray>[<red>System</red>]</dark_gray>"
+    clan:
+        create: "<gold>New clan formed <bold><clan_name></bold>, leader: <leader>"
+        ally:
+            create: "<cyan>Alliance formed between clans <bold><clan_name></bold> and <bold><clan_name2></bold>."
+            delete: "<red>Alliance ended between clans <bold><clan_name></bold> and <bold><clan_name2></bold>."
+        disband: "Clan <clan_name> disbanded by the leader."
+    member:
+        add: "<gray>Player <bold><player_name></bold> added to the clan"
+        remove: "<gray>Player <bold><player_name></bold> removed from the clan"
+    war:
+        begin: "<dark_red>WAR BETWEEN CLANS, clan <attacker_clan> attacked <receiver_clan>."
+
+scoreboard:
+    clan:
+        tag: "<aqua>[<tag>]</aqua>"
+    sidebar:
+        title: "<dark_purple>Quintilis"
+        content:
+            - "<gray>--------------------</gray>"
+            - "<yellow>Top Players</yellow>"
+            - "<top_players>"
+            - ""
+            - "<red>Top Clans:</red>"
+            - "<top_clans>"
+            - "<gray>--------------------</gray>"
