@@ -320,3 +320,15 @@ broadcast:
         remove: "<gray>Jogador <bold><player_name></bold> removido do clã"
     war:
         begin: "<dark_red>GUERRA ENTRE CLÂS, clã <attacker_clan> atacou <receiver_clan>."
+        
+scoreboard:
+    sidebar:
+        title: "Quintilis"
+        content:
+            - "<gray>--------------------</gray>"
+            - "<yellow>Melhores Jogadores</yellow>"
+            - "<top_players>" 
+            - ""
+            - "<red>Melhores Clãs:</red>"
+            - "<top_clans>"''
+            - "<gray>--------------------</gray>"

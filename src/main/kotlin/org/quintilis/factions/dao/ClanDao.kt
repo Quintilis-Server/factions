@@ -37,6 +37,9 @@ interface ClanDao: BaseDao<ClanEntity, Int> {
     @SqlQuery("SELECT * FROM clans WHERE leader_uuid = :leaderId AND active = TRUE")
     fun findByLeaderId(@Bind("leaderId") leaderId: UUID): ClanEntity?
 
+    @SqlQuery("SELECT * FROM clans ORDER BY points ASC LIMIT 3")
+    fun findTopClans(): List<ClanEntity>
+
     @SqlQuery("""
         SELECT c.* FROM clans c
         JOIN clan_cores cc on c.id = cc.clan_id

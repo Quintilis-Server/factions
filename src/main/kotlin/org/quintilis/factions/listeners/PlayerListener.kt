@@ -19,6 +19,7 @@ import org.quintilis.factions.extensions.getPlayerEntity
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.managers.TagManager
+import org.quintilis.factions.scoreboard.Scoreboard
 import org.quintilis.factions.services.FactionsServices
 import org.quintilis.factions.services.FactionsServices.clanRelationCache
 import org.quintilis.factions.services.FactionsServices.playerCache
@@ -34,7 +35,6 @@ class PlayerListener(private val plugin: Factions): Listener {
         val player = event.player
         val uuid = player.uniqueId
 
-
         if(!this.playerDao.isInDatabase(uuid)){
             plugin.logger.info("Player ${player.name} is not in the database")
             val playerEntity = PlayerEntity(uuid, player.name, 0);
@@ -42,6 +42,8 @@ class PlayerListener(private val plugin: Factions): Listener {
             plugin.logger.info("Player ${player.name} joined successfully")
             return
         }
+
+        Scoreboard.setupScoreboard(player);
 
         plugin.logger.info("Player ${player.name} joined successfully")
     }
