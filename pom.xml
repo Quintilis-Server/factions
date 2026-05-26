@@ -86,6 +86,14 @@
                             <pattern>org.postgresql</pattern>
                             <shadedPattern>org.quintilis.factions.lib.postgresql</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>me.catcoder.sidebar</pattern>
+                            <shadedPattern>org.quintilis.factions.lib.sidebar</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.tcoded.folialib</pattern>
+                            <shadedPattern>org.quintilis.factions.lib.folialib</shadedPattern>
+                        </relocation>
                     </relocations>
 
                     <transformers>
@@ -146,16 +154,34 @@
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         <repository>
-            <id>fancynpcs-repo</id>
-            <url>https://repo.fancyplugins.de/releases</url>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <id>fancyinnovations-releases</id>
+            <name>FancyInnovations Repository</name>
+            <url>https://repo.fancyinnovations.com/releases</url>
         </repository>
         <repository>
             <id>placeholderapi</id>
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
+            <id>viaversion-repo</id>
+            <url>https://repo.viaversion.com</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>tcoded-repo</id>
+            <url>https://repo.tcoded.com/releases</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
@@ -275,12 +301,19 @@
             <version>6.0.2</version>
             <scope>provided</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.quintilis</groupId>-->
-<!--            <artifactId>economy</artifactId>-->
-<!--            <version>1.0-SNAPSHOT</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
 
+        <dependency>
+            <groupId>com.github.CatCoderr</groupId>
+            <artifactId>ProtocolSidebar</artifactId>
+            <version>50bfed345c</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.tcoded</groupId>
+            <artifactId>FoliaLib</artifactId>
+            <version>0.5.1</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

@@ -21,12 +21,12 @@ import org.quintilis.factions.extensions.getClan
 import org.quintilis.factions.managers.QuintilisScheduler
 import org.quintilis.factions.managers.TagManager
 import org.quintilis.factions.placeholders.FactionsLangExpansion
+import org.quintilis.factions.scoreboard.Scoreboard
 
 class Factions : JavaPlugin() {
 
     override fun onLoad() {
         super.onLoad()
-
     }
 
     override fun onEnable() {
@@ -65,8 +65,10 @@ class Factions : JavaPlugin() {
             server.pluginManager.disablePlugin(this)
             return
         }
+
         FactionsServices.init(this)
         Keys.load(this)
+        Scoreboard.init(this)
 
         this.registerEvents()
 

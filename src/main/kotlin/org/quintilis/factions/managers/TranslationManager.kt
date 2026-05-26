@@ -75,6 +75,8 @@ object TranslationManager {
 
         // 4. Injeta as traduções no Tradutor Global do Servidor
         GlobalTranslator.translator().addSource(store)
+//        plugin.logger.info("YAMLs carregados: ${loadedYamls.keys}")
+//        plugin.logger.info("Valor direto: ${loadedYamls.values.firstOrNull()?.getString("scoreboard.sidebar.title")}")
 
         plugin.logger.info("$loadedCount pacotes de idioma registrados com sucesso.")
     }
@@ -144,12 +146,12 @@ object TranslationManager {
         if (yaml.isList(key)) {
             return yaml.getStringList(key).joinToString("<newline>")
         }
-        
+
         val str = yaml.getString(key)
         if (str != null) {
             return str.replace("\n", "<newline>")
         }
-        
+
         return key
     }
 

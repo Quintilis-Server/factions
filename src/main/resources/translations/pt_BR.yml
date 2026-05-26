@@ -322,13 +322,15 @@ broadcast:
         begin: "<dark_red>GUERRA ENTRE CLÂS, clã <attacker_clan> atacou <receiver_clan>."
         
 scoreboard:
+    clan:
+        tag: "<aqua>[<tag>]</aqua>"
     sidebar:
-        title: "Quintilis"
+        title: "<dark_purple>Quintilis"
         content:
             - "<gray>--------------------</gray>"
             - "<yellow>Melhores Jogadores</yellow>"
-            - "<top_players>" 
+            - "<top_players>"
             - ""
             - "<red>Melhores Clãs:</red>"
-            - "<top_clans>"''
+            - "<top_clans>"
             - "<gray>--------------------</gray>"
