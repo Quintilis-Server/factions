@@ -67,9 +67,11 @@ object ConfigManager: BaseConfigManager() {
     }
 
     fun getAnticoreCompassExpiry(): Int{
-        return this.getInt("anticore.compassExpity")
+        return this.getInt("anticore.compass-expiry")
     }
-
+    fun getAnticoreCompassPrice(): Int{
+        return this.getInt("anticore.compass-price")
+    }
     fun getWarTimeout(): Int{
         return this.getInt("war.timeout")
     }

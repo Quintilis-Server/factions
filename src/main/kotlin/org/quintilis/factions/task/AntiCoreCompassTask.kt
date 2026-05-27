@@ -90,7 +90,7 @@ class AntiCoreCompassTask: BukkitRunnable() {
 
             // Aqui você pode usar o render com placeholders se tiver configurado
             player.sendActionBar(TranslationManager.render(
-                "antiCore.compass.message",
+                "anticore.compass.message",
                 player.locale(),
                 Placeholder.unparsed("dist", dist.toString()),
                 Placeholder.unparsed("seconds_left", secondsLeft.toString()),

@@ -8,6 +8,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Particle
 import org.bukkit.Sound
+import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.event.Cancellable
 import org.bukkit.event.Listener
@@ -23,6 +24,7 @@ import org.quintilis.factions.extensions.broadcastTranslatable
 import org.quintilis.factions.extensions.getClanAsLeader
 import org.quintilis.factions.extensions.isClanLeader
 import org.quintilis.factions.extensions.isCoreItem
+import org.quintilis.factions.extensions.isOverworld
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.managers.TranslationManager
 import org.quintilis.factions.results.Result
@@ -54,6 +56,11 @@ class CoreListener: Listener {
             val center = location.clone().subtract(0.0, 1.0, 0.0)
             val centerChunk = location.chunk
             val world = location.world
+
+            if(!world.isOverworld()){
+                event.isCancelled = true
+                return
+            }
 
             for (x in -1..1) {
                 for (z in -1..1) {

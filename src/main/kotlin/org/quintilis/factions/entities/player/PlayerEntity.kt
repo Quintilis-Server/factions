@@ -25,4 +25,11 @@ data class PlayerEntity(
     fun getPlayer(): Player? = Bukkit.getPlayer(id)
 
     fun getClan(): ClanEntity? = clanCache.getClanByMember(id)
+
+    fun havePoints(other: Int): Boolean = points >= other
+
+    fun removePoints(other: Int) {
+        this.points -= other
+        this.save<BaseEntity>()
+    }
 }

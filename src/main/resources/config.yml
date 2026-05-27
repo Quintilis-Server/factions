@@ -29,4 +29,5 @@ anticore:
   time: 400               #TICKS
   shots: 10
   activation-radius: 15
-  compassExpiry: 60       #SECONDS
+  compass-expiry: 60       #SECONDS
+  compass-price: 50

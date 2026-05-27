@@ -9,6 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.quintilis.factions.entities.clan.AntiCoreEntity
 import org.quintilis.factions.exceptions.points.NotEnoughPointsError
 import org.quintilis.factions.extensions.getClanAsLeader
+import org.quintilis.factions.extensions.getPlayerEntity
 import org.quintilis.factions.extensions.sendTranslatable
 import org.quintilis.factions.managers.ConfigManager
 import org.quintilis.factions.managers.ErrorManager
@@ -88,14 +89,21 @@ class AntiCoreGUI(player: Player, plugin: JavaPlugin) : BaseGUI(player, "gui.ant
         gui.setItem(2, 5, glowstoneItem) // Flow to the right
 
 
+        val compassPrice = ConfigManager.getAnticoreCompassPrice()
         val compassItem = createItem(
             Material.COMPASS,
             "gui.anticore.compass.name",
             "gui.anticore.compass.lore",
             Placeholder.parsed("price", glowstonePrice.toString())
         ).asGuiItem { event ->
+            val playerEntity = player.getPlayerEntity() ?: return@asGuiItem
             event.isCancelled = true
             ErrorManager.runSafe(player) {
+                if(!playerEntity.havePoints(compassPrice)) {
+                    throw NotEnoughPointsError()
+                }
+
+                playerEntity.removePoints(compassPrice)
                 val compass = anticoreService.createCompassItem(player)
 
                 player.inventory.addItem(compass)

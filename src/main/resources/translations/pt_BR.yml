@@ -49,6 +49,12 @@ gui:
         glowstone:
             name: "Glowstone"
             lore: "Usado para explodir um Anticore. \n O dano causado ao player <bold>não é negado</bold>, somente o dano estrutural."
+        compass:
+            name: "Localizador de Anticore"
+            lore:
+                - "Mira no anticore mais proximo."
+                - "Só é ativado quando colocado na mão."
+                - "Dura 60 segundos"
 
 # ============================================
 # Comandos e Sistema de Clãs
