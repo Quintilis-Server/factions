@@ -20,6 +20,6 @@ interface PlayerDao: BaseDao<PlayerEntity, UUID> {
     @SqlQuery("SELECT * FROM players where name = :name")
     fun findByName(@Bind("name")name: String): PlayerEntity?
 
-    @SqlQuery("SELECT * FROM players ORDER BY points LIMIT 3")
+    @SqlQuery("SELECT * FROM players ORDER BY points DESC LIMIT 3")
     fun findTopPlayers(): List<PlayerEntity>
 }

@@ -24,6 +24,8 @@ object Scoreboard {
         val title = TranslationManager.render("scoreboard.sidebar.title", player.locale())
         val sidebar = ProtocolSidebar.newAdventureSidebar(title, plugin)
 
+        sidebar.updateLinesPeriodically(20,20)
+
         val rawLines = TranslationManager.getRawList("scoreboard.sidebar.content", player.locale())
         val mm = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage()
 
@@ -60,7 +62,7 @@ object Scoreboard {
                                     TranslationManager.render(
                                         "scoreboard.clan.tag",
                                         playerContext.locale(),
-                                        Placeholder.unparsed("tag", clan.tag!!)
+                                        Placeholder.unparsed("tag", clan.tag)
                                     )
                                 } else {
                                     Component.empty()
