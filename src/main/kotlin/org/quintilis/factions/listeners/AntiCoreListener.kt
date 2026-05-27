@@ -158,53 +158,70 @@ class AntiCoreListener(val plugin: JavaPlugin) : Listener {
 
         // 5ª Carga: O bloco VAI explodir agora
         if (antiCore.glowstoneCharges >= 5) {
-            // Marcamos o BLOCO na memória do servidor (Metadata)
-            // O valor pode ser o ID do AntiCore para facilitar a busca depois
-            block.setMetadata("factions_exploding_anticore",
-                org.bukkit.metadata.FixedMetadataValue(Bukkit.getPluginManager().getPlugin("Factions")!!, antiCore.id)
-            )
-            println("Anticore explodindo")
-            // NÃO definimos active = false aqui ainda!
+            event.isCancelled = true
+
+            if (event.hand == org.bukkit.inventory.EquipmentSlot.HAND) {
+                item.amount -= 1
+            }
+
+            block.type = Material.AIR
+
+            if(antiCore.active){
+                antiCore.active = false
+                antiCore.save<BaseEntity>()
+                antiCoreCache.invalidateSpatialCaches(block.location)
+
+                val loc = block.location
+                loc.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, loc.clone().add(0.5, 0.5, 0.5), 1)
+                loc.world.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.8f)
+
+                loc.broadcastInRadius(50.0, Component.translatable(
+                    "anticore.destroyed.glowstone",
+                    Argument.string("attacker_clan", antiCore.getClan()?.name!!),
+                    Argument.string("destroyer_player", event.player.name) // Agora você tem o player de forma fácil!
+                ))
+            }
+            return
         }
 
         antiCore.save<BaseEntity>()
         antiCoreCache.invalidateSpatialCaches(block.location)
     }
 
-    @EventHandler
-    fun onAntiCoreExplosion(event: BlockExplodeEvent){
-        val block = event.block
-
-        // 1. Verificamos se o bloco tem a nossa "Tag" de memória
-        val metadata = block.getMetadata("factions_exploding_anticore")
-        println(metadata)
-        if (metadata.isNotEmpty()) {
-            // Se tem a tag, é 100% de certeza que é o AntiCore detonando
-            val antiCoreId = metadata[0].asInt()
-
-            // 2. PROTEGE OS BLOCOS (Limpa a lista de destruição)
-            event.blockList().clear()
-
-            // 3. AGORA sim, desativamos ele no banco de forma segura
-            val anticore = antiCoreCache.findById(antiCoreId)
-            if (anticore != null && anticore.active) {
-                anticore.active = false
-                anticore.save<BaseEntity>()
-                antiCoreCache.invalidateSpatialCaches(block.location)
-
-                // Avisos e efeitos
-                block.world.playSound(block.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.8f)
-                block.location.broadcastInRadius(50.0, Component.translatable(
-                    "anticore.destroyed.glowstone",
-                    Argument.string("attacker_clan", anticore.getClan()?.name!!),
-//                    Argument.string("destroyer_player", event.)
-                ))
-            }
-
-            // Remove a metadata para limpar a memória
-            block.removeMetadata("factions_exploding_anticore", Bukkit.getPluginManager().getPlugin("Factions")!!)
-        }
-    }
+//    @EventHandler
+//    fun onAntiCoreExplosion(event: BlockExplodeEvent){
+//        val block = event.block
+//
+//        // 1. Verificamos se o bloco tem a nossa "Tag" de memória
+//        val metadata = block.getMetadata("factions_exploding_anticore")
+//        println(metadata)
+//        if (metadata.isNotEmpty()) {
+//            // Se tem a tag, é 100% de certeza que é o AntiCore detonando
+//            val antiCoreId = metadata[0].asInt()
+//
+//            // 2. PROTEGE OS BLOCOS (Limpa a lista de destruição)
+//            event.blockList().clear()
+//
+//            // 3. AGORA sim, desativamos ele no banco de forma segura
+//            val anticore = antiCoreCache.findById(antiCoreId)
+//            if (anticore != null && anticore.active) {
+//                anticore.active = false
+//                anticore.save<BaseEntity>()
+//                antiCoreCache.invalidateSpatialCaches(block.location)
+//
+//                // Avisos e efeitos
+//                block.world.playSound(block.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.8f)
+//                block.location.broadcastInRadius(50.0, Component.translatable(
+//                    "anticore.destroyed.glowstone",
+//                    Argument.string("attacker_clan", anticore.getClan()?.name!!),
+////                    Argument.string("destroyer_player", event.)
+//                ))
+//            }
+//
+//            // Remove a metadata para limpar a memória
+//            block.removeMetadata("factions_exploding_anticore", Bukkit.getPluginManager().getPlugin("Factions")!!)
+//        }
+//    }
 
     @EventHandler
     fun onPistonExtend(event: BlockPistonExtendEvent) {

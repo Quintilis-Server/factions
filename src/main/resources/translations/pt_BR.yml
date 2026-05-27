@@ -242,11 +242,13 @@ nexus:
     protect.indestructible: "<red>Nucleo de clã, entre em <bold>guerra</bold> pra quebrar."
 anticore:
     name: "Anti-Core"
-    placed: "<yellow>Anti-Core colocado no núcleo do clã <defender_clan>"
+    place:
+        success: "<yellow>Anti-Core colocado no núcleo do clã <defender_clan>"
     removed: "<gray>O Anti-Core foi removido e a drenagem cessou.</gray>"
     error:
         attacking-same-clan: "<yellow>Você esta atacando o seu próprio clã, coloque o anti core mais proximo de um núcleo de outro clã"
         no-influence-zone: "<red>Você esta tentando colocar o anticore em uma zona onde não tem núcleos ativos, coloque o anticore em um chunk inimigo"
+        nexus-protected: "<red>O nexus ainda esta protegido por outros núcleos."
     destroyed:
         glowstone: "<red>Um Anticore do clã <attacker_clan> foi destruido por <destroyer_player> usando glowstone."
     compass:
